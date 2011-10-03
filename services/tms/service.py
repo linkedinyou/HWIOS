@@ -12,7 +12,7 @@
 import os,sys
 from ConfigParser import ConfigParser
 
-from hwios.core.static_file import StaticFile
+from core.static_file import StaticFile
 
 from twisted.application.internet import TCPServer, SSLServer
 from twisted.web import static, server

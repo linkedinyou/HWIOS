@@ -15,7 +15,7 @@ from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.translation import ugettext as _
 
-from hwios.core.application import HWIOS
+from core.application import HWIOS
 from web_ui.models.pad import Pad
 from web_ui.models.ws_auth import WSAuth
 from web_ui.models.profiles import Profile

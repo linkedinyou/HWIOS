@@ -9,7 +9,7 @@
     :license: LGPL, See LICENSE for details.
 """
 
-from hwios.core.application import HWIOS
+from core.application import HWIOS
 from web_ui.models.signal import Signal
 
 class TrackerMiddleware:

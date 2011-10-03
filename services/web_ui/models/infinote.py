@@ -18,7 +18,7 @@
 import sys
 import re
 import random
-from hwios.core.application import HWIOS
+from core.application import HWIOS
 
 class InfinotePool(object):
     """

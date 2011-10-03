@@ -17,7 +17,7 @@ from twisted.python import failure, log
 from django.contrib.sessions.models import Session
 
 
-from hwios.core.application import HWIOS
+from core.application import HWIOS
 from web_ui.models.signal import Signal, SignalPool
 import web_ui.urls as urls
 

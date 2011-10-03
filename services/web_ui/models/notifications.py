@@ -11,7 +11,7 @@
 import re
 from copy import deepcopy
 
-from hwios.core.application import HWIOS
+from core.application import HWIOS
 from django.template.loader import render_to_string
 
 compiled_notify_patterns = {}

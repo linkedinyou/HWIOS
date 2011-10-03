@@ -30,7 +30,7 @@ from django.contrib.auth.models import User
 
 import web_ui.settings as settings
 from web_ui.models.settings import Settings
-from hwios.core.application import HWIOS
+from core.application import HWIOS
 from web_ui.models.signal import Signal
 
 class XAuth(ModelBackend):

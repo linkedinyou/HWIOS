@@ -16,7 +16,7 @@ from django.core import serializers
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext as _
 
-from hwios.core.application import HWIOS
+from core.application import HWIOS
 from web_ui.forms.teknon import BackendOnlineServiceIniForm, BackendOfflineServiceIniForm, SERVICE_TYPES
 from web_ui.models.ws_auth import WSAuth
 from web_ui.models.notifications import *

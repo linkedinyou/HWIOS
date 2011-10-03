@@ -14,8 +14,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext as _
 
-from hwios.core.application import HWIOS
-from hwios.lib.diff_match_patch import diff_match_patch
+from core.application import HWIOS
+from lib.diff_match_patch import diff_match_patch
 
 from web_ui.models.ws_auth import WSAuth
 from web_ui.models.wiki import WikiArticle, WikiRevision

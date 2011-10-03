@@ -15,7 +15,7 @@ from django.contrib.auth.models import Group
 from django.template.loader import render_to_string
 
 from web_ui.models.profiles import Profile
-from hwios.core.application import HWIOS
+from core.application import HWIOS
 
 #0:ignore, 1:view, 2:participate, 3:respond, 4:act
 ACTIVITY_CSS = ['ui-icon-dummy','ui-icon-search','ui-icon-person','ui-icon-comment','ui-icon-alert']

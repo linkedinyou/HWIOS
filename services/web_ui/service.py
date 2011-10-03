@@ -21,8 +21,8 @@ from twisted.python import threadpool
 from twisted.web import http
 
 import web_ui.settings as settings
-from hwios.core.application import HWIOS
-from hwios.core.static_file import StaticFile
+from core.application import HWIOS
+from core.static_file import StaticFile
 
 from web_ui.models.http import WebSocketHandler, WebSocketSite
 from web_ui.models.ws_router import WebSocketRouter

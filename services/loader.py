@@ -12,7 +12,7 @@ import os,sys
 HWIOS_ROOT = os.environ['HWIOS_ROOT']
 from ConfigParser import ConfigParser
 
-from hwios.core.application import HWIOS
+from core.application import HWIOS
 
 class ServiceLoader(object):
     """Automated service loader for HWIOS"""

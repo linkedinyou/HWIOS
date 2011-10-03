@@ -22,8 +22,8 @@ from django.core import mail
 from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext as _
 
-from hwios.core.application import HWIOS
-from hwios.core.tools import JSONResponse
+from core.application import HWIOS
+from core.tools import JSONResponse
 
 from web_ui.models.settings import Settings
 from web_ui.models.profiles import Profile

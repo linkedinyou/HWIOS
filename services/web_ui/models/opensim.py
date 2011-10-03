@@ -11,7 +11,7 @@
 import os
 from stat import *
 import time
-from hwios.core.application import HWIOS
+from core.application import HWIOS
 from web_ui.models.settings import Settings
 
 class Maps():

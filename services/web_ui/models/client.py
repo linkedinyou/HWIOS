@@ -10,7 +10,7 @@
 """
 from twisted.python import failure, log
 
-from hwios.core.application import HWIOS
+from core.application import HWIOS
 
 class Client(object):
     """

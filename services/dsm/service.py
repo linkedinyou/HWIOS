@@ -14,7 +14,7 @@ from twisted.application import internet
 from twisted.internet import defer
 from twisted.python import failure, log
 
-from hwios.core.application import HWIOS
+from core.application import HWIOS
 from dsm_server import DSMServer,DSMRealm,DSMCredChecker,DSMPortalRoot
 
 

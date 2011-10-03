@@ -15,7 +15,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext as _
 
-from hwios.core.application import HWIOS
+from core.application import HWIOS
 
 from web_ui.models.activity import Activity, ACTIVITY_CSS
 from web_ui.models.ws_auth import WSAuth

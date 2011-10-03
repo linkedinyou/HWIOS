@@ -15,7 +15,7 @@ from twisted.internet import reactor, defer
 from django.utils.translation import ugettext as _
 from django.template.loader import render_to_string
 
-from hwios.core.application import HWIOS
+from core.application import HWIOS
 from web_ui.models.ws_auth import WSAuth
 from web_ui.models.signal import Signal
 

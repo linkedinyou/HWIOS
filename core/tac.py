@@ -23,11 +23,11 @@ from twisted.internet import reactor
 #Set our environment, so the hwios namespace can be found
 os.environ['DJANGO_SETTINGS_MODULE'] = 'web_ui.settings'
 HWIOS_ROOT = os.getcwd()
-sys.path.append(os.path.join(HWIOS_ROOT,'../'))
+sys.path.append(os.path.join(HWIOS_ROOT,'./'))
 sys.path.append(os.path.join(HWIOS_ROOT,'services'))
 
-from hwios.core.application import HWIOS
-from hwios.services.loader import ServiceLoader
+from core.application import HWIOS
+from services.loader import ServiceLoader
 
 application = service.Application('HWIOS')
 HWIOS.application = application

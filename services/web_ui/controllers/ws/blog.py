@@ -17,7 +17,7 @@ from django.forms import model_to_dict
 from django.utils.translation import ugettext as _
 from django.db import models
 
-from hwios.core.application import HWIOS
+from core.application import HWIOS
 
 from web_ui.models.ws_auth import WSAuth
 from web_ui.models.blog import BlogArticle, BlogArticleComment

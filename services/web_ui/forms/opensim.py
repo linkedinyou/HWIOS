@@ -12,7 +12,7 @@
 import random
 from django import forms
 from django.utils.translation import ugettext_lazy as _
-from hwios.core.application import HWIOS
+from core.application import HWIOS
 from web_ui.models.settings import Settings
 from web_ui.models.profiles import Profile
 from web_ui.models.opensim import Regions

@@ -19,7 +19,7 @@ from django.db import models
 from django.db import connections
 from django.core.exceptions import ObjectDoesNotExist
 
-from hwios.core.application import HWIOS
+from core.application import HWIOS
 from web_ui.models.ws_auth import WSAuth
 from web_ui.models.opensim import Simulators, Luggage, Regions, Scenes, Maps
 

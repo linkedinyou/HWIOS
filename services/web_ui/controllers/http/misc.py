@@ -20,8 +20,8 @@ from django.contrib.auth.models import AnonymousUser
 
 from web_ui.models.elFinder import connector
 
-from hwios.core.application import HWIOS
-from hwios.core.tools import JSONResponse
+from core.application import HWIOS
+from core.tools import JSONResponse
 from web_ui.models.settings import Settings
 from web_ui.models.menu import Menu
 from web_ui.models.client import Client

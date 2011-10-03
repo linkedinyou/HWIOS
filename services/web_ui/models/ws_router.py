@@ -24,7 +24,7 @@ from twisted.internet import defer
 from twisted.python import log
 from twisted.internet import reactor
 
-from hwios.core.application import HWIOS
+from core.application import HWIOS
 import web_ui.settings as settings
 
 from web_ui.models.profiles import Profile

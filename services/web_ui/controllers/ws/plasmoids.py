@@ -17,7 +17,7 @@ from django.utils.translation import ugettext as _
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
 
-from hwios.core.application import HWIOS
+from core.application import HWIOS
 from web_ui.models.ws_auth import WSAuth
 from web_ui.models.plasmoids import Plasmoid
 from web_ui.models.infinote import InfinoteEditor, InfinotePool

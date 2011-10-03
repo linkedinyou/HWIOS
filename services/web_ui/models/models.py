@@ -12,7 +12,7 @@
 import settings
 import plasmoids
 import pad
-import hyki
+import wiki
 import menu
 import blog
 import activity

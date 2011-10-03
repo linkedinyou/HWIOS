@@ -14,7 +14,7 @@ import math
 from django.core import serializers
 from django.template.loader import render_to_string
 
-from hwios.core.application import HWIOS
+from core.application import HWIOS
 from web_ui.models.ws_auth import WSAuth
 from web_ui.models.profiles import Profile
 from web_ui.models.opensim import Regions, Maps
