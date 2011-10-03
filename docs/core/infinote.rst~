@@ -1,0 +1,14 @@
+Infinote OT
+===========
+
+The Operational transformation based infinote protocol became usable for the web, after the MIT-licensed
+javascript implementation jinfinote (http://www.jinfinote.com/) hit the web. HWIOS uses jinfinote on the clientside.
+A python port of jinfinote has been developed to keep track of the common document state on the serverside. Both together
+form the OT-based editing system that's available in HWIOS.
+
+
+Code References
+---------------
+.. automodule:: services.web_ui.models.infinote
+   :members: InfinoteEditor, InfinotePool
+   :show-inheritance:

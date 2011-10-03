@@ -1,0 +1,168 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+"""
+    hwios
+    ~~~~~
+
+    General executable file for all HWIOS related actions
+
+    :copyright: Copyright 2011-2012 OS-Networks
+    :license: LGPL, See LICENSE for details.
+"""
+
+import sys,os
+import subprocess
+
+from twisted.application import internet, service
+
+from optparse import OptionParser
+from ConfigParser import ConfigParser
+from django.core.exceptions import ObjectDoesNotExist
+try:
+    import MySQLdb
+except ImportError:
+    pass
+os.environ["DJANGO_SETTINGS_MODULE"] = "services.web_ui.settings"
+HWIOS_ROOT = os.getcwd()
+os.environ["HWIOS_ROOT"] = HWIOS_ROOT
+
+sys.path.append(os.path.join(HWIOS_ROOT,'services'))
+
+import web_ui.settings as settings
+
+config = ConfigParser()
+config.read('hwios.ini')
+if '--debug' in sys.argv[1:3]: 
+    config.set('general','debug',True)
+    try:
+        port = sys.argv[2]
+    except:
+        port = 8000
+else: config.set('general','debug',False)
+config.write(open('hwios.ini','wb'))
+config.read('hwios.ini')
+
+def start(option, opt_str, value, parser):    
+    os.system('twistd --pidfile hwios.pid -l hwios.log -oy core/tac.py')
+    
+def stop(option, opt_str, value, parser):
+    os.system('kill -15 $(pidof hwios)')
+    
+def debug(option, opt_str, value, parser):
+    os.system('python core/autoreload-twistd.py -noy core/tac.py')
+
+def pypy(option, opt_str, value, parser):
+    os.system('pypy core/autoreload-twistd.py -noy core/tac.py')
+
+
+def update_language(option, opt_str, value, parser):
+    os.chdir('services/web_ui')    
+    os.system('django-admin.py makemessages -l nl')
+    os.environ['PYTHONPATH'] = HWIOS_ROOT
+    os.system('HWIOSPATH='+HWIOS_ROOT+' django-admin.py compilemessages --settings=services.web_ui.settings')
+    
+
+def setup(option, opt_str, value, parser):
+    if config.get('db','engine') == 'mysql':
+        try:
+            db_connection = MySQLdb.connect(host=config.get('db','host'),user=config.get('db','user'),passwd=config.get('db','pw'))
+            cursor = db_connection.cursor()
+            cursor.execute('DROP DATABASE IF EXISTS hwios')
+            cursor.execute('CREATE DATABASE hwios')
+            cursor.close()
+            db_connection.commit()
+            db_connection.close()
+        except MySQLdb.Error:
+            pass
+    os.system('python services/web_ui/manage.py syncdb --noinput')
+    os.system('python hwios --load') 
+    from services.web_ui.models.profiles import Profile
+    print 'Create an administrator account...'
+    first_name = raw_input("First name: ")
+    last_name = raw_input("Last name: ")
+    email = raw_input("Email: ")
+    password = raw_input("Password: ")
+    profile_data = {'username':first_name, 
+                    'first_name': first_name, 
+                    'last_name': last_name, 
+                    'email': email, 
+                    'password': password, 
+                    'is_staff': 1, 
+                    'is_superuser': 1, 
+                    'is_active': 1, 
+                    'organisation': '', 
+                    'timezone': 'Europe/Amsterdam', 
+                    'karma': 0, 
+                    'ip': '127.0.0.1' 
+                    }
+    profile = Profile.objects.create_profile(profile_data, acp=True)
+    
+def test_user(option, opt_str, value, parser):
+    from services.web_ui.models.profiles import Profile
+    profile_data = {'username':'test', 
+                    'first_name': 'test1', 
+                    'last_name': 'test', 
+                    'email': 'test', 
+                    'password': 'test', 
+                    'is_staff': 1, 
+                    'is_superuser': 1, 
+                    'is_active': 1, 
+                    'organisation': '', 
+                    'timezone': 'Europe/Amsterdam', 
+                    'karma': 0, 
+                    'ip': '127.0.0.1' 
+                    }
+                    
+    profile = Profile.objects.create_profile(profile_data, acp=True)
+    if profile == None:
+        print "Account already exist"
+
+def dump_data(option, opt_str, value, parser):
+    os.system('python services/web_ui/manage.py dumpdata models > services/web_ui/models.json')
+
+def sync_db(option, opt_str, value, parser):
+    os.system('python services/web_ui/manage.py syncdb')
+
+def load_data(option, opt_str, value, parser):
+    os.system('python services/web_ui/manage.py loaddata services/web_ui/models.json')
+
+def deploy_assets(option, opt_str, value, parser):
+    from django import template
+    import web_ui.settings as settings
+    import datetime
+    import cssmin
+    css_dir = os.path.join(settings.HWIOS_ROOT,'services','web_ui','media','themes','start','css')
+    css_files = []
+    with open(os.path.join(css_dir,'hwios_debug.css'), 'r') as f:
+        debug_output = f.read()
+        debug_output = debug_output.replace('@import url("', '')
+        debug_output = debug_output.replace('");', '')
+    css_files = debug_output.split('\n')
+    css_output = ''    
+    for _file in css_files:
+        with open(os.path.join(css_dir,_file), 'r') as f:
+            css_output += f.read()
+    css = cssmin.cssmin(css_output)
+    with open(os.path.join(css_dir,'hwios_deploy.css'), 'w') as f:
+        f.write(css)
+    p = subprocess.Popen('sh deploy.sh', shell=True, cwd=os.path.join(HWIOS_ROOT,'services','web_ui','media','scripts'))
+    sts = os.waitpid(p.pid, 0)[1]
+        
+    
+            
+if __name__ == "__main__":
+    parser = OptionParser()
+    parser.add_option('--setup',action="callback", callback=setup,help='Setup HWIOS database and initial data')
+    parser.add_option('--debug',action="callback", callback=debug,help='Start HWIOS in debug modus')
+    parser.add_option('--start',action="callback", callback=start,help='Start and daemonize HWIOS')
+    
+    parser.add_option('--pypy',action="callback", callback=pypy,help='Start HWIOS with PyPy JIT 1.4')
+    parser.add_option('--stop',action="callback", callback=stop,help='Stop HWIOS daemon')
+
+    parser.add_option('--ulang',action="callback", callback=update_language,help='Updates or creates language files')
+    parser.add_option('--dump',action="callback", callback=dump_data,help='Dump Fixtures')
+    parser.add_option('--syncdb',action="callback", callback=sync_db,help='Synchronize Database')
+    parser.add_option('--load',action="callback", callback=load_data,help='Load Fixtures')
+    parser.add_option('--deploy',action="callback", callback=deploy_assets,help='Optimizes web assets for deployment')
+    parser.add_option('--test',action="callback", callback=test_user,help='Run debug tests')
+    (options, args) = parser.parse_args()

@@ -1,0 +1,22 @@
+{%load i18n%}
+<div class='activity-entry crow'>
+    <div class='activity-entry-message'>
+        <span class='hwios-button activity-type ui-icon {{activity.action_css}}' data-uri='{{activity.link}}'></span>
+        <span class='activity-entry-message-text'><a href='{{activity.link}}'>{{activity.message}}</a></span>
+    </div>
+    <div class='activity-entry-header'>
+        {% if activity.actor_user.profile.photo %}
+        <div class='activity-avatar'><img src='/media/files/avatars/{{activity.actor_user.profile.photo}}'/></div>
+        {%else%}
+        <div class='activity-avatar unknown-avatar'></div>
+        {%endif%}
+        <div class='activity-entry-header-text'>
+        {%ifequal activity.actor_user None%}
+        HWIOS
+        {%else%}
+        {{activity.actor_user}}
+        {%endifequal%}
+        , {{activity.pub_date|date:"D d F, H:i"}}
+        </div>
+    </div>
+</div>

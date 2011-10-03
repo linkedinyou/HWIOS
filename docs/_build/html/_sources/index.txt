@@ -1,0 +1,84 @@
+===================
+HWIOS Documentation
+===================
+
+About HWIOS
+===========
+The Hybrid Web IO System framework is a general purpose realtime collaborative platform, specialized in serving realtime information to
+web-clients through extensive use of websocket and routing technology. The framework is written in Python and Javascript on top of
+frameworks like Twisted, Django and Jquery. HWIOS can be used to create async networked applications for the web, including realtime cms-software,
+networked games, messaging applications, etc.. HWIOS is capable of serving multiple twisted services at once, which means that other network
+services can be used to relay data to web-clients. An example of this can be found in the distributed service management implementation called
+Teknon. Read on for more information about the project's background:
+
+.. toctree::
+   :maxdepth: 1
+
+   narratives/introduction
+   
+Quickstart Guides
+=================
+
+.. toctree::
+   :maxdepth: 1
+
+   narratives/installation
+   narratives/writing_modules
+
+**Get involved**
+
+`Website <http://hwios.org>`_
+|
+`Mailing list <http://groups.google.com/group/hwios>`_
+|
+`#hwios IRC channel <irc://irc.freenode.net/#hwios>`_
+
+**Contributing**
+
+`GIT repository <https://github.com/phrearch/hwios/>`_
+|
+`Report bugs <https://github.com/phrearch/hwios/>`_
+
+*Code checkout:*
+
+::
+    
+ git clone git://github.com/phrearch/hwios.git
+ 
+
+References
+==========
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+
+**Core**
+
+.. toctree::
+    :maxdepth: 1
+
+    core/application
+    core/services
+    core/hwm
+    core/client
+    core/notification
+    core/gis
+    core/infinote
+    core/misc
+    
+**Modules**
+
+.. toctree::
+    :maxdepth: 1
+
+    
+    modules/messenger
+    modules/profiles
+    modules/blog
+    modules/wiki
+    modules/opensim
+    modules/pad
+    modules/teknon
+
+*This project is financially supported by* `Surfnet <http://www.surfnet.nl>`_ & `NLNet foundation <http://nlnet.nl>`_

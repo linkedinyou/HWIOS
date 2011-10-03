@@ -1,0 +1,96 @@
+{% load i18n %}
+<div class='hwios-widget'>
+    <div class='ui-widget-header ui-corner-top services' id='teknon_clients'>
+        <span>{%trans 'Services'%}</span>
+        <span>{%trans 'Overview'%}</span>
+    </div>
+    <div id='teknon-tabs'>
+        <ul>
+            <li><a href='#teknon-services'>{%trans 'Services'%}</a></li>
+            <li><a href='#teknon-machines'>{%trans 'Machines'%}</a></li>
+        </ul>
+        <div class='ui-widget-content ui-corner-bottom contenttext' id='teknon-services'>
+            <table class='datatable' id='table-services'>
+                <thead>
+                    <tr>
+                    <th class='datatable-cb'><input type='checkbox' id='cb-all' /></th>
+                    <th>{%trans 'Description'%}</th>
+                    <th>{%trans 'Client'%}</th>
+                    <th>{%trans 'Port'%}</th>
+                    <th>{%trans 'Options'%}</th>
+                    </tr>
+                </thead>
+                    {%for client in clients%}
+                        {%for service in client.services%}
+                        <tr>
+                        <td><input type='checkbox' id='{{service.uuid}}' name='{{service.uuid}}'/></td>
+                        <td>{{service.name}}</td>
+                        <td>{{client.peer.host}}:{{client.peer.port}}</td>                        
+                        <td>{{service.port}}</td>
+                        <td>
+                            {%ifequal service.status 'ON' %}
+                                <button data-function='teknon.stop_services' data-state='OFF' data-uuid='{{service.uuid}}' data-name='{{service.name}}' id='service-status-{{service.uuid}}' class='action-icon service-on'></button>
+                                {%ifequal service.watchdog 'ON' %}
+                                <button data-function='teknon.switch_watchdog' data-state='OFF' data-uuid='{{service.uuid}}' data-name='{{service.name}}' id='watchdog-status-{{service.uuid}}' class='action-icon watchdog-on'></button>
+                                {%else%}
+                                <button data-function='teknon.switch_watchdog' data-state='ON' data-uuid='{{service.uuid}}' data-name='{{service.name}}' id='watchdog-status-{{service.uuid}}' class='action-icon watchdog-off'></button>
+                                {%endifequal%}
+                            <button data-function='teknon.open_console' data-uuid='{{service.uuid}}' data-name='{{service.name}}' id='console-status-{{service.uuid}}' class='action-icon console-on'></button>
+                            {%else %}
+                            <button data-function='teknon.start_services' data-uuid='{{service.uuid}}' data-name='{{service.name}}' id='service-status-{{service.uuid}}' class='action-icon service-off'></button>
+                            <button data-function='teknon.switch_watchdog' data-state='ON' data-uuid='{{service.uuid}}' data-name='{{service.name}}' id='watchdog-status-{{service.uuid}}' class='action-icon action-icon-disabled watchdog-off'></button>
+                            <button data-function='teknon.open_console' data-uuid='{{service.uuid}}' data-name='{{service.name}}' id='console-status-{{service.uuid}}' class='action-icon action-icon-disabled console-on'></button>
+                            {%endifequal%}
+                            {% ifequal service.type 'SIM' %}
+                            {%if service.user_ini%}
+                            <button id='btn-edit-sim-slave-ini' data-uuid='{{service.uuid}}' data-name='{{service.name}}' id='sim-slave-ini-status-{{service.uuid}}' class='action-icon edit-sim-slave-ini'></button>
+                            {%endif%}
+                            {%endifequal%}
+                        </td>
+                        </tr>
+                        {%endfor%}
+                    {%endfor%}
+            </table>
+            <div class='hwios-toolbar'>
+                <div class='ui-helper-clearfix'>
+                    <div class='fg-buttonset fg-buttonset-single ui-helper-clearfix' style='float:left;'>
+                        <button data-function='teknon.start_services' class='btn-active-many fg-button ui-state-default fg-button-icon-left ui-corner-left ui-state-disabled'><span class='ui-icon ui-icon-gear'></span><span>{%trans 'Start'%}</span></button>
+                        <button data-function='teknon.stop_services' class='btn-active-many fg-button ui-state-default fg-button-icon-left ui-state-disabled'><span class='ui-icon ui-icon-closethick'></span><span>{%trans 'Stop'%}</span></button>
+                        <button data-function='teknon.kill_services' class='btn-active-many fg-button ui-state-default fg-button-icon-left ui-state-disabled ui-corner-right'><span class='ui-icon ui-icon-alert'></span><span>{%trans 'Kill'%}</span></button>
+                    </div>
+                </div>
+            </div>        
+        </div>
+        <div class='ui-widget-content ui-corner-bottom contenttext' id='teknon-machines'>
+            <table class='datatable' id='table-machines'>
+            <thead>
+                <tr>
+                <th class='datatable-cb'><input type='checkbox' id='cb-all' /></th>
+                <th>{%trans 'UUID'%}</th>
+                <th>{%trans 'Daemon User'%}</th>
+                <th>{%trans 'Connected from'%}</th>
+                <th>{%trans 'Options'%}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {%for client in clients%}
+            <tr>
+            <th><input type='checkbox' id='{{service.uuid}}' name='{{service.uuid}}'/></th>
+            <td>{{client.uuid}}</td>
+            <td>{{client.name.0}} {{client.name.1}}</td>
+            <td>{{client.peer.host}}:{{client.peer.port}}</td>
+            <td></td>
+            </tr>
+            {%endfor%}
+            </tbody>
+            </table>
+            <div class='hwios-toolbar'>
+                <div class='ui-helper-clearfix'>
+                    <div class='fg-buttonset fg-buttonset-single ui-helper-clearfix' style='float:left;'>
+                    <button class='btn-active-many fg-button ui-state-default fg-button-icon-left ui-corner-all ui-state-disabled'><span class='ui-icon ui-icon-gear'></span><span>{%trans 'FIXME'%}</span></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

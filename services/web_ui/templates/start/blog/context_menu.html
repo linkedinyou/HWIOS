@@ -1,0 +1,12 @@
+{% load i18n %}
+{%if profile.is_staff%}
+<div class="context-menu-option hwios-button" data-uri="/blog/create/">
+    <span class="ui-icon ui-icon-document"></span>{%trans "New article"%}
+</div>
+<div class="context-menu-option ui-state-disabled hwios-button" data-uripart='/blog/{id}/edit/' data-uriflag='id' data-ctx="edit-article">
+    <span class="ui-icon ui-icon-wrench"></span>{%trans "Edit article"%}
+</div>
+<div class="context-menu-option ui-state-disabled hwios-button" data-function="blog.delete_article" data-ctx="delete-article">
+    <span class="ui-icon ui-icon-trash"></span>{%trans "Delete article"%}
+</div>
+{%endif%}

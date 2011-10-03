@@ -1,0 +1,289 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Websockets &mdash; HWIOS v0.6 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="HWIOS v0.6 documentation" href="../index.html" />
+    <link rel="next" title="Profiles Module" href="../modules/profiles.html" />
+    <link rel="prev" title="Writing modules" href="../narratives/writing_modules.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../modules/profiles.html" title="Profiles Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../narratives/writing_modules.html" title="Writing modules"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">HWIOS v0.6 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="websockets">
+<h1>Websockets<a class="headerlink" href="#websockets" title="Permalink to this headline">¶</a></h1>
+<p>HWIOS has several files that are responsible for handling websocket connections.</p>
+<div class="section" id="module-services.web_ui.models.ws_router">
+<span id="code-references"></span><h2>Code References<a class="headerlink" href="#module-services.web_ui.models.ws_router" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="services-web-ui-models-ws-router">
+<h3>services.web_ui.models.ws_router<a class="headerlink" href="#services-web-ui-models-ws-router" title="Permalink to this headline">¶</a></h3>
+<p>Websocket routing handlers</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">copyright:</th><td class="field-body">Copyright 2009-2011 OS-Networks.</td>
+</tr>
+<tr class="field"><th class="field-name">license:</th><td class="field-body">BSD, see LICENSE for details.</td>
+</tr>
+</tbody>
+</table>
+<dl class="exception">
+<dt id="services.web_ui.models.ws_router.JsonRPCErr">
+<em class="property">exception </em><tt class="descclassname">services.web_ui.models.ws_router.</tt><tt class="descname">JsonRPCErr</tt><a class="reference internal" href="../_modules/services/web_ui/models/ws_router.html#JsonRPCErr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.ws_router.JsonRPCErr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></tt></p>
+<p>JSONRPC code used from MIT-licensed libhjw (<a class="reference external" href="http://code.google.com/p/libhjw/source/browse/trunk/testbed/carcassonne/json_rpc.py?r=171">http://code.google.com/p/libhjw/source/browse/trunk/testbed/carcassonne/json_rpc.py?r=171</a>)</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="services.web_ui.models.ws_router.WebSocketRouter">
+<em class="property">class </em><tt class="descclassname">services.web_ui.models.ws_router.</tt><tt class="descname">WebSocketRouter</tt><big>(</big><em>transport</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/ws_router.html#WebSocketRouter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.ws_router.WebSocketRouter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">web_ui.models.http.WebSocketHandler</span></tt></p>
+<p>This is the main websocket router</p>
+</dd></dl>
+
+</div>
+<span class="target" id="module-services.web_ui.models.ws_realm"></span><div class="section" id="services-web-ui-models-ws-realm">
+<h3>services.web_ui.models.ws_realm<a class="headerlink" href="#services-web-ui-models-ws-realm" title="Permalink to this headline">¶</a></h3>
+<p>Websocket pooling and dispatching handlers</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">copyright:</th><td class="field-body">Copyright 2009-2011 OS-Networks.</td>
+</tr>
+<tr class="field"><th class="field-name">license:</th><td class="field-body">BSD, see LICENSE for details.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="services.web_ui.models.ws_realm.WSRealm">
+<em class="property">class </em><tt class="descclassname">services.web_ui.models.ws_realm.</tt><tt class="descname">WSRealm</tt><a class="reference internal" href="../_modules/services/web_ui/models/ws_realm.html#WSRealm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.ws_realm.WSRealm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>Initializes and keeps all websocket related handlers together.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="services.web_ui.models.ws_realm.WebSocketDispatcher">
+<em class="property">class </em><tt class="descclassname">services.web_ui.models.ws_realm.</tt><tt class="descname">WebSocketDispatcher</tt><a class="reference internal" href="../_modules/services/web_ui/models/ws_realm.html#WebSocketDispatcher"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.ws_realm.WebSocketDispatcher" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>The websocket dispatcher takes care of routing and matching of urls to the appropriate controller</p>
+<dl class="method">
+<dt id="services.web_ui.models.ws_realm.WebSocketDispatcher.route">
+<tt class="descname">route</tt><big>(</big><em>url</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/ws_realm.html#WebSocketDispatcher.route"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.ws_realm.WebSocketDispatcher.route" title="Permalink to this definition">¶</a></dt>
+<dd><p>Routes urls to the apprioate websocket controller</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>url</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; the url to match the pattern-collection with</td>
+</tr>
+<tr class="field"><th class="field-name">Returns list:</th><td class="field-body">reference to a websocket controller</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="services.web_ui.models.ws_realm.WebSocketPool">
+<em class="property">class </em><tt class="descclassname">services.web_ui.models.ws_realm.</tt><tt class="descname">WebSocketPool</tt><big>(</big><em>signals</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/ws_realm.html#WebSocketPool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.ws_realm.WebSocketPool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>The websocket pool is used to keep track of subscriptions and clients in the websocket domain</p>
+<dl class="method">
+<dt id="services.web_ui.models.ws_realm.WebSocketPool.add_client">
+<tt class="descname">add_client</tt><big>(</big><em>transport</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/ws_realm.html#WebSocketPool.add_client"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.ws_realm.WebSocketPool.add_client" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup a client instance for this transport, and add it to the general client-list</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>transport</strong> (<em>transport</em>) &#8211; A representation of the socket connection</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">client - Return the client object for further processing</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.models.ws_realm.WebSocketPool.get_client">
+<tt class="descname">get_client</tt><big>(</big><em>profile_uuid</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/ws_realm.html#WebSocketPool.get_client"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.ws_realm.WebSocketPool.get_client" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find a client in the general client-list, based on it&#8217;s profile uuid</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>profile_uuid</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The profile uuid to find the client with</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">client or None</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.models.ws_realm.WebSocketPool.get_clients">
+<tt class="descname">get_clients</tt><big>(</big><em>client_filter=None</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/ws_realm.html#WebSocketPool.get_clients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.ws_realm.WebSocketPool.get_clients" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find clients in the general client-list, and optionally apply a filter.
+Filter options are: &#8216;all&#8217;,&#8217;users&#8217; or &#8216;moderators&#8217;.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>client_filter</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; a predefined filter to operate on the general client-list</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">list - Return a list of clients</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.models.ws_realm.WebSocketPool.name_taken">
+<tt class="descname">name_taken</tt><big>(</big><em>username</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/ws_realm.html#WebSocketPool.name_taken"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.ws_realm.WebSocketPool.name_taken" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if the username exists in our list of anonymous and registered clients</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>username</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; the username to check for</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">bool - Acknowledgement whether username exists or not</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.models.ws_realm.WebSocketPool.rm_client">
+<tt class="descname">rm_client</tt><big>(</big><em>transport</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/ws_realm.html#WebSocketPool.rm_client"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.ws_realm.WebSocketPool.rm_client" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove a client from the general client-list when the client websocket connection is terminated</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>transport</strong> (<em>transport</em>) &#8211; A representation of the socket connection</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<span class="target" id="module-services.web_ui.models.ws_auth"></span><span class="target" id="module-services.web_ui.models.client"></span></div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Websockets</a><ul>
+<li><a class="reference internal" href="#module-services.web_ui.models.ws_router">Code References</a><ul>
+<li><a class="reference internal" href="#services-web-ui-models-ws-router">services.web_ui.models.ws_router</a></li>
+<li><a class="reference internal" href="#services-web-ui-models-ws-realm">services.web_ui.models.ws_realm</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../narratives/writing_modules.html"
+                        title="previous chapter">Writing modules</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../modules/profiles.html"
+                        title="next chapter">Profiles Module</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/core/websockets.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../modules/profiles.html" title="Profiles Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../narratives/writing_modules.html" title="Writing modules"
+             >previous</a> |</li>
+        <li><a href="../index.html">HWIOS v0.6 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, OS-Networks.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

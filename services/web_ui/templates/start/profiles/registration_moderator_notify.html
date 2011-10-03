@@ -1,0 +1,34 @@
+{%load i18n%}
+<h2>{%trans "Account registration from"%} {{ip}}</h2>
+{% ifequal activation_type 0%}
+<p>{%trans "A person with the following credentials succesfully created an activated account:"%}</p>
+<ul>
+<li>{%trans "First name:"%} {{ profile.first_name }}</li>
+<li>{%trans "Last name:"%} {{ profile.last_name }}</li>
+<li>{%trans "E-Mail:"%} {{ profile.email }}</li>
+<li>{%trans "Organisation:"%} {{ profile.organisation }}</li>
+</ul>
+<p><i>{%trans "If you don't want to receive new user notifications, you can disable this from the HWIOS backend."%}</i></p>
+{% else %}
+    {% ifequal activation_type 1%}
+    <p>{%trans "A person with the following credentials succesfully created an inactive account:"%}</p>
+    <ul>
+    <li>{%trans "First name:"%} {{ profile.first_name }}</li>
+    <li>{%trans "Last name:"%} {{ profile.last_name }}</li>
+    <li>{%trans "E-Mail:"%} {{ profile.email }}</li>
+    <li>{%trans "Organisation:"%} {{ profile.organisation }}</li>
+    </ul>
+    <p><i>{%trans "If you don't want to receive new user notifications, you can disable this from the HWIOS backend."%}</i></p>
+    {% else %}
+        {% ifequal activation_type 2%}
+        <p>{%trans "A person with the following credentials is requesting an account:"%}</p>
+        <ul>
+        <li>{%trans "First name:"%} {{ profile.first_name }}</li>
+        <li>{%trans "Last name:"%} {{ profile.last_name }}</li>
+        <li>{%trans "E-Mail:"%} {{ profile.email }}</li>
+        <li>{%trans "Organisation:"%} {{ profile.organisation }}</li>
+        </ul>
+        <p>{%trans "When the account request seems valid to you, please approve it by following"%} <a href="{{activatelink}}">{%trans "this link"%}</a>.</p>
+        {% endifequal %}
+    {% endifequal %}
+{% endifequal %}

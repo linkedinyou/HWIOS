@@ -1,0 +1,14 @@
+{% load i18n %}
+{%if profile.is_authenticated%}
+<div class="context-menu-option ui-state-disabled hwios-button" data-uripart='/wiki/{id}/edit/history/' data-uriflag='id' data-ctx='view-document-history'>
+    <span class="ui-icon ui-icon-flag"></span>{%trans "Revise history"%}
+</div>
+<div class="context-menu-option ui-state-disabled hwios-button" data-uripart='/wiki/{id}/edit/' data-uriflag='id' data-ctx="edit-document">
+    <span class="ui-icon ui-icon-wrench"></span>{%trans "Edit document"%}
+</div>
+{%endif%}
+{%if profile.is_staff%}
+    <div class="context-menu-option ui-state-disabled hwios-button" data-function="wiki.delete_article" data-ctx="delete-document">
+    <span class="ui-icon ui-icon-trash"></span>{%trans "Delete document"%}
+</div>
+{%endif%}

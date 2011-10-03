@@ -1,0 +1,250 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Writing modules &mdash; HWIOS v0.6 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="HWIOS v0.6 documentation" href="../index.html" />
+    <link rel="next" title="HWM" href="../core/hwm.html" />
+    <link rel="prev" title="Installation" href="installation.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../core/hwm.html" title="HWM"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Installation"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">HWIOS v0.6 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="writing-modules">
+<h1>Writing modules<a class="headerlink" href="#writing-modules" title="Permalink to this headline">¶</a></h1>
+<p>If you want to write a custom realtime web-application with HWIOS, it&#8217;s generally recommended to follow the development pattern
+for modules that&#8217;s used in HWIOS. Currently there is no extensive module-convention or module-installation capability yet. In time a
+module-installer will be added, and some of the file-structuring may be subject of change. Following the pattern defined here
+should make it easier for you as developer to get started though.</p>
+<div class="section" id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<p>We will look at a very basic example module called <em>my_mod</em>. First fire up HWIOS and navigate to the /my_mod/ url to show our example.
+This module shows the basic concepts of HWIOS websocket messaging. It simply send a message to all other connected clients when the client presses
+the Send button. The example doesn&#8217;t use any database interaction, but much of the extra functionality that larger modules have are basically
+all django-related topics.</p>
+<div class="section" id="files">
+<h3>Files<a class="headerlink" href="#files" title="Permalink to this headline">¶</a></h3>
+<p>The involved files for the module are already prepared in the hwios source-code, which are:</p>
+<div class="highlight-python"><pre>services/web_ui/controllers/ws/my_mod.py &lt;= websocket view handler
+services/web_ui/templates/start/my_mod/view_my_mod.html &lt;= our html template
+services/web_ui/urls.py &lt;= url's for the view handler go here
+services/web_ui/media/scripts/modules/my_app.js &lt;= javascript code to handle the module views</pre>
+</div>
+</div>
+<div class="section" id="module-services.web_ui.controllers.ws.my_mod">
+<span id="controller"></span><h3>Controller<a class="headerlink" href="#module-services.web_ui.controllers.ws.my_mod" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="services-web-ui-controllers-ws-my-mod">
+<h4>services.web_ui.controllers.ws.my_mod<a class="headerlink" href="#services-web-ui-controllers-ws-my-mod" title="Permalink to this headline">¶</a></h4>
+<p>The my_mod example module explaining some concepts of HWIOS</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">copyright:</th><td class="field-body">Copyright 2009-2011 OS-Networks.</td>
+</tr>
+<tr class="field"><th class="field-name">license:</th><td class="field-body">BSD, see LICENSE for details.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="services.web_ui.controllers.ws.my_mod.WS_MyMod">
+<em class="property">class </em><tt class="descclassname">services.web_ui.controllers.ws.my_mod.</tt><tt class="descname">WS_MyMod</tt><big>(</big><em>dispatcher</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/my_mod.html#WS_MyMod"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.my_mod.WS_MyMod" title="Permalink to this definition">¶</a></dt>
+<dd><p>Websocket controller class for the documentation example module</p>
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.my_mod.WS_MyMod.left_my_mod">
+<tt class="descname">left_my_mod</tt><big>(</big><em>client</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/my_mod.html#WS_MyMod.left_my_mod"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.my_mod.WS_MyMod.left_my_mod" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inform other clients when this client leaves, but only if the client was looking at this view while it left</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">dict - Status and html-layout data response</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.my_mod.WS_MyMod.notify_my_mod">
+<tt class="descname">notify_my_mod</tt><big>(</big><em>client</em>, <em>text</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/my_mod.html#WS_MyMod.notify_my_mod"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.my_mod.WS_MyMod.notify_my_mod" title="Permalink to this definition">¶</a></dt>
+<dd><p>send a message to all other clients</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>text</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The text to send to the other clients</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">dict - Status and html-layout data response</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.my_mod.WS_MyMod.view_my_mod">
+<tt class="descname">view_my_mod</tt><big>(</big><em>client</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/my_mod.html#WS_MyMod.view_my_mod"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.my_mod.WS_MyMod.view_my_mod" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the client data and renders the example module template</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">dict - Html-layout data response</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<p>All module logic ends up in a controller. A client requests some data from an url over the websocket, after which hwios routes the url to the
+appropriate function in one of the websocket controllers. A lot of django-related code is used to handle operations like template-rendering or working
+with database-objects. Definitions of models is currently beyond the reach of this tutorial, but those should go in services/web_ui/models/.</p>
+</div>
+<div class="section" id="template">
+<h3>Template<a class="headerlink" href="#template" title="Permalink to this headline">¶</a></h3>
+<p>All visual layout is defined in hmtl templates, using the django templating system. These templates are rendered then in memory, and send as json
+to the client. The convention to send html data to the client, is by stuffing it into a dict object, like: {&#8216;data&#8217;:{&#8216;dom&#8217;:{&#8216;&lt;&lt;css_class&gt;&gt;&#8217;:my_html_data}}}
+The name of the css-class defines for what section in the dom this html data is proposed.</p>
+</div>
+<div class="section" id="url-routing">
+<h3>URL-Routing<a class="headerlink" href="#url-routing" title="Permalink to this headline">¶</a></h3>
+<p>In urls.py there is a ws_patterns list, that defines all routes to websocket controllers. Each route is a tupple with 4 parameters. The first is a regular
+expression for the url-matching, the second is the module, the third is the class-name and the fourth is the function name. Named groups can be used in
+the regular expression, and are used as parameters in the controller function.</p>
+</div>
+<div class="section" id="client-module">
+<h3>Client-module<a class="headerlink" href="#client-module" title="Permalink to this headline">¶</a></h3>
+<p>Each HWIOS client-module is essentially a requirejs module, that&#8217;s being loaded once the url dictates it. HWIOS defines two kind of urls; there are urls
+for views and urls for data. The first part of the url is normally a reference to the module, like /my_mod/some/function/ references the my_mod module.
+The client-module should have the same name, otherwise it can&#8217;t be found. Data urls use the preserved data keyword in the url, like /data/some/function/.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Writing modules</a><ul>
+<li><a class="reference internal" href="#example">Example</a><ul>
+<li><a class="reference internal" href="#files">Files</a></li>
+<li><a class="reference internal" href="#module-services.web_ui.controllers.ws.my_mod">Controller</a><ul>
+<li><a class="reference internal" href="#services-web-ui-controllers-ws-my-mod">services.web_ui.controllers.ws.my_mod</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#template">Template</a></li>
+<li><a class="reference internal" href="#url-routing">URL-Routing</a></li>
+<li><a class="reference internal" href="#client-module">Client-module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="installation.html"
+                        title="previous chapter">Installation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../core/hwm.html"
+                        title="next chapter">HWM</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/narratives/writing_modules.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../core/hwm.html" title="HWM"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Installation"
+             >previous</a> |</li>
+        <li><a href="../index.html">HWIOS v0.6 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, OS-Networks.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

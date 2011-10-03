@@ -1,0 +1,23 @@
+{% load i18n %}
+<div class="context-menu-option ui-state-disabled hwios-button" data-ctx-hideid='{{profile.id}}' data-uripart='/profiles/{id}/' data-uriflag='id' data-ctx='view-profile'>
+    <span class="ui-icon ui-icon-arrowthickstop-1-e"></span>{%trans "View profile"%}
+</div>
+{%if profile.is_authenticated%}
+<div class="context-menu-option ui-state-disabled hwios-button" data-function="wiki.delete_article" data-ctx="delete-document">
+    <span class="ui-icon ui-icon-mail-closed"></span>{%trans "Send message"%}
+</div>
+<div class="context-menu-option ui-state-hidden hwios-button" data-ctx-showid='{{profile.id}}' data-uripart='/profiles/{id}/edit/' data-uriflag='id'>
+    <span class="ui-icon ui-icon-wrench"></span>{%trans "Edit my profile"%}
+</div>
+<div class="context-menu-option ui-state-hidden hwios-button" data-ctx-showid='{{profile.id}}' data-uri='/data/profiles/logout/'>
+    <span class="ui-icon ui-icon-power"></span>{%trans "Logout"%}
+</div>
+{%else%}
+<div class="context-menu-option ui-state-hidden hwios-button" data-ctx-showid='{{profile.id}}' data-uri='/data/profiles/login/'>
+    <span class="ui-icon ui-icon-power"></span>{%trans "Login"%}
+</div>
+<div class="context-menu-option ui-state-hidden hwios-button" data-ctx-showid='{{profile.id}}' data-uri='/data/profiles/register/'>
+    <span class="ui-icon ui-icon-pencil"></span>{%trans "Register"%}
+</div>
+{%endif%}
+

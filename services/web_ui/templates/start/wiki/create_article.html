@@ -1,0 +1,22 @@
+{% load i18n %}
+<div class='hwios-widget'>
+    <div class="ui-widget-header ui-corner-top">
+        <span class="wiki-modified">{{page.slug|escape}}</span>
+        <span>{%trans "New document"%}</span>
+    </div>
+    {% if profile.is_authenticated%}
+    <div class="ui-widget-content ui-corner-bottom edit-wiki-page" id="{{page.slug|escape}}_content">
+        <p><i>{%trans "Document"%} {{page.slug|escape}} {%trans "doesn't exist yet. Create it below to proceed..." %}</i></p>
+    </div>
+
+    <div class='hwios-toolbar'>
+        <div class="servicetoolbar fg-toolbar ui-widget-header ui-corner-all ui-helper-clearfix">
+            <div class="fg-buttonset fg-buttonset-multi ui-helper-clearfix">
+                <button data-function='wiki.save_new_article' data-id="{{page.slug}}" class='fg-button ui-state-default fg-button-icon-left ui-corner-all'><span class='ui-icon ui-icon-document'></span><span>{% trans "Create" %}</span></button>
+            </div>
+        </div>
+    </div>
+    {%else%}
+        <div class="ui-widget-content ui-corner-bottom contenttext"><p><i>{%trans "This page doesn't exist yet. Only logged in users may create/edit new pages..."%}</b></i></div>
+    {%endif%}
+</div>

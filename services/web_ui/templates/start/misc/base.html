@@ -1,0 +1,80 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link type='text/css' href='/media/themes/{{theme}}/css/{{css_target}}' media='screen' rel='stylesheet' />
+<link rel="shortcut icon" href="/media/themes/{{theme}}/css/images/favicon.ico" type="image/x-icon" />
+<title>{% block title %}{%endblock%}</title> 
+<meta charset="utf-8">
+<script type="text/javascript" src="{% url django.views.i18n.javascript_catalog %}"></script>
+<script type='text/javascript' src='/media/scripts/lib/jquery/jquery.require.js' data-ace-base='/media/script/'></script>
+<script type='text/javascript' data-ace-base='/foobar/'>
+
+require({
+    baseUrl: '{{script_path}}',
+    packaged: true,
+    waitSeconds: 5,
+    locale: "en-US"   
+    },['app'],
+    function(app){
+    app.init($.parseJSON('{{client_init|safe}}'), ['modules/ui','modules/activity','modules/messenger']);
+    }
+);
+</script>   
+</head>
+<body>
+    
+    <div id='header'>
+        <div id='hwios' class='rotate-90'>HW<span id='hwios-highlight'>IO</span>S</div>
+        <div id="copyright">&copy; <a href="http://www.os-networks.net">OS-Networks</a></div>        
+        <div id='logo'></div>
+        <div id='menu-container'>{% include "misc/navigation.html" %}</div>
+    </div>
+
+ 
+    <div class='sidebar'>
+        <div id='messenger-context'>
+            <div id='messenger-options'></div>
+            <div id="online-box"></div>
+            <div id='activity-widget'>
+                <div id='activity-text'></div>
+                <div class='activity-loading'>{% trans "Loading..." %}</div>
+            </div>
+            <div id="message_box">
+                <div class='activity-loading'>{% trans "Loading..." %}</div>
+                <div id="messages"></div>
+            </div>
+            <input id="message_input_field" type="text"/>
+        </div>
+    </div>
+    <div class='main'></div>  
+
+
+    <div id="notify-container">
+        <div id="notify-info" class="ui-state-highlight">
+            <a class="ui-notify-close" href="#">
+                <span class="ui-icon ui-icon-close" style="float:right"></span>
+            </a>
+            <span style="float:left; margin:-1px 5px 0 0;" class="ui-icon ui-icon-info"></span>
+            <h1>{% trans "Notification" %}</h1>
+            <p>#{i18n}</p>
+        </div>
+        <div id="notify-warning" class="ui-state-highlight">
+            <a class="ui-notify-close" href="#">
+                <span class="ui-icon ui-icon-close" style="float:right"></span>
+            </a>
+            <span style="float:left; margin:-1px 5px 0 0;" class="ui-icon ui-icon-alert"></span>
+            <h1>{% trans "Warning" %}</h1>
+            <p>#{i18n}</p>
+        </div>
+        <div id="notify-error" class="ui-state-error">
+            <a class="ui-notify-close" href="#">
+                <span class="ui-icon ui-icon-close" style="float:right"></span>
+            </a>
+            <span style="float:left; margin:-1px 5px 0 0;" class="ui-icon ui-icon-alert"></span>
+            <h1>{% trans "Error" %}</h1>
+            <p>#{i18n}</p>
+        </div>
+    </div>
+</body>
+</html>

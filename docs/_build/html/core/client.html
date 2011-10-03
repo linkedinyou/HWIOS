@@ -1,0 +1,419 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Clients and Profiles &mdash; HWIOS v0.6 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="HWIOS v0.6 documentation" href="../index.html" />
+    <link rel="next" title="Notification" href="notification.html" />
+    <link rel="prev" title="Websocket Messaging" href="hwm.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="notification.html" title="Notification"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="hwm.html" title="Websocket Messaging"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">HWIOS v0.6 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="clients-and-profiles">
+<h1>Clients and Profiles<a class="headerlink" href="#clients-and-profiles" title="Permalink to this headline">¶</a></h1>
+<p>Client is the HWIOS concept of a persistent user, that needs to set/get properties both from a persistent connection(a tranport) and from HTTP requests
+within Django. It has a Profile, which is nothing more than a reference to the modified django user if logged in. Otherwise it is a reference to an anonymous
+empty profile object. The client is not the same as the transport, because some of the client&#8217;s properties have to be set from a
+django http-view. This is especially true for the http bootstrapping view. At that poiunt, the client doesn&#8217;t have a transport yet,
+but things like language-preferences(found in the http-headers) can already be linked to the client from there.</p>
+<div class="section" id="module-services.web_ui.models.profiles">
+<span id="code-references"></span><h2>Code References<a class="headerlink" href="#module-services.web_ui.models.profiles" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="services-web-ui-models-profiles">
+<h3>services.web_ui.models.profiles<a class="headerlink" href="#services-web-ui-models-profiles" title="Permalink to this headline">¶</a></h3>
+<p>The model description for the blogging module</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">copyright:</th><td class="field-body">Copyright 2009-2011 OS-Networks.</td>
+</tr>
+<tr class="field"><th class="field-name">license:</th><td class="field-body">BSD, see LICENSE for details.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="services.web_ui.models.profiles.Profile">
+<em class="property">class </em><tt class="descclassname">services.web_ui.models.profiles.</tt><tt class="descname">Profile</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/profiles.html#Profile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.profiles.Profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">django.contrib.auth.models.User</span></tt></p>
+<p>HWIOS profile model object</p>
+<p>Extends django&#8217;s default user object with custom fields and functionality like
+modified authentication.</p>
+</dd></dl>
+
+</div>
+<span class="target" id="module-services.web_ui.auth.default"></span><div class="section" id="services-web-ui-auth-default">
+<h3>services.web_ui.auth.default<a class="headerlink" href="#services-web-ui-auth-default" title="Permalink to this headline">¶</a></h3>
+<p>Overriding of the default Django authentication model allowing us to customize things</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">copyright:</th><td class="field-body">Copyright 2009-2011 OS-Networks.</td>
+</tr>
+<tr class="field"><th class="field-name">license:</th><td class="field-body">BSD, see LICENSE for details.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="services.web_ui.auth.default.XAuth">
+<em class="property">class </em><tt class="descclassname">services.web_ui.auth.default.</tt><tt class="descname">XAuth</tt><a class="reference internal" href="../_modules/services/web_ui/auth/default.html#XAuth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.auth.default.XAuth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">django.contrib.auth.backends.ModelBackend</span></tt></p>
+<p>Overriding ModelBackend so the authenticate function can be overriden as well.</p>
+<dl class="method">
+<dt id="services.web_ui.auth.default.XAuth.authenticate">
+<tt class="descname">authenticate</tt><big>(</big><em>username=None</em>, <em>password=None</em>, <em>options=False</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/auth/default.html#XAuth.authenticate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.auth.default.XAuth.authenticate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Authenticated a user login request to django</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>username</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The username that is trying to login (first_name and last_name)</li>
+<li><strong>password</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The raw password that&#8217;s used to login with</li>
+<li><strong>options</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Optional; Add some options to the login</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Profile or None - Returns the profile when succesful, otherwise None</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="services.web_ui.auth.default.XAuth.user_class">
+<tt class="descname">user_class</tt><a class="reference internal" href="../_modules/services/web_ui/auth/default.html#XAuth.user_class"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.auth.default.XAuth.user_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the userclass</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">Profile - Return the profile class</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="services.web_ui.auth.default.XAuthManager">
+<em class="property">class </em><tt class="descclassname">services.web_ui.auth.default.</tt><tt class="descname">XAuthManager</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/auth/default.html#XAuthManager"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.auth.default.XAuthManager" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">django.db.models.manager.Manager</span></tt></p>
+<p>Profile manager object override, to handle things like creating new profiles and sending activation mails</p>
+<dl class="method">
+<dt id="services.web_ui.auth.default.XAuthManager.activate_profile">
+<tt class="descname">activate_profile</tt><big>(</big><em>uuid</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/auth/default.html#XAuthManager.activate_profile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.auth.default.XAuthManager.activate_profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enables the profile by setting the is_active property of the profile</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>uuid</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The uuid of the profile to activate</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">Profile or None - Returns the modified profile or None</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.auth.default.XAuthManager.create_profile">
+<tt class="descname">create_profile</tt><big>(</big><em>profile_data</em>, <em>acp=False</em>, <em>client=None</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/auth/default.html#XAuthManager.create_profile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.auth.default.XAuthManager.create_profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new profile from data and optionally sends a signal within HWIOS for optional listeners</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>profile_data</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; A collection of keys and values necessary to register a new account</li>
+<li><strong>acp</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; Acp means that the account is registered from the backend, which takes a different path for registering (like no activation mail)</li>
+<li><strong>client</strong> (<em>Client</em>) &#8211; If client is not None, send out a signal for optional further processing. Doesn&#8217;t need client anyway probably.</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Profile - Returns the new profile</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.auth.default.XAuthManager.update_profile">
+<tt class="descname">update_profile</tt><big>(</big><em>profile_uuid</em>, <em>profile_data</em>, <em>client=None</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/auth/default.html#XAuthManager.update_profile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.auth.default.XAuthManager.update_profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates a profile from data and optionally sends a signal within HWIOS for optional listeners</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>profile_uuid</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The uuid of the profile to update</li>
+<li><strong>profile_data</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; A collection of keys and values necessary to update the profile</li>
+<li><strong>client</strong> (<em>Client</em>) &#8211; If client is not None, send out a signal for optional further processing. Doesn&#8217;t need client anyway probably.</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Profile - Returns the updated profile</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<span class="target" id="module-services.web_ui.models.client"></span><div class="section" id="services-web-ui-models-clients">
+<h3>services.web_ui.models.clients<a class="headerlink" href="#services-web-ui-models-clients" title="Permalink to this headline">¶</a></h3>
+<p>Defines the general Client object that keeps state between HTTP and Websocket mode</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">copyright:</th><td class="field-body">Copyright 2009-2011 OS-Networks.</td>
+</tr>
+<tr class="field"><th class="field-name">license:</th><td class="field-body">BSD, see LICENSE for details.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="services.web_ui.models.client.Client">
+<em class="property">class </em><tt class="descclassname">services.web_ui.models.client.</tt><tt class="descname">Client</tt><big>(</big><em>profile</em>, <em>session</em>, <em>language</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/client.html#Client"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.client.Client" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>The Client objects describes a general user-entity that&#8217;s available in both HTTP and Websocket mode</p>
+<dl class="method">
+<dt id="services.web_ui.models.client.Client.remote">
+<tt class="descname">remote</tt><big>(</big><em>method_url</em>, <em>params=None</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/client.html#Client.remote"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.client.Client.remote" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends json-encoded method-data in HWM-format to this client.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>method_url</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The client-side method-url to route to</li>
+<li><strong>params</strong> &#8211; Either a dict or a list to use as parameters for the client-side method</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.models.client.Client.set_transport">
+<tt class="descname">set_transport</tt><big>(</big><em>transport</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/client.html#Client.set_transport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.client.Client.set_transport" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the Client&#8217;s tcp transport reference</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>transport</strong> (<em>transport</em>) &#8211; The websocket tcp transport</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.models.client.Client.set_uri">
+<tt class="descname">set_uri</tt><big>(</big><em>uri</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/client.html#Client.set_uri"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.client.Client.set_uri" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the client&#8217;s current tracked view</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>uri</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The uri to set the view to</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<span class="target" id="module-services.web_ui.models.ws_auth"></span><div class="section" id="services-web-ui-models-ws-auth">
+<h3>services.web_ui.models.ws_auth<a class="headerlink" href="#services-web-ui-models-ws-auth" title="Permalink to this headline">¶</a></h3>
+<p>Decorator class to make authentication of whole views a bit easier</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">copyright:</th><td class="field-body">Copyright 2009-2011 OS-Networks.</td>
+</tr>
+<tr class="field"><th class="field-name">license:</th><td class="field-body">BSD, see LICENSE for details.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="services.web_ui.models.ws_auth.WSAuth">
+<em class="property">class </em><tt class="descclassname">services.web_ui.models.ws_auth.</tt><tt class="descname">WSAuth</tt><a class="reference internal" href="../_modules/services/web_ui/models/ws_auth.html#WSAuth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.ws_auth.WSAuth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>The decorator class for authentication</p>
+<dl class="classmethod">
+<dt id="services.web_ui.models.ws_auth.WSAuth.is_authenticated">
+<em class="property">classmethod </em><tt class="descname">is_authenticated</tt><big>(</big><em>fn</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/ws_auth.html#WSAuth.is_authenticated"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.ws_auth.WSAuth.is_authenticated" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the view&#8217;s client is authenticated or not</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="services.web_ui.models.ws_auth.WSAuth.is_staff">
+<em class="property">classmethod </em><tt class="descname">is_staff</tt><big>(</big><em>fn</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/ws_auth.html#WSAuth.is_staff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.ws_auth.WSAuth.is_staff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the view&#8217;s client is staff or not</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<span class="target" id="module-services.web_ui.models.dj_tracker"></span><div class="section" id="id1">
+<h3>services.web_ui.models.clients<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>Defines the general Client object that keeps state between HTTP and Websocket mode</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">copyright:</th><td class="field-body">Copyright 2009-2011 OS-Networks.</td>
+</tr>
+<tr class="field"><th class="field-name">license:</th><td class="field-body">BSD, see LICENSE for details.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="services.web_ui.models.dj_tracker.TrackerMiddleware">
+<em class="property">class </em><tt class="descclassname">services.web_ui.models.dj_tracker.</tt><tt class="descname">TrackerMiddleware</tt><a class="reference internal" href="../_modules/services/web_ui/models/dj_tracker.html#TrackerMiddleware"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.dj_tracker.TrackerMiddleware" title="Permalink to this definition">¶</a></dt>
+<dd><p>Small middleware that can track urls also in HTTP-mode. Not really used AFAIK atm.</p>
+<dl class="method">
+<dt id="services.web_ui.models.dj_tracker.TrackerMiddleware.process_request">
+<tt class="descname">process_request</tt><big>(</big><em>request</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/dj_tracker.html#TrackerMiddleware.process_request"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.dj_tracker.TrackerMiddleware.process_request" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process each request, add the url to the client&#8217;s view history and signal that the view has changed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>request</strong> &#8211; The django request object to handle</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Clients and Profiles</a><ul>
+<li><a class="reference internal" href="#module-services.web_ui.models.profiles">Code References</a><ul>
+<li><a class="reference internal" href="#services-web-ui-models-profiles">services.web_ui.models.profiles</a></li>
+<li><a class="reference internal" href="#services-web-ui-auth-default">services.web_ui.auth.default</a></li>
+<li><a class="reference internal" href="#services-web-ui-models-clients">services.web_ui.models.clients</a></li>
+<li><a class="reference internal" href="#services-web-ui-models-ws-auth">services.web_ui.models.ws_auth</a></li>
+<li><a class="reference internal" href="#id1">services.web_ui.models.clients</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="hwm.html"
+                        title="previous chapter">Websocket Messaging</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="notification.html"
+                        title="next chapter">Notification</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/core/client.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="notification.html" title="Notification"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="hwm.html" title="Websocket Messaging"
+             >previous</a> |</li>
+        <li><a href="../index.html">HWIOS v0.6 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, OS-Networks.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

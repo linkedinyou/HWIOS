@@ -1,0 +1,59 @@
+@import "jquery-ui-1.8.7.custom.css";
+@import "hwios.datatables.css";
+@import "hwios.core.css";
+
+html,body {
+    padding:0px;
+    margin:0px;    
+}
+
+body {
+    display:table-cell;
+    vertical-align:middle; 
+}
+
+#content {position:absolute; top:0; bottom:0; left:0; right:0;
+            margin:auto; height:300px; width:70%;}
+
+.splash_bg {
+    width:100%;
+    height:100%;
+    position:absolute;
+    top:0px;
+    z-index:1;
+}
+
+#grid-status {
+    width:500px;
+    height:300px;
+    margin:0 auto;
+    -webkit-box-shadow: 2px 2px 12px rgba(0,0,0,0.6);
+    -moz-box-shadow: 2px 2px 8px #666, 4px 4px 4px rgba(0,0,0,0.3);
+    -moz-border-radius:6px;
+    -webkit-border-radius:6px;
+    z-index:2000;
+    position:relative;
+    border:1px solid #666;
+}
+
+#grid-status .ui-widget-header {
+    padding:4px;
+    font-size:15px !important;
+    font-weight:bold;
+    color:#fff;
+    text-shadow: 0 -1px #3b5d6b, 1px 0 #3b5d6b;
+    font-family: sans-serif;
+}
+
+.datatable {
+    width:100%;
+    color:#888;
+    border:4px !important;
+}
+
+table th {
+    text-align:left;
+    color:#aaa;
+}
+
+

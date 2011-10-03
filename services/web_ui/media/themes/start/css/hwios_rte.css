@@ -1,0 +1,143 @@
+.rte-contenteditable {
+    outline:none;
+    -webkit-user-select: auto;
+    -moz-user-select: auto;
+    padding:10px;
+    border-bottom:1px solid #ddd;
+    min-height:150px;
+    height:400px;
+    resize: vertical !important;
+    overflow-y:scroll;
+}
+
+.ui-tabs-panel p {
+    margin-top:7px;
+}
+
+.rte-contenteditable > img {
+    overflow: hide;
+    resize: both;
+}
+
+.rte-image {
+    vertical-align:text-top;
+    display:inline;
+    margin:5px;
+}
+
+#rte-toolbar {
+    width:100%;
+    height:34px;
+    background: #efefef;
+    border:1px solid #ddd;
+    -webkit-box-sizing:border-box;
+    -moz-box-sizing:border-box;
+    padding:3px;
+}
+
+.rte-icon {
+    display:block;
+    float:left;
+    width:24px;
+    height:24px;
+    zoom:1.1;
+    background: #fff url('images/icons/rte.png');
+    border:1px solid #999;
+}
+
+.rte-icon:hover {
+    background: #ccc url('images/icons/rte.png');
+}
+
+.rte-icon-active {
+    background: #ccc url('images/icons/rte.png');
+    border:1px solid #999;
+}
+
+.rte-icon-inactive {
+    opacity:0.3;
+    -webkit-transition: all 0.2s ease-in-out;
+    -moz-transition: all 0.2s ease-in-out;
+    cursor:default;
+}
+
+/* no-state button */
+.rte-button-no-state {
+    background: #fff url('images/icons/rte.png');
+    -webkit-animation-duration: 0.2s;
+    -webkit-animation-iteration-count: 1;
+    -webkit-animation-timing-function: ease-in-out;
+}
+
+@-webkit-keyframes push_button {
+    0%   {box-shadow: 2px 2px 8px rgba(0,0,0,0.8);}
+    50%  {box-shadow: 0px 0px 2px rgba(0,0,0,0.8);}
+    100% {box-shadow: 2px 2px 8px rgba(0,0,0,0.8);}
+}
+
+/*!
+ * elRTE WYSIWYG HTML-editor
+ * Version 1.2 (2010-12-12)
+ * http://elrte.org
+ *
+ * Copyright 2010, Studio 42 Ltd.
+ * Licensed under a 3 clauses BSD license
+ */
+#rte-icon-bold{background-position:-252px -2px;}
+#rte-icon-italic{background-position:-270px -2px;}
+#rte-icon-underline{background-position:-290px -2px;}
+#rte-icon-strikethrough{background-position:-149px -29px}
+#rte-icon-outdent{background-position:-6px -29px}
+#rte-icon-indent{background-position:-32px -29px}
+#rte-icon-subscript{background-position:-54px -29px}
+#rte-icon-superscript{background-position:-76px -29px}
+#rte-icon-insertHorizontalRule{background-position:-199px -29px}
+#rte-icon-insertUnorderedList{background-position:-100px -29px}
+#rte-icon-insertOrderedList{background-position:-124px -29px}
+
+#rte-icon-justifyLeft{background-position:-311px -2px}
+#rte-icon-justifyCenter{background-position:-335px -2px}
+#rte-icon-justifyRight{background-position:-360px -2px}
+#rte-icon-createLink{background-position:-244px -29px}
+#rte-icon-insertImage{background-position:-384px -2px}
+#rte-icon-removeFormat{background-position:-180px -2px}
+/*****************************************************/
+
+.image-resizable {
+    border:2px dashed #333;
+}
+/* account for rte in django form.as_p shifting, when replacing empty input field within p element */
+form .contenteditable {
+    margin-top:-20px;
+}
+
+.image-context-menu {
+    width:170px;
+    border:1px solid #67a2cf;
+    position:absolute;
+    background:#fff;
+    border-radius:5px;
+    padding:5px 0;
+}
+
+.image-context-menu .ui-icon {
+    float:left;
+    margin-right:5px;
+}
+
+.image-context-menu div {
+    font:12px trebuchet ms,lucida grande,verdana,sans-serif;
+    padding:5px;
+}
+
+.image-context-menu div:hover {
+    background-color:#99ccff;
+}
+
+.rte-float-left {
+    float:left;
+}
+
+.rte-float-right {
+    float:right;
+}

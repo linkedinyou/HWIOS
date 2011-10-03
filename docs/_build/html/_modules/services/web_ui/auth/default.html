@@ -1,0 +1,355 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>services.web_ui.auth.default &mdash; HWIOS v0.6 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '0.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="HWIOS v0.6 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">HWIOS v0.6 documentation</a> &raquo;</li>
+          <li><a href="../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for services.web_ui.auth.default</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    services.web_ui.auth.default</span>
+<span class="sd">    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">    Overriding of the default Django authentication model allowing us to customize things</span>
+
+<span class="sd">    :copyright: Copyright 2009-2011 OS-Networks.</span>
+<span class="sd">    :license: BSD, see LICENSE for details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">uuid</span><span class="o">,</span> <span class="nn">time</span><span class="o">,</span> <span class="nn">datetime</span><span class="o">,</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">hashlib</span>
+<span class="kn">import</span> <span class="nn">smtplib</span>
+
+<span class="kn">from</span> <span class="nn">django.db</span> <span class="kn">import</span> <span class="n">models</span> 
+<span class="kn">from</span> <span class="nn">django.contrib.auth.models</span> <span class="kn">import</span> <span class="n">User</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth.backends</span> <span class="kn">import</span> <span class="n">ModelBackend</span>
+<span class="kn">from</span> <span class="nn">django.http</span> <span class="kn">import</span> <span class="n">HttpResponseServerError</span>
+<span class="kn">from</span> <span class="nn">django.core</span> <span class="kn">import</span> <span class="n">mail</span>
+<span class="kn">from</span> <span class="nn">django.template</span> <span class="kn">import</span> <span class="n">Context</span><span class="p">,</span> <span class="n">Template</span>
+<span class="kn">from</span> <span class="nn">django.template.loader</span> <span class="kn">import</span> <span class="n">render_to_string</span>
+<span class="kn">from</span> <span class="nn">django.core.exceptions</span> <span class="kn">import</span> <span class="n">ObjectDoesNotExist</span>
+<span class="kn">from</span> <span class="nn">django.db.utils</span> <span class="kn">import</span> <span class="n">DatabaseError</span>
+<span class="kn">from</span> <span class="nn">django.db.models</span> <span class="kn">import</span> <span class="n">get_model</span>
+<span class="kn">from</span> <span class="nn">django.core.exceptions</span> <span class="kn">import</span> <span class="n">ImproperlyConfigured</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth</span> <span class="kn">import</span> <span class="n">authenticate</span><span class="p">,</span> <span class="n">login</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth.models</span> <span class="kn">import</span> <span class="n">User</span>
+
+<span class="kn">import</span> <span class="nn">web_ui.settings</span> <span class="kn">as</span> <span class="nn">settings</span>
+<span class="kn">from</span> <span class="nn">web_ui.models.settings</span> <span class="kn">import</span> <span class="n">Settings</span>
+<span class="kn">from</span> <span class="nn">hwios.core.application</span> <span class="kn">import</span> <span class="n">HWIOS</span>
+<span class="kn">from</span> <span class="nn">web_ui.models.signal</span> <span class="kn">import</span> <span class="n">Signal</span>
+
+<div class="viewcode-block" id="XAuth"><a class="viewcode-back" href="../../../../core/client.html#services.web_ui.auth.default.XAuth">[docs]</a><span class="k">class</span> <span class="nc">XAuth</span><span class="p">(</span><span class="n">ModelBackend</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Overriding ModelBackend so the authenticate function can be overriden as well.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="XAuth.user_class"><a class="viewcode-back" href="../../../../core/client.html#services.web_ui.auth.default.XAuth.user_class">[docs]</a>    <span class="k">def</span> <span class="nf">user_class</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set the userclass</span>
+
+<span class="sd">        :return: Profile - Return the profile class</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;_user_class&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_user_class</span> <span class="o">=</span> <span class="n">get_model</span><span class="p">(</span><span class="s">&#39;no_fixture&#39;</span><span class="p">,</span><span class="s">&#39;profile&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_class</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">ImproperlyConfigured</span><span class="p">(</span><span class="s">&#39;Could not get custom user model&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_class</span>
+        
+        </div>
+<div class="viewcode-block" id="XAuth.authenticate"><a class="viewcode-back" href="../../../../core/client.html#services.web_ui.auth.default.XAuth.authenticate">[docs]</a>    <span class="k">def</span> <span class="nf">authenticate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">options</span> <span class="o">=</span> <span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Authenticated a user login request to django</span>
+
+<span class="sd">        :param str username: The username that is trying to login (first_name and last_name)</span>
+<span class="sd">        :param str password: The raw password that&#39;s used to login with</span>
+<span class="sd">        :param dict options: Optional; Add some options to the login</span>
+<span class="sd">        :return: Profile or None - Returns the profile when succesful, otherwise None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="c">#&#39;regular&#39; sha1 django authentication</span>
+        <span class="c">#result = super(XAuth, self).authenticate(username=&#39;%s %s&#39; % (username[0],username[1]), password=password)</span>
+        <span class="c">#if isinstance(result, User):</span>
+        <span class="c">#    return result.profile</span>
+        <span class="c">#else:</span>
+        <span class="c">#    return None</span>
+        <span class="c">#&#39;opensim-compatible&#39; authentication. Won&#39;t hurt to use it without opensim</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">profile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_class</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">first_name</span><span class="o">=</span><span class="n">username</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">last_name</span><span class="o">=</span><span class="n">username</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">pwhash</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">:</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="n">password</span><span class="p">)</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">(),</span><span class="n">profile</span><span class="o">.</span><span class="n">salt</span><span class="p">))</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">pwhash</span> <span class="o">==</span> <span class="n">profile</span><span class="o">.</span><span class="n">password</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">profile</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">None</span>
+        <span class="k">except</span> <span class="n">ObjectDoesNotExist</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+
+</div></div>
+<div class="viewcode-block" id="XAuthManager"><a class="viewcode-back" href="../../../../core/client.html#services.web_ui.auth.default.XAuthManager">[docs]</a><span class="k">class</span> <span class="nc">XAuthManager</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Manager</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Profile manager object override, to handle things like creating new profiles and sending activation mails&quot;&quot;&quot;</span>
+    
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">acp_settings</span> <span class="o">=</span> <span class="n">Settings</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">acp_settings</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span> <span class="n">acp_settings</span> <span class="o">=</span> <span class="n">acp_settings</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">except</span> <span class="n">DatabaseError</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">XAuthManager</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        
+    
+<div class="viewcode-block" id="XAuthManager.create_profile"><a class="viewcode-back" href="../../../../core/client.html#services.web_ui.auth.default.XAuthManager.create_profile">[docs]</a>    <span class="k">def</span> <span class="nf">create_profile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">profile_data</span><span class="p">,</span> <span class="n">acp</span> <span class="o">=</span> <span class="bp">False</span><span class="p">,</span> <span class="n">client</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates a new profile from data and optionally sends a signal within HWIOS for optional listeners</span>
+
+<span class="sd">        :param dict profile_data: A collection of keys and values necessary to register a new account</span>
+<span class="sd">        :param bool acp: Acp means that the account is registered from the backend, which takes a different path for registering (like no activation mail)</span>
+<span class="sd">        :param Client client: If client is not None, send out a signal for optional further processing. Doesn&#39;t need client anyway probably.</span>
+<span class="sd">        :return: Profile - Returns the new profile</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">write_profile</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">acp_settings</span> <span class="o">=</span> <span class="n">Settings</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">required_keys</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;first_name&#39;</span><span class="p">,</span><span class="s">&#39;last_name&#39;</span><span class="p">,</span><span class="s">&#39;email&#39;</span><span class="p">,</span><span class="s">&#39;password&#39;</span><span class="p">,</span><span class="s">&#39;ip&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">acp</span><span class="p">:</span>
+            <span class="n">required_keys</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s">&#39;is_staff&#39;</span><span class="p">,</span><span class="s">&#39;is_active&#39;</span><span class="p">])</span>
+        <span class="n">missing_keys</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">proceed</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">required_keys</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">profile_data</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+                <span class="n">missing_keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+                <span class="n">proceed</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">proceed</span><span class="p">:</span> <span class="k">return</span> <span class="n">missing_keys</span>
+        <span class="c">#valid parameters, proceeed...</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>                
+                <span class="n">profile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">first_name</span><span class="o">=</span><span class="n">profile_data</span><span class="p">[</span><span class="s">&#39;first_name&#39;</span><span class="p">],</span><span class="n">last_name</span><span class="o">=</span><span class="n">profile_data</span><span class="p">[</span><span class="s">&#39;last_name&#39;</span><span class="p">])</span>                 
+                <span class="n">write_profile</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="c">#doesnt exist. create a hwios profile</span>
+            <span class="k">except</span> <span class="n">ObjectDoesNotExist</span><span class="p">:</span> 
+                <span class="n">profile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="o">**</span><span class="n">profile_data</span><span class="p">)</span>
+                <span class="n">profile</span><span class="o">.</span><span class="n">username</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">profile_data</span><span class="p">[</span><span class="s">&#39;first_name&#39;</span><span class="p">],</span><span class="n">profile_data</span><span class="p">[</span><span class="s">&#39;last_name&#39;</span><span class="p">])</span>
+                <span class="n">profile</span><span class="o">.</span><span class="n">email</span> <span class="o">=</span> <span class="n">profile_data</span><span class="p">[</span><span class="s">&#39;email&#39;</span><span class="p">]</span>
+                <span class="n">profile</span><span class="o">.</span><span class="n">uuid</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span>
+                <span class="n">profile</span><span class="o">.</span><span class="n">date_joined</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+                <span class="n">profile</span><span class="o">.</span><span class="n">set_password</span><span class="p">(</span><span class="n">profile_data</span><span class="p">[</span><span class="s">&#39;password&#39;</span><span class="p">])</span>
+                <span class="n">profile</span><span class="o">.</span><span class="n">raw_password</span> <span class="o">=</span> <span class="n">profile_data</span><span class="p">[</span><span class="s">&#39;password&#39;</span><span class="p">]</span>
+                <span class="n">profile</span><span class="o">.</span><span class="n">ip</span> <span class="o">=</span> <span class="n">profile_data</span><span class="p">[</span><span class="s">&#39;ip&#39;</span><span class="p">]</span>
+                <span class="c">#passed to the registration template later on</span>
+                <span class="n">profile</span><span class="o">.</span><span class="n">acp_settings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">acp_settings</span>
+            <span class="c">#used in the activation body</span>
+            <span class="n">profile</span><span class="o">.</span><span class="n">raw_password</span> <span class="o">=</span> <span class="n">profile_data</span><span class="p">[</span><span class="s">&#39;first_name&#39;</span><span class="p">]</span>
+            <span class="c">#0: direct activation, 1: activation by user, 2:activation by moderator</span>
+            <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">acp_settings</span><span class="o">.</span><span class="n">activation_type</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">acp_settings</span><span class="o">.</span><span class="n">activation_type</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">acp</span><span class="p">:</span>
+                <span class="n">profile</span><span class="o">.</span><span class="n">is_active</span> <span class="o">=</span> <span class="mi">0</span>                
+                <span class="bp">self</span><span class="o">.</span><span class="n">activate_link</span> <span class="o">=</span> <span class="s">&#39;http://</span><span class="si">%s</span><span class="s">:</span><span class="si">%s</span><span class="s">/profiles/activate/</span><span class="si">%s</span><span class="s">/&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">HWIOS_URI</span><span class="p">,</span> <span class="n">settings</span><span class="o">.</span><span class="n">HWIOS_PORT</span><span class="p">,</span> <span class="n">profile</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_send_activation_mail</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span> <span class="n">acp</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="n">acp</span><span class="p">:</span>
+                <span class="n">profile</span><span class="o">.</span><span class="n">is_active</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="n">first_name</span> <span class="o">=</span> <span class="n">profile_data</span><span class="p">[</span><span class="s">&#39;first_name&#39;</span><span class="p">]</span>
+                <span class="n">last_name</span> <span class="o">=</span> <span class="n">profile_data</span><span class="p">[</span><span class="s">&#39;last_name&#39;</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_send_activation_mail</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span> <span class="n">acp</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">acp</span><span class="p">:</span>
+                <span class="n">first_name</span> <span class="o">=</span> <span class="n">profile_data</span><span class="p">[</span><span class="s">&#39;first_name&#39;</span><span class="p">]</span>
+                <span class="n">last_name</span> <span class="o">=</span> <span class="n">profile_data</span><span class="p">[</span><span class="s">&#39;last_name&#39;</span><span class="p">]</span>
+                <span class="n">profile</span><span class="o">.</span><span class="n">is_active</span> <span class="o">=</span> <span class="n">profile_data</span><span class="p">[</span><span class="s">&#39;is_active&#39;</span><span class="p">]</span>
+                <span class="n">profile</span><span class="o">.</span><span class="n">is_staff</span> <span class="o">=</span> <span class="n">profile_data</span><span class="p">[</span><span class="s">&#39;is_staff&#39;</span><span class="p">]</span>
+                <span class="n">profile</span><span class="o">.</span><span class="n">is_superuser</span> <span class="o">=</span> <span class="n">profile_data</span><span class="p">[</span><span class="s">&#39;is_superuser&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">write_profile</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
+                <span class="n">profile</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">client</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s">&#39;profile_created&#39;</span><span class="p">,</span> <span class="n">client</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">transport</span><span class="p">,</span> <span class="n">filters</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">profile</span> <span class="o">=</span> <span class="n">profile</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">profile</span>
+        
+    </div>
+    <span class="k">def</span> <span class="nf">delete_profile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">profile_uuid</span><span class="p">,</span> <span class="n">client</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span> 
+            <span class="n">profile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">uuid</span> <span class="o">=</span> <span class="n">profile_uuid</span><span class="p">)</span>
+            <span class="n">deleted</span> <span class="o">=</span> <span class="n">profile</span><span class="o">.</span><span class="n">username</span>
+            <span class="n">profile</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">client</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s">&#39;profile_deleted&#39;</span><span class="p">,</span> <span class="n">client</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">transport</span><span class="p">,</span> <span class="n">filters</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">profile_uuid</span> <span class="o">=</span> <span class="n">profile_uuid</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">ObjectDoesNotExist</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span><span class="n">deleted</span><span class="p">,</span><span class="s">&#39;status&#39;</span><span class="p">:</span><span class="s">&quot;Succesfully deleted&quot;</span><span class="p">}</span>
+        
+    
+    <span class="c">#limiting this to username,firstname,lastname,password</span>
+<div class="viewcode-block" id="XAuthManager.update_profile"><a class="viewcode-back" href="../../../../core/client.html#services.web_ui.auth.default.XAuthManager.update_profile">[docs]</a>    <span class="k">def</span> <span class="nf">update_profile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">profile_uuid</span><span class="p">,</span> <span class="n">profile_data</span><span class="p">,</span> <span class="n">client</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Updates a profile from data and optionally sends a signal within HWIOS for optional listeners</span>
+
+<span class="sd">        :param str profile_uuid: The uuid of the profile to update</span>
+<span class="sd">        :param dict profile_data: A collection of keys and values necessary to update the profile</span>
+<span class="sd">        :param Client client: If client is not None, send out a signal for optional further processing. Doesn&#39;t need client anyway probably.</span>
+<span class="sd">        :return: Profile - Returns the updated profile</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">profile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">uuid</span> <span class="o">=</span> <span class="n">profile_uuid</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">profile_data</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s">&#39;password&#39;</span><span class="p">:</span>               
+                <span class="k">if</span> <span class="n">profile_data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">!=</span> <span class="s">&#39;&#39;</span><span class="p">:</span>
+                    <span class="n">profile</span><span class="o">.</span><span class="n">set_password</span><span class="p">(</span><span class="n">profile_data</span><span class="p">[</span><span class="s">&#39;password&#39;</span><span class="p">])</span>
+                    <span class="c">#we signal authentication listeners with raw password included, so they may change their pw-data as well</span>
+                    <span class="n">profile</span><span class="o">.</span><span class="n">raw_password</span> <span class="o">=</span> <span class="n">profile_data</span><span class="p">[</span><span class="s">&#39;password&#39;</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s">&#39;avatar&#39;</span><span class="p">:</span>
+                <span class="kn">import</span> <span class="nn">PIL</span>
+                <span class="kn">import</span> <span class="nn">Image</span><span class="o">,</span><span class="nn">ImageDraw</span><span class="o">,</span><span class="nn">ImageFont</span><span class="o">,</span><span class="nn">ImageChops</span>
+                <span class="kn">from</span> <span class="nn">StringIO</span> <span class="kn">import</span> <span class="n">StringIO</span>
+                <span class="kn">import</span> <span class="nn">base64</span>
+                <span class="n">udata</span> <span class="o">=</span> <span class="n">profile_data</span><span class="p">[</span><span class="s">&#39;avatar&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s">&#39;utf-8&#39;</span><span class="p">)</span>
+                <span class="n">imagedata</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64decode</span><span class="p">(</span><span class="n">udata</span><span class="p">)</span>
+                <span class="n">im</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">imagedata</span><span class="p">))</span>
+                <span class="n">resized_image</span> <span class="o">=</span> <span class="n">im</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="mi">120</span><span class="p">,</span><span class="mi">120</span><span class="p">))</span>
+                <span class="c">#remove old avatar image</span>
+                <span class="n">_avatar_fp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">HWIOS_ROOT</span><span class="p">,</span><span class="s">&#39;services&#39;</span><span class="p">,</span><span class="s">&#39;web_ui&#39;</span><span class="p">,</span><span class="s">&#39;media&#39;</span><span class="p">,</span><span class="s">&#39;files&#39;</span><span class="p">,</span><span class="s">&#39;avatars&#39;</span><span class="p">)</span>
+                <span class="n">old_avatar_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_avatar_fp</span><span class="p">,</span> <span class="n">profile</span><span class="o">.</span><span class="n">photo</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">old_avatar_file</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+                    <span class="k">pass</span>
+                <span class="n">new_avatar_file</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">_</span><span class="si">%s</span><span class="s">.png&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">profile</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()))</span>
+                <span class="n">profile</span><span class="o">.</span><span class="n">photo</span> <span class="o">=</span> <span class="n">new_avatar_file</span>
+                <span class="n">_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_avatar_fp</span><span class="p">,</span> <span class="n">new_avatar_file</span><span class="p">),</span><span class="s">&#39;w&#39;</span><span class="p">)</span>
+                <span class="n">resized_image</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">_file</span><span class="p">,</span><span class="s">&#39;png&#39;</span><span class="p">)</span>
+                <span class="n">_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">chmod</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_avatar_fp</span><span class="p">,</span> <span class="n">new_avatar_file</span><span class="p">),</span> <span class="mo">0755</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span> <span class="nb">setattr</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span><span class="n">key</span><span class="p">,</span><span class="n">profile_data</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+        <span class="n">profile</span><span class="o">.</span><span class="n">username</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">profile</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span> <span class="n">profile</span><span class="o">.</span><span class="n">last_name</span><span class="p">)</span>
+        <span class="n">profile</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="n">profile</span><span class="o">.</span><span class="n">is_authenticated</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">if</span> <span class="n">client</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="c">#update the ws-session&#39;s profile, if change is required</span>
+            <span class="k">if</span> <span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">uuid</span> <span class="o">==</span> <span class="n">profile</span><span class="o">.</span><span class="n">uuid</span><span class="p">:</span>
+                <span class="n">client</span><span class="o">.</span><span class="n">profile</span> <span class="o">=</span> <span class="n">profile</span>
+            <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s">&#39;profile_changed&#39;</span><span class="p">,</span> <span class="n">client</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">transport</span><span class="p">,</span> <span class="n">filters</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">profile</span> <span class="o">=</span> <span class="n">profile</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">profile</span>
+        
+        </div>
+    <span class="k">def</span> <span class="nf">_send_activation_mail</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">profile</span><span class="p">,</span> <span class="n">acp</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Sends an activation mail to a registered profile</span>
+
+<span class="sd">        :param Profile profile: The profile to send the activation mail to        </span>
+<span class="sd">        :param bool acp: With acp, the moderator doesn&#39;t get an activation mail notification </span>
+<span class="sd">        :return: bool - Returns True on success, False otherwise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">subject</span><span class="p">,</span> <span class="n">from_email</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">acp_settings</span><span class="o">.</span><span class="n">mail_header</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">acp_settings</span><span class="o">.</span><span class="n">mail_from</span>
+        <span class="n">mail_tpl</span> <span class="o">=</span> <span class="n">Template</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">acp_settings</span><span class="o">.</span><span class="n">mail_body</span><span class="p">)</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">Context</span><span class="p">({</span><span class="s">&#39;profile&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="p">,</span> <span class="s">&#39;activation_type&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">acp_settings</span><span class="o">.</span><span class="n">activation_type</span><span class="p">,</span> <span class="s">&#39;activatelink&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">activate_link</span><span class="p">})</span>
+        <span class="n">user_email_msg</span> <span class="o">=</span> <span class="n">mail_tpl</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">connection</span> <span class="o">=</span> <span class="n">mail</span><span class="o">.</span><span class="n">get_connection</span><span class="p">(</span><span class="n">fail_silently</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">smtplib</span><span class="o">.</span><span class="n">SMTPException</span><span class="p">:</span>
+            <span class="n">feedback</span> <span class="o">=</span> <span class="s">&#39;Your account was made, but an email delivery failure occured. Please contact the administrator!&#39;</span>
+            <span class="n">dialog</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&#39;profiles/registration_complete.html&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;profile&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="p">,</span> <span class="s">&#39;activation_type&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">acp_settings</span><span class="o">.</span><span class="n">activation_type</span><span class="p">})</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="n">user_email</span> <span class="o">=</span> <span class="n">mail</span><span class="o">.</span><span class="n">EmailMessage</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="n">user_email_msg</span><span class="p">,</span> <span class="n">from_email</span><span class="p">,</span> <span class="p">[</span><span class="n">profile</span><span class="o">.</span><span class="n">email</span><span class="p">],</span> <span class="n">connection</span><span class="o">=</span><span class="n">connection</span><span class="p">)</span>
+        <span class="n">user_email</span><span class="o">.</span><span class="n">content_subtype</span> <span class="o">=</span> <span class="s">&quot;html&quot;</span>
+        <span class="n">user_email</span><span class="o">.</span><span class="n">send</span><span class="p">()</span>
+        <span class="c">#send a mail to moderator if moderator activation is required, or moderator notify is enabled. Ignore in case the profile was made from acp</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">acp_settings</span><span class="o">.</span><span class="n">activation_type</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">acp_settings</span><span class="o">.</span><span class="n">registration_moderator_notify</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">acp</span><span class="p">:</span>
+            <span class="n">mod_email_msg</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&#39;profiles/registration_moderator_notify.html&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;profile&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="p">,</span> <span class="s">&#39;activation_type&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">acp_settings</span><span class="o">.</span><span class="n">activation_type</span><span class="p">,</span><span class="s">&#39;activatelink&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">activate_link</span><span class="p">,</span> <span class="s">&#39;ip&#39;</span><span class="p">:</span><span class="n">profile</span><span class="o">.</span><span class="n">ip</span><span class="p">})</span>
+            <span class="n">moderators</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">is_staff</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">email_list</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">moderator</span> <span class="ow">in</span> <span class="n">moderators</span><span class="p">:</span>
+                <span class="n">email_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">moderator</span><span class="o">.</span><span class="n">email</span><span class="p">)</span>
+            <span class="n">mod_email</span> <span class="o">=</span> <span class="n">mail</span><span class="o">.</span><span class="n">EmailMessage</span><span class="p">(</span><span class="s">&#39;New account registered at </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">acp_settings</span><span class="o">.</span><span class="n">site_name</span><span class="p">),</span> <span class="n">mod_email_msg</span><span class="p">,</span> <span class="n">from_email</span><span class="p">,</span> <span class="n">email_list</span><span class="p">,</span> <span class="n">connection</span><span class="o">=</span><span class="n">connection</span><span class="p">)</span>
+            <span class="n">mod_email</span><span class="o">.</span><span class="n">content_subtype</span> <span class="o">=</span> <span class="s">&quot;html&quot;</span>
+            <span class="n">mod_email</span><span class="o">.</span><span class="n">send</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">True</span>    
+        
+        
+<div class="viewcode-block" id="XAuthManager.activate_profile"><a class="viewcode-back" href="../../../../core/client.html#services.web_ui.auth.default.XAuthManager.activate_profile">[docs]</a>    <span class="k">def</span> <span class="nf">activate_profile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">uuid</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Enables the profile by setting the is_active property of the profile</span>
+
+<span class="sd">        :param str uuid: The uuid of the profile to activate</span>
+<span class="sd">        :return: Profile or None - Returns the modified profile or None</span>
+<span class="sd">    </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">profile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">uuid</span> <span class="o">=</span> <span class="n">uuid</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">profile</span><span class="o">.</span><span class="n">is_active</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">profile</span><span class="o">.</span><span class="n">is_active</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">profile</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">profile</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>     </div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">HWIOS v0.6 documentation</a> &raquo;</li>
+          <li><a href="../../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, OS-Networks.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

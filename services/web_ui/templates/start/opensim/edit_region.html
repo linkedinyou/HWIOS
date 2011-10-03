@@ -1,0 +1,30 @@
+{%load i18n%}
+<div class='hwios-widget'>
+    <div class='ui-widget-header ui-corner-top services'>
+        <span>{%trans 'Regions'%}</span>
+        <span>{%trans 'Edit'%}</span>
+    </div>
+    <div class='ui-widget-content'>
+        <div class='region-editor-container'>
+            <div class='region-editor-form'>
+                <form method='post' action=''>
+                    {{ form.as_p }}
+                    <p>
+                    <label for='id_shutdown_time' id='slider-shutdown-time-indicator' class='slider-indicator'>{%trans 'Reboot warning (sec.)'%}</label>
+                    <input type='hidden' id='id_shutdown_time' name='shutdown_time' />
+                    <span class='slider' id='slider-shutdown-time'></span>
+                    </p>
+                </form>
+            </div>
+            <div id='map'></div>
+        </div>
+    </div>
+    <div class='hwios-toolbar'>
+        <div class='ui-helper-clearfix'>
+            <div class='fg-buttonset fg-buttonset-single ui-helper-clearfix'>
+                <button data-uri='/opensim/regions/' class='fg-button ui-state-default fg-button-icon-left ui-corner-left'><span class='ui-icon ui-icon-document'></span><span>{%trans 'Cancel'%}</span></button>
+                <button data-function='opensim.save_edit_region' data-uuid='{{region_uuid}}' class='fg-button ui-state-default fg-button-icon-left ui-corner-right'><span class='ui-icon ui-icon-pencil'></span><span>{%trans 'Save'%}</span></button>
+            </div>
+        </div>
+    </div>
+</div>

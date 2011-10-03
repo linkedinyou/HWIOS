@@ -1,0 +1,20 @@
+{% load i18n %}
+<div class='hwios-widget'>
+    <div class='ui-widget-header'>
+        <span>{%trans 'New Article'%}</span>
+        <span>{% now "M d Y, H:i" %}</span>
+    </div>
+    <div class='ui-widget-content'>
+        <form>{{form.as_p}}</form>
+    </div>
+    <div class='hwios-toolbar'>
+        <div class='ui-helper-clearfix'>
+            <div class='fg-buttonset fg-buttonset-single ui-helper-clearfix'>
+                <button data-uri='/blog/' data-slug='{{page.slug}}' class='fg-button ui-state-default fg-button-icon-left ui-corner-left'><span class='ui-icon ui-icon-document'></span><span>{%trans 'Cancel'%}</span></button>
+                <button data-function='blog.save_new_article' class='fg-button ui-state-default fg-button-icon-left ui-corner-right'><span class='ui-icon ui-icon-transfer-e-w'></span><span>{%trans 'Submit'%}</span></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+

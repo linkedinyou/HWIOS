@@ -1,0 +1,41 @@
+{% load i18n %}
+<div class='hwios-widget' id='blog-context'>
+    <div class='ui-widget-content'>
+        <div id='blog-articles'>
+        {% if articles|length > 0 %}        
+            {%for article in articles%}
+            <div class='blog-article' data-ctxmatch='["delete-article","edit-article"]' data-id='{{article.slug}}'>
+                <div class='blog-article-left-pane'>                    
+                    {%if article.author.profile.photo%}
+                    <div class='article-avatar'><img src='/media/files/avatars/{{article.author.profile.photo}}'/></div>
+                    {%else%}
+                    <div class='article-avatar unknown-avatar'></div>
+                    {%endif%}
+                    <div class='blog-article-created'>{{article.pub_date|date:"M d Y" }}</div>
+                </div>                    
+                <div class='blog-article-right-pane'>
+                    <div class='blog-article-header'>
+                        <span><a href='/blog/{{article.slug}}'>{{article.title}}</a></span>
+                        <div class='blog-article-by'>{{article.author}}, {{article.pub_date|date:"H:i" }}</div>
+                        {%if profile.is_staff%}
+                        <span class='article-option hwios-button ui-icon ui-icon-trash' data-function='blog.delete_article' data-id='{{article.slug}}'></span>
+                        {% if profile == article.author%}
+                        <span class='article-option hwios-button ui-icon ui-icon-pencil' data-uri='/blog/{{article.slug}}/edit/' data-id='{{article.slug}}'></span>
+                        {%endif%}
+                        {%endif%}
+                    </div>
+                    <div class='blog-article-text'>{% autoescape off %}{{article.text}}{% endautoescape %}</div>
+                    {% ifequal article.comments 0 %}
+                    <div class='blog-article-comments'>{%trans "No comments yet..."%}</div>
+                    {%else%}
+                    <div class='blog-article-comments'>{{article.comments}} {%trans "comments"%}</div>
+                    {%endifequal%}                    
+                </div>
+            </div>
+            {%endfor%}        
+        {%else%}
+        <div class='blog-article'><p>{%trans "No articles yet..."%}</p></div>
+        {%endif%}
+        </div>
+    </div>
+</div>

@@ -1,0 +1,27 @@
+{% load i18n %}
+<div class='hwios-widget'>
+    <div class='ui-widget-header ui-corner-top'>
+        <span>{%trans 'New Plasmoid'%}</span>
+    <span>{%trans 'Create'%}</p>
+    </div>
+    <div class='ui-widget-content ui-corner-bottom contenttext'>
+        <div id='plasmoid-form-container'>
+            <div id='plasmoid-form'>            
+            <form>
+            <p><label>{%trans 'UUID'%}</label><input type='text' disabled='disabled' value='{{plasmoid.uuid}}'></input></p>
+                {{ form.as_p }}
+            </form>
+            </div>
+            <div id='plasmoid_{{plasmoid.uuid}}' class='plasmoid-preview'></div>
+        </div>
+        <div id='plasmoid-editor' class='infinote-editor'></div>
+    </div>
+    <div class='hwios-toolbar'>
+        <div class='ui-helper-clearfix'>
+            <div class='fg-buttonset fg-buttonset-single ui-helper-clearfix'>
+                <button data-uri='/plasmoids/' data-uuid='{{plasmoid.uuid}}' class='fg-button ui-state-default fg-button-icon-left ui-corner-left'><span class='ui-icon ui-icon-document'></span><span>{%trans 'Cancel'%}</span></button>
+                <button data-function='plasmoids.save_plasmoid' data-uuid='{{plasmoid.uuid}}' class='fg-button ui-state-default fg-button-icon-left ui-corner-right'><span class='ui-icon ui-icon-pencil'></span><span>{%trans 'Save'%}</span></button>
+            </div>
+        </div>
+    </div>
+</div>

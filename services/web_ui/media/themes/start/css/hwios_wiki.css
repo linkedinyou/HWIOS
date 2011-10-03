@@ -1,0 +1,130 @@
+#undo_slider_value {
+    color:#000;
+    padding:5px;
+    padding-left:15px;
+}
+
+#wiki-markdown {
+    min-height:150px;
+    -webkit-user-select: auto;
+    font-size:15px;
+    line-height:1.2;
+}
+
+#wiki-markdown p:first-letter {
+    font-weight:bold;
+   font-size:20px;
+}
+
+#wiki-markdown h1 {
+    font-size:26px;
+    font-weight:bold;
+    color:#00aeef;
+}
+
+#wiki-markdown h2 {
+    font-size:20px;
+    color:#000;
+}
+
+#wiki-markdown h2:first-letter {
+    color:#00aeef;
+}
+
+#wiki-markdown h3 {
+    font-size:16px;
+    font-style:bold;
+}
+
+#wiki-markdown h4 {
+    font-size:15px;
+    font-style:italic;
+}
+
+#wiki-markdown pre {
+    display:block;
+    position:relative;
+    
+}
+
+#wiki-markdown code {
+    font-size:12px;
+    color:#3e4e64;
+    border:1px dashed #333;
+    overflow:auto;
+    overflow-Y:hidden;
+    height:100%;
+    padding:5px;
+}
+
+#wiki-markdown pre {
+
+}
+
+#wiki-markdown table {
+    border:1px solid #6ba5d0;
+    border-collapse:collapse;
+}
+
+#wiki-markdown td {
+    border:1px solid #6ba5d0;
+    padding:4px;
+    background-color:#dde4ff;
+}
+
+#wiki-markdown th {
+    color:#fff;
+    padding:4px;
+    background-color:#6ba5d0;
+}
+
+#wiki-markdown a {
+    color:#aaa;
+    font-weight:bold;
+}
+
+#wiki-markdown a:hover {
+    color:#ff6c00;
+}
+
+#wiki-markdown img {
+    border:1px solid #666;
+    border-radius: 8px;
+    box-shadow: 2px 2px 12px rgba(0,0,0,0.8);
+}
+
+.edit-wiki-page #wiki-markdown {
+    width:100%;
+    padding:5px;
+    height:300px;
+    border-bottom:1px solid #ddd;
+    overflow:auto;
+    -webkit-box-sizing: border-box; 
+    -moz-box-sizing: border-box; 
+    -webkit-user-select: none;
+    background-color:#fff;
+    resize:vertical;
+    border-top:1px dotted #ddd;
+}
+
+/*Editor container*/
+.edit-wiki-page > #wiki-editor {
+    width:100%;
+    border-left:1px dotted #ddd;
+    border-bottom:1px solid #ddd;
+    border-bottom:1px solid #ddd;
+}
+
+
+
+#wiki-listener {
+    border:1px solid #333;
+}
+
+.profile-body {
+
+}
+
+.editor-hidden {
+    display:none;
+}

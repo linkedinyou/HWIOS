@@ -1,0 +1,24 @@
+{% load i18n %}
+<div class='hwios-widget'>
+    <div class='ui-widget-header ui-corner-top'>
+        <span>{{page.slug}}</span>
+        <span>{%trans 'Edit document'%}</span>
+    </div>
+    <div class='ui-widget-content ui-corner-bottom contenttext edit-wiki-page'>
+        <div id='wiki-markdown'></div>
+        <div id='wiki-editor' class='infinote-editor'></div>
+        <form method='post' action='/wiki/{{page.slug}}/save/'>
+            {{form.as_p}}
+        </form>    
+    </div>
+    <div class='hwios-toolbar'>
+        <div class='ui-helper-clearfix'>
+            <div class='fg-buttonset fg-buttonset-single ui-helper-clearfix'>
+                <button data-uri='/wiki/{{page.slug}}/' data-id='{{page.slug}}' class='fg-button ui-state-default fg-button-icon-left ui-corner-left'><span class='ui-icon ui-icon-document'></span><span>{%trans 'Cancel'%}</span></button>
+                <button data-function='wiki.save_edit_article' data-id='{{page.slug}}' class='fg-button ui-state-default fg-button-icon-left ui-corner-right'><span class='ui-icon ui-icon-transfer-e-w'></span><span>{%trans 'Submit'%}</span></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+

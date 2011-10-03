@@ -1,0 +1,330 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>services.web_ui.models.opensim &mdash; HWIOS v0.6 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '0.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="HWIOS v0.6 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">HWIOS v0.6 documentation</a> &raquo;</li>
+          <li><a href="../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for services.web_ui.models.opensim</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    services.web_ui.controllers.ws.opensim</span>
+<span class="sd">    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">    The websocket controller for the wiki module</span>
+
+<span class="sd">    :copyright: Copyright 2009-2011 OS-Networks.</span>
+<span class="sd">    :license: BSD, see LICENSE for details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">stat</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">hwios.core.application</span> <span class="kn">import</span> <span class="n">HWIOS</span>
+
+
+<div class="viewcode-block" id="Simulators"><a class="viewcode-back" href="../../../../modules/opensim.html#services.web_ui.models.opensim.Simulators">[docs]</a><span class="k">class</span> <span class="nc">Simulators</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Abstraction layer between teknon and general opensim concept of simulators.</span>
+<span class="sd">    Handles basic commands that are involved with simulator management.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+    
+    
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Simulators.get_simulators"><a class="viewcode-back" href="../../../../modules/opensim.html#services.web_ui.models.opensim.Simulators.get_simulators">[docs]</a>    <span class="k">def</span> <span class="nf">get_simulators</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">online</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get all simulators from all tms clients</span>
+
+<span class="sd">        :param bool online: Returns only online simulators when true</span>
+<span class="sd">        return: dict - a list of simulators</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">teknon_clients</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">pb_server</span><span class="o">.</span><span class="n">get_clients</span><span class="p">()</span>
+        <span class="n">simulators</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">client</span> <span class="ow">in</span> <span class="n">teknon_clients</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">service</span> <span class="ow">in</span> <span class="n">client</span><span class="o">.</span><span class="n">services</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">service</span><span class="p">[</span><span class="s">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;SIM&#39;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">online</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">service</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;ON&#39;</span><span class="p">:</span>
+                            <span class="n">simulators</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">service</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">simulators</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">service</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">simulators</span>
+        
+        </div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Simulators.get_simulator"><a class="viewcode-back" href="../../../../modules/opensim.html#services.web_ui.models.opensim.Simulators.get_simulator">[docs]</a>    <span class="k">def</span> <span class="nf">get_simulator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">uuid</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get a simulator based on service uuid</span>
+
+<span class="sd">        :param str uuid: The service uuid to get it from</span>
+<span class="sd">        return: dict - returns a client_service </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">teknon_clients</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">pb_server</span><span class="o">.</span><span class="n">get_clients</span><span class="p">()</span>
+        <span class="n">simulators</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">client</span> <span class="ow">in</span> <span class="n">teknon_clients</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">service</span> <span class="ow">in</span> <span class="n">client</span><span class="o">.</span><span class="n">services</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">service</span><span class="p">[</span><span class="s">&#39;uuid&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">uuid</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">service</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+</div></div>
+<div class="viewcode-block" id="Regions"><a class="viewcode-back" href="../../../../modules/opensim.html#services.web_ui.models.opensim.Regions">[docs]</a><span class="k">class</span> <span class="nc">Regions</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Abstraction layer between teknon and general opensim concept of regions.</span>
+<span class="sd">    Handles basic commands that are involved with simulator management.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+    
+        
+<div class="viewcode-block" id="Regions.get_region_services"><a class="viewcode-back" href="../../../../modules/opensim.html#services.web_ui.models.opensim.Regions.get_region_services">[docs]</a>    <span class="k">def</span> <span class="nf">get_region_services</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">format</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get a list of regions from each online teknon host</span>
+
+<span class="sd">        :param str format: select output type (&quot;tuple&quot; or &quot;dict&quot;)</span>
+<span class="sd">        return: dict or tuple - A list of region-services</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">clients</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">pb_server</span><span class="o">.</span><span class="n">get_clients</span><span class="p">()</span>
+        <span class="n">region_services</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">client</span> <span class="ow">in</span> <span class="n">clients</span><span class="p">:</span>
+            <span class="n">region_services</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">region_services</span><span class="p">)</span>
+        <span class="c">#for django forms</span>
+        <span class="k">if</span> <span class="n">format</span> <span class="o">==</span> <span class="s">&#39;tuple&#39;</span><span class="p">:</span>
+            <span class="n">tuple_list</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">region_service</span> <span class="ow">in</span> <span class="n">region_services</span><span class="p">:</span>
+                <span class="n">tuple_list</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">region_service</span><span class="p">[</span><span class="s">&#39;uuid&#39;</span><span class="p">],</span><span class="n">region_service</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]))</span>
+            <span class="k">return</span> <span class="n">tuple_list</span>
+        <span class="k">return</span> <span class="n">region_services</span>
+        
+    </div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Regions.get_regions"><a class="viewcode-back" href="../../../../modules/opensim.html#services.web_ui.models.opensim.Regions.get_regions">[docs]</a>    <span class="k">def</span> <span class="nf">get_regions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get a list of regions from each online teknon host</span>
+
+<span class="sd">        :return: list - A list of regions from each teknon service that is a region service</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">clients</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">pb_server</span><span class="o">.</span><span class="n">get_clients</span><span class="p">()</span>
+        <span class="n">regions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">client</span> <span class="ow">in</span> <span class="n">clients</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">service</span> <span class="ow">in</span> <span class="n">client</span><span class="o">.</span><span class="n">region_services</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">service</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;ON&#39;</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">region</span> <span class="ow">in</span> <span class="n">service</span><span class="p">[</span><span class="s">&#39;regions&#39;</span><span class="p">]:</span>
+                        <span class="n">region</span><span class="p">[</span><span class="s">&#39;service&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">service</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]</span>
+                        <span class="n">region</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Online&#39;</span>
+                        <span class="n">regions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">region</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">region</span> <span class="ow">in</span> <span class="n">service</span><span class="p">[</span><span class="s">&#39;regions&#39;</span><span class="p">]:</span>
+                        <span class="n">region</span><span class="p">[</span><span class="s">&#39;service&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">service</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]</span>
+                        <span class="n">region</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Offline&#39;</span>
+                        <span class="n">regions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">region</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">regions</span>
+    
+    </div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Regions.get_region"><a class="viewcode-back" href="../../../../modules/opensim.html#services.web_ui.models.opensim.Regions.get_region">[docs]</a>    <span class="k">def</span> <span class="nf">get_region</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">region_uuid</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get region with uuid from Teknon clients</span>
+<span class="sd">        </span>
+<span class="sd">        :param str region_uuid: The uuid of the region to lookup</span>
+<span class="sd">        return: dict or False - Info about the region or False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">teknon_clients</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">pb_server</span><span class="o">.</span><span class="n">get_clients</span><span class="p">()</span>
+        <span class="n">simulators</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">client</span> <span class="ow">in</span> <span class="n">teknon_clients</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">service</span> <span class="ow">in</span> <span class="n">client</span><span class="o">.</span><span class="n">services</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">service</span><span class="p">[</span><span class="s">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;SIM&#39;</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">region</span> <span class="ow">in</span> <span class="n">service</span><span class="p">[</span><span class="s">&#39;regions&#39;</span><span class="p">]:</span>
+                        <span class="k">if</span> <span class="n">region</span><span class="p">[</span><span class="s">&#39;RegionUUID&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">region_uuid</span><span class="p">:</span>
+                            <span class="n">region</span><span class="p">[</span><span class="s">&#39;service_uuid&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">service</span><span class="p">[</span><span class="s">&#39;uuid&#39;</span><span class="p">]</span>
+                            <span class="k">return</span> <span class="n">region</span>
+        <span class="k">return</span> <span class="bp">False</span>
+        
+        </div></div>
+<div class="viewcode-block" id="Scenes"><a class="viewcode-back" href="../../../../modules/opensim.html#services.web_ui.models.opensim.Scenes">[docs]</a><span class="k">class</span> <span class="nc">Scenes</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Abstraction layer between teknon and general opensim concept of scenes.</span>
+<span class="sd">    Handles basic commands that are involved with simulator management.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>    
+    
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Scenes.get_scenes"><a class="viewcode-back" href="../../../../modules/opensim.html#services.web_ui.models.opensim.Scenes.get_scenes">[docs]</a>    <span class="k">def</span> <span class="nf">get_scenes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get an overview of all available scenes in our webdav share</span>
+
+<span class="sd">        return: list or Exception - Info about all available files or an IOError exception</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">oar_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">HWIOS</span><span class="o">.</span><span class="n">services</span><span class="p">[</span><span class="s">&#39;web_ui&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">location</span><span class="p">,</span><span class="s">&#39;dav_store&#39;</span><span class="p">,</span><span class="s">&#39;oar&#39;</span><span class="p">)</span>
+        <span class="n">file_list</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">oar_path</span><span class="p">)</span>
+        <span class="n">scenes</span><span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">count</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">file_list</span><span class="p">):</span>  
+            <span class="n">oar_location</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">oar_path</span><span class="p">,</span><span class="n">value</span><span class="p">)</span>
+            <span class="n">scenes</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="n">value</span><span class="p">})</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">st</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">oar_location</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+                <span class="k">print</span> <span class="s">&quot;failed to get information about&quot;</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">oar_location</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">scenes</span><span class="p">[</span><span class="n">count</span><span class="p">][</span><span class="s">&#39;size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> MB&#39;</span> <span class="o">%</span> <span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">st</span><span class="p">[</span><span class="n">ST_SIZE</span><span class="p">])</span> <span class="o">/</span> <span class="mi">1024</span> <span class="o">/</span> <span class="mi">1024</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+                <span class="n">scenes</span><span class="p">[</span><span class="n">count</span><span class="p">][</span><span class="s">&#39;modified&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">asctime</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">localtime</span><span class="p">(</span><span class="n">st</span><span class="p">[</span><span class="n">ST_MTIME</span><span class="p">]))</span>
+        <span class="k">return</span> <span class="n">scenes</span>
+    </div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Scenes.delete_scenes"><a class="viewcode-back" href="../../../../modules/opensim.html#services.web_ui.models.opensim.Scenes.delete_scenes">[docs]</a>    <span class="k">def</span> <span class="nf">delete_scenes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">scene_list</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Delete a scene from the local webdav share</span>
+
+<span class="sd">        :param list scene_list: A filename list of all the scenes to delete</span>
+<span class="sd">        return: int or False - The amount of deleted files or False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">oar_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">HWIOS</span><span class="o">.</span><span class="n">services</span><span class="p">[</span><span class="s">&#39;web_ui&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">location</span><span class="p">,</span><span class="s">&#39;dav_store&#39;</span><span class="p">,</span><span class="s">&#39;oar&#39;</span><span class="p">)</span>
+        <span class="n">deleted</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">scene</span> <span class="ow">in</span> <span class="n">scene_list</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s">&quot;/&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">scene</span> <span class="ow">and</span> <span class="s">&quot;</span><span class="se">\000</span><span class="s">&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">scene</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">scene</span><span class="p">)</span> <span class="o">&lt;=</span><span class="mi">255</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">scene</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;.oar&#39;</span><span class="p">:</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">oar_path</span><span class="p">,</span> <span class="n">scene</span><span class="p">))</span>
+                    <span class="n">deleted</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="n">deleted</span>
+        
+        </div></div>
+<div class="viewcode-block" id="Luggage"><a class="viewcode-back" href="../../../../modules/opensim.html#services.web_ui.models.opensim.Luggage">[docs]</a><span class="k">class</span> <span class="nc">Luggage</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Abstraction layer between teknon and general opensim concept of luggage.</span>
+<span class="sd">    Handles basic commands that are involved with simulator management.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+    
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Luggage.get_luggage"><a class="viewcode-back" href="../../../../modules/opensim.html#services.web_ui.models.opensim.Luggage.get_luggage">[docs]</a>    <span class="k">def</span> <span class="nf">get_luggage</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get an overview of all available luggage files in our webdav share</span>
+
+<span class="sd">        return: list or Exception - Info about all available files or an IOError exception</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">iar_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">HWIOS</span><span class="o">.</span><span class="n">services</span><span class="p">[</span><span class="s">&#39;web_ui&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">location</span><span class="p">,</span><span class="s">&#39;dav_store&#39;</span><span class="p">,</span><span class="s">&#39;iar&#39;</span><span class="p">)</span>
+        <span class="n">file_list</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">iar_path</span><span class="p">)</span>
+        <span class="n">luggage</span><span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">count</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">file_list</span><span class="p">):</span>  
+            <span class="n">iar_location</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">iar_path</span><span class="p">,</span><span class="n">value</span><span class="p">)</span>
+            <span class="n">luggage</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s">&#39;name&#39;</span><span class="p">:</span> <span class="n">value</span><span class="p">})</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">st</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">iar_location</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+                <span class="k">print</span> <span class="s">&quot;failed to get information about&quot;</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">iar_location</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">luggage</span><span class="p">[</span><span class="n">count</span><span class="p">][</span><span class="s">&#39;size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> MB&#39;</span> <span class="o">%</span> <span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">st</span><span class="p">[</span><span class="n">ST_SIZE</span><span class="p">])</span> <span class="o">/</span> <span class="mi">1024</span> <span class="o">/</span> <span class="mi">1024</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+                <span class="n">luggage</span><span class="p">[</span><span class="n">count</span><span class="p">][</span><span class="s">&#39;modified&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">asctime</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">localtime</span><span class="p">(</span><span class="n">st</span><span class="p">[</span><span class="n">ST_MTIME</span><span class="p">]))</span>
+        <span class="k">return</span> <span class="n">luggage</span>
+    </div>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Luggage.delete_luggage"><a class="viewcode-back" href="../../../../modules/opensim.html#services.web_ui.models.opensim.Luggage.delete_luggage">[docs]</a>    <span class="k">def</span> <span class="nf">delete_luggage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">luggage_list</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Delete a luggage file from the local webdav share</span>
+
+<span class="sd">        :param list luggage_list: A filename list of all the luggage files to delete</span>
+<span class="sd">        return: int or False - The amount of deleted files or False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">iar_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">HWIOS</span><span class="o">.</span><span class="n">services</span><span class="p">[</span><span class="s">&#39;web_ui&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">location</span><span class="p">,</span><span class="s">&#39;dav_store&#39;</span><span class="p">,</span><span class="s">&#39;iar&#39;</span><span class="p">)</span>
+        <span class="n">deleted</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">luggage</span> <span class="ow">in</span> <span class="n">luggage_list</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s">&quot;/&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">luggage</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">luggage</span><span class="p">)</span> <span class="o">&lt;=</span><span class="mi">255</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">luggage</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;.iar&#39;</span><span class="p">:</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">iar_path</span><span class="p">,</span> <span class="n">luggage</span><span class="p">))</span>
+                    <span class="n">deleted</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="n">deleted</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">HWIOS v0.6 documentation</a> &raquo;</li>
+          <li><a href="../../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, OS-Networks.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

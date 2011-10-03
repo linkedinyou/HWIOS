@@ -1,0 +1,118 @@
+# HWIOS Translation
+# Copyright (C) 2011-2012 OS-Networks
+# This file is distributed under the same license as the HWIOS package.
+# J. van Veen <info@os-networks.net>, 2011.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2011-03-21 15:31+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Jeroen van Veen <info@os-networks.net>\n"
+"Language-Team: HWIOS Translators <info@os-networks.net>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: controllers/ws/dsm.py:46
+msgid "Login"
+msgstr "Login"
+
+msgid "Register"
+msgstr "Registreer"
+
+msgid "Cancel"
+msgstr "Annuleer"
+
+msgid "Load"
+msgstr "Laad"
+
+msgid "Save"
+msgstr "Bewaar"
+
+msgid "Delete"
+msgstr "Verwijder"
+
+msgid "Start"
+msgstr "Start"
+
+msgid "Stop"
+msgstr "Stop"
+
+msgid "Kill"
+msgstr "Beëindig"
+
+msgid "You are now logged in..."
+msgstr "U bent nu ingelogd..."
+
+msgid "Load luggage file"
+msgstr "Laad baggage bestand"
+
+msgid "Load scene"
+msgstr "Laad scene"
+
+msgid "Save luggage as"
+msgstr "Bewaar baggage als"
+
+msgid "Save scene as"
+msgstr "Bewaar scene als"
+
+msgid "Please confirm"
+msgstr "Bevestig alstublieft"
+
+msgid "Reboot"
+msgstr "Herstart"
+
+msgid "Region"
+msgstr "Regio"
+
+msgid "Address"
+msgstr "Adres"
+
+msgid "Position"
+msgstr "Positie"
+
+msgid "No matching records found"
+msgstr "Geen overeenkomstige data gevonden"
+
+msgid "Show"
+msgstr "Toon"
+
+msgid "Showing"
+msgstr "Vertoning"
+
+msgid "entries"
+msgstr "posten"
+
+msgid "Search"
+msgstr "Zoek"
+
+msgid "of"
+msgstr "van"
+
+msgid "to"
+msgstr "tot"
+
+msgid "total entries"
+msgstr "posten totaal"
+
+msgid "filtered from"
+msgstr "Gefilterd uit"
+
+msgid "Messenger ready"
+msgstr "Bode gereed"
+
+msgid "connected"
+msgstr "verbonden"
+
+msgid "disconnected"
+msgstr "afgesloten"
+
+msgid "Warning"
+msgstr "Waarschuwing"
+
+msgid "You"
+msgstr "U"

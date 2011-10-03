@@ -1,0 +1,27 @@
+<div class='hwios-widget'>
+    <div class='ui-widget-header ui-corner-top'>
+        <span class="ui-icon menu-icon ui-icon-wrench"></span>
+        <span>My_Mod</span>
+    </div>
+    <div class='ui-widget-content'>
+    <p>You are profile {{profile.username}}</p>
+    <h2>List of online users</h2>
+    <ul id='online-profiles'>
+    {%for online_profile in online%}
+    <li>{{online_profile}}</li>
+    {%endfor%}
+    </ul>
+    <textarea id='textarea-my_mod'></textarea>
+    <button data-function='my_mod.notify' class='fg-button fg-button-icon-left ui-state-default ui-corner-all'><span class='ui-icon ui-icon-document-b' title='Start'></span><span>Send</span></button>
+    </div>
+    <p><b>Server said:</b></p>
+    <div id='message-status'></div>
+    <p><b>Client said:</b></p>
+    <div id='latest-message'></div>
+    <div id='trips'>
+        <div id='trips-total'></div>
+        <div id='trips-second'>-</div>
+        <button data-function='my_mod.trip' class='fg-button fg-button-icon-left ui-state-default ui-corner-all'><span class='ui-icon ui-icon-document-b' title='Start'></span><span>Trip</span></button>
+    </div>
+    
+</div>

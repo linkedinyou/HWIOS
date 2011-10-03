@@ -1,0 +1,202 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>hwios.services.web_ui.models.activity &mdash; HWIOS v0.6 documentation</title>
+    <link rel="stylesheet" href="../../../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '0.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="HWIOS v0.6 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">HWIOS v0.6 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for hwios.services.web_ui.models.activity</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="kn">from</span> <span class="nn">django.db.models</span> <span class="kn">import</span> <span class="n">CharField</span><span class="p">,</span> <span class="n">DateTimeField</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">,</span> <span class="n">Model</span><span class="p">,</span> <span class="n">TextField</span><span class="p">,</span> <span class="n">IntegerField</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth.models</span> <span class="kn">import</span> <span class="n">Group</span>
+
+<span class="kn">from</span> <span class="nn">web_ui.models.profiles</span> <span class="kn">import</span> <span class="n">Profile</span>
+<span class="kn">from</span> <span class="nn">django.core</span> <span class="kn">import</span> <span class="n">serializers</span>
+<span class="kn">from</span> <span class="nn">autoslug</span> <span class="kn">import</span> <span class="n">AutoSlugField</span>
+
+<span class="kn">from</span> <span class="nn">hwios.core.application</span> <span class="kn">import</span> <span class="n">HWIOS</span>
+
+<span class="c">#0:ignore, 1:view, 2:participate, 3:respond, 4:act</span>
+<span class="n">ACTIVITY_CSS</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;ui-icon-dummy&#39;</span><span class="p">,</span><span class="s">&#39;ui-icon-search&#39;</span><span class="p">,</span><span class="s">&#39;ui-icon-person&#39;</span><span class="p">,</span><span class="s">&#39;ui-icon-comment&#39;</span><span class="p">,</span><span class="s">&#39;ui-icon-alert&#39;</span><span class="p">]</span>
+
+<span class="n">VISIBILITY_TYPES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;all&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span>
+    <span class="s">&#39;users&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span>
+    <span class="s">&#39;moderators&#39;</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span>
+    <span class="c">#will be added later</span>
+    <span class="s">&#39;friends&#39;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span>
+    <span class="s">&#39;group&#39;</span><span class="p">:</span><span class="mi">4</span>
+<span class="p">}</span>
+
+<span class="n">ACTIVITY_ACTIONS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;ignore&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span>
+    <span class="s">&#39;view&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span>
+    <span class="s">&#39;respond&#39;</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span>
+    <span class="s">&#39;participate&#39;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span>
+    <span class="s">&#39;act&#39;</span><span class="p">:</span><span class="mi">4</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="k">def</span> <span class="nf">make_uuid</span><span class="p">():</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
+
+<div class="viewcode-block" id="Activity"><a class="viewcode-back" href="../../../../../modules/profiles.html#hwios.services.web_ui.models.activity.Activity">[docs]</a><span class="k">class</span> <span class="nc">Activity</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    ORM Model for the activity functionality</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">connection_name</span><span class="o">=</span><span class="s">&quot;default&quot;</span> 
+
+    <span class="n">uuid</span> <span class="o">=</span> <span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">36</span><span class="p">,</span>  <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">make_uuid</span><span class="p">)</span>
+    <span class="n">message</span> <span class="o">=</span> <span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">36</span><span class="p">)</span>
+    <span class="n">link</span> <span class="o">=</span> <span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">128</span><span class="p">)</span>
+    <span class="n">actor_user</span> <span class="o">=</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Profile</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">actor_group</span> <span class="o">=</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Group</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="c">#0: all, 1:users, 2:moderators, 3:friends,4:group</span>
+    <span class="c">#0:ignore, 1:view, 2:participate, 3:respond, 4:act</span>
+    <span class="n">action_all</span> <span class="o">=</span> <span class="n">IntegerField</span><span class="p">()</span>
+    <span class="n">action_users</span> <span class="o">=</span> <span class="n">IntegerField</span><span class="p">()</span>
+    <span class="n">action_moderators</span> <span class="o">=</span> <span class="n">IntegerField</span><span class="p">()</span>
+    <span class="n">action_friends</span> <span class="o">=</span> <span class="n">IntegerField</span><span class="p">()</span>
+    <span class="n">action_group</span> <span class="o">=</span> <span class="n">IntegerField</span><span class="p">()</span>    
+    <span class="n">pub_date</span> <span class="o">=</span> <span class="n">DateTimeField</span><span class="p">(</span><span class="n">auto_now_add</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">verbose_name_plural</span> <span class="o">=</span> <span class="s">&quot;Activities&quot;</span>
+        <span class="n">app_label</span> <span class="o">=</span> <span class="s">&#39;no_fixture&#39;</span>
+        <span class="n">db_table</span> <span class="o">=</span> <span class="s">&#39;hwios_activities&#39;</span>
+        <span class="n">ordering</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;-pub_date&#39;</span><span class="p">]</span>
+
+</div>
+<div class="viewcode-block" id="publish_activity"><a class="viewcode-back" href="../../../../../modules/profiles.html#hwios.services.web_ui.models.activity.publish_activity">[docs]</a><span class="k">def</span> <span class="nf">publish_activity</span><span class="p">(</span><span class="n">actor</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">link</span><span class="p">,</span> <span class="n">action_list</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    @param action_matrix - key: 0: all, 1:users, 2:moderators, 3:friends,4:group, value: #0:ignore, 1:view, 2:participate, 3:respond, 4:act</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c">#store in the db first</span>
+    <span class="n">activity</span> <span class="o">=</span> <span class="n">Activity</span><span class="p">()</span>
+    <span class="n">activity</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span>
+    <span class="n">activity</span><span class="o">.</span><span class="n">link</span> <span class="o">=</span> <span class="n">link</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{}}</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">actor</span><span class="p">,</span> <span class="n">Profile</span><span class="p">):</span>
+        <span class="n">activity</span><span class="o">.</span><span class="n">actor_user</span> <span class="o">=</span> <span class="n">actor</span>
+        <span class="n">response</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">][</span><span class="s">&#39;actor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">actor</span><span class="o">.</span><span class="n">username</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">actor</span><span class="p">,</span> <span class="n">Group</span><span class="p">):</span>
+        <span class="n">activity</span><span class="o">.</span><span class="n">actor_group</span> <span class="o">=</span> <span class="n">actor</span>
+    <span class="k">elif</span> <span class="n">actor</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="n">activity</span><span class="o">.</span><span class="n">action_all</span> <span class="o">=</span> <span class="n">action_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">activity</span><span class="o">.</span><span class="n">action_users</span> <span class="o">=</span> <span class="n">action_list</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">activity</span><span class="o">.</span><span class="n">action_moderators</span> <span class="o">=</span> <span class="n">action_list</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">activity</span><span class="o">.</span><span class="n">action_friends</span> <span class="o">=</span> <span class="n">action_list</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">activity</span><span class="o">.</span><span class="n">action_group</span> <span class="o">=</span> <span class="n">action_list</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+    <span class="n">activity</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+    <span class="c">#print activity.pub_date</span>
+    <span class="n">pub_date</span> <span class="o">=</span> <span class="n">activity</span><span class="o">.</span><span class="n">pub_date</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%a </span><span class="si">%d</span><span class="s"> %B, %H:%M&quot;</span><span class="p">)</span>
+    <span class="n">response</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">][</span><span class="s">&#39;message&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">activity</span><span class="o">.</span><span class="n">message</span>
+    <span class="n">response</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">][</span><span class="s">&#39;link&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">activity</span><span class="o">.</span><span class="n">link</span>
+    <span class="n">response</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">][</span><span class="s">&#39;pub_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pub_date</span>
+
+    <span class="c">#broadcast it to our public - 0: all,1:users,2:moderators,3:friends,4:group{    </span>
+    <span class="k">for</span> <span class="n">_client</span> <span class="ow">in</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">get_clients</span><span class="p">():</span>
+        <span class="c">#type 2 - moderators/staff</span>
+        <span class="k">if</span> <span class="n">_client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">is_staff</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">action_list</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>                
+                <span class="n">response</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">][</span><span class="s">&#39;action_css&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ACTIVITY_CSS</span><span class="p">[</span><span class="n">activity</span><span class="o">.</span><span class="n">action_moderators</span><span class="p">]</span>
+                <span class="n">_client</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="s">&#39;/data/activity/create/&#39;</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span>
+        <span class="c">#type 1 - users</span>
+        <span class="k">elif</span> <span class="n">_client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">is_authenticated</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">action_list</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">response</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">][</span><span class="s">&#39;action_css&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ACTIVITY_CSS</span><span class="p">[</span><span class="n">activity</span><span class="o">.</span><span class="n">action_users</span><span class="p">]</span>
+                <span class="n">_client</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="s">&#39;/data/activity/create/&#39;</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span>
+        <span class="c">#type 0 - all</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">action_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">response</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">][</span><span class="s">&#39;action_css&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ACTIVITY_CSS</span><span class="p">[</span><span class="n">activity</span><span class="o">.</span><span class="n">action_all</span><span class="p">]</span>
+                <span class="n">_client</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="s">&#39;/data/activity/create/&#39;</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">HWIOS v0.6 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, OS-Networks.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

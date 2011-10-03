@@ -1,0 +1,309 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Installation &mdash; HWIOS v0.6 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="HWIOS v0.6 documentation" href="../index.html" />
+    <link rel="next" title="Writing a new module" href="write_module.html" />
+    <link rel="prev" title="Introduction" href="introduction.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="write_module.html" title="Writing a new module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="introduction.html" title="Introduction"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">HWIOS v0.6 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<p>Currently HWIOS is supposed to work on all UNIX systems like Linux, OSX and FreeBSD. However, due to limited resources, it has only been tested on
+Linux(Ubuntu &amp; Archlinux) so far. In theory the software should also be able to run on Windows, although that may require some additional compatibility code.
+Problems may well as be only occur in the optional Teknon client, in which services make use of named pipes. Those are AFAIK not supported on Windows.</p>
+<div class="section" id="hwios-dependencies">
+<h2>HWIOS Dependencies<a class="headerlink" href="#hwios-dependencies" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>twisted 11 (networking)</li>
+<li>django 1.3 (web framework)</li>
+<li>wsgidav (webdav shares)</li>
+<li>python-graph-core (plasmoid wiki graph visualisation)</li>
+<li>mysql-python (advised when using cpython)</li>
+<li>ujson (json serializer)</li>
+<li>pyopenssl (optional)</li>
+<li>pil</li>
+</ul>
+<div class="section" id="optional">
+<h3>Optional<a class="headerlink" href="#optional" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Sphinx (Render documentation)</li>
+<li>Node.js (JS optimalization)</li>
+<li>Teknon DSM daemon (Distributed service management)</li>
+<li>Wdfs (Teknon dav-mounting for IAR/OAR sharing, *NIX only)</li>
+<li>Pymysql (use this when running with pypy)</li>
+<li>Mono (VM for OpenSimulator)</li>
+</ul>
+</div>
+</div>
+<div class="section" id="unix-installation">
+<h2>UNIX Installation<a class="headerlink" href="#unix-installation" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Create a system user called hwios, and login with this new account</li>
+</ul>
+<div class="highlight-python"><pre>adduser hwios
+su hwios</pre>
+</div>
+<ul class="simple">
+<li>Get all python dependencies and install HWIOS</li>
+</ul>
+<div class="highlight-python"><pre>sudo pip install twisted django wsgidav mysql-python ujson pyopenssl pil python-graph-core
+git clone git://github.com/phrearch/hwios.git ~/hwios
+cd ~/hwios
+cp hwios.ini.example hwios.ini
+vim hwios.ini</pre>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">It is important that the uri under the general section in hwios.ini is the same as the address you type in your browser. This may be both a domain name or an ip-address.</p>
+</div>
+<ul class="simple">
+<li>Fill in your mysql credentials, load the setup and startup HWIOS</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">HWIOS asks you to provide a first-name, last-name and a password for the initial administrator profile.</p>
+</div>
+<div class="highlight-python"><pre>./hwios --setup
+sudo ./hwios --debug</pre>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Point your html5 browser to the uri you provided in hwios.ini and check whether the interface loads succesfully.</p>
+</div>
+</div>
+<div class="section" id="id1">
+<h2>Optional<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="opensimulator">
+<h3>OpenSimulator<a class="headerlink" href="#opensimulator" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Download and prepare vanilla OpenSimulator</li>
+</ul>
+<div class="highlight-python"><pre>cd ~
+git clone git://opensimulator.org/git/opensim /home/hwios/simulator
+cd simulator
+sh runprebuild.sh
+nant
+cd bin
+mysqladmin -u root -pMYSQLPW create grid create sim_9000
+cp OpenSim.ini.example OpenSim.ini
+vim OpenSim.ini</pre>
+</div>
+<ul class="simple">
+<li>Enable remote admin, set it&#8217;s password (&#8216;foobar&#8217; for dev-purposes) and uncomment <strong>//Include-Architecture = &#8220;config-include/GridHypergrid.ini&#8221;//</strong> at the bottom of the file</li>
+</ul>
+<div class="highlight-python"><pre>cp Robust.HG.ini.example Robust.HG.ini
+vim Robust.HG.ini</pre>
+</div>
+<ul class="simple">
+<li>Edit database and url-settings in Robust.HG.ini (&#8216;grid&#8217; db-name is used by default in HWIOS)</li>
+</ul>
+<div class="highlight-python"><pre>screen -S robust
+mono Robust.exe -inifile=Robust.HG.ini
+&lt;ctrl&gt;&lt;a&gt;+&lt;d&gt;</pre>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The grid-server filled the grid database with tables if everything went well. Navigate to the opensim section in HWIOS, and click on the sync button
+to create a linked opensim account.</p>
+</div>
+<ul class="simple">
+<li>Setup the Simulator</li>
+</ul>
+<div class="highlight-python"><pre>cd /home/hwios/simulator/bin
+cp config-include/GridCommon.ini.example config-include/GridCommon.ini
+cp config-include/FlotsamCache.ini.example config-include/FlotsamCache.ini
+vim config-include/GridCommon.ini</pre>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Edit the mysql database settings for the simulator(use &#8216;sim_9000&#8217; for instance). Make sure you uncomment sqlite in the process.
+Point the service connectors(AssetServerURI, InventoryServerURI, etc.) to your local ip (for dev, for production use lan/wan ip)</p>
+</div>
+<ul class="simple">
+<li>Start the simulator</li>
+</ul>
+<div class="highlight-python"><pre>cd ..
+mono OpenSim.exe
+New region name []: test
+Region UUID [4e939f2c-89cb-4449-9eb9-409bfa5ff4dd]:&lt;enter&gt;
+Region Location [1000,1000]:&lt;enter&gt;
+Internal IP address [0.0.0.0]:&lt;enter&gt;
+Internal port [9000]:&lt;enter&gt;
+Allow alternate ports [False]:&lt;enter&gt;
+External host name [SYSTEMIP]:127.0.0.1
+Do you wish to join an existing estate? [no]:&lt;enter&gt;
+New estate name [My Estate]:&lt;enter&gt;
+state owner first name [Test]: test
+Estate owner last name [User]: test</pre>
+</div>
+<ul class="simple">
+<li>Close the simulator and grid-server if they keep running. They will be running in a Teknon subprocess in a moment. Try to debug any errors before preceding.</li>
+</ul>
+<dl class="docutils">
+<dt>::</dt>
+<dd>&lt;ctrl&gt;&lt;c&gt;
+screen -r robust
+&lt;ctrl&gt;&lt;c&gt;
+exit
+cd ~</dd>
+</dl>
+<ul class="simple">
+<li>Install and setup the Teknon DMS client</li>
+</ul>
+<dl class="docutils">
+<dt>::</dt>
+<dd>git clone git://github.com/phrearch/teknon.git ~/teknon
+cd ~/teknon
+mkdir webdav
+cp teknon.ini.example teknon.ini
+cp services.ini.example services.ini</dd>
+</dl>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">teknon.ini has the config parameters to connect to the HWIOS server. The services.ini defines local services that are controlled by Teknon.
+The example services.ini file reflects the values used in this manual, so you don&#8217;t need to change anything there. To login the teknon client,
+you need to use the credentials of a HWIOS admin user(for example our account that was created during the HWIOS setup).</p>
+</div>
+<ul class="simple">
+<li>Start teknon</li>
+</ul>
+<dl class="docutils">
+<dt>::</dt>
+<dd>sudo ./teknon &#8211;debug</dd>
+</dl>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Everything went right if you&#8217;ll see that the client connected to HWIOS(something like <em>[Broker,client] joined group CLIENTS</em>), and no error shows indicating a
+webdav mount-failure occured.</p>
+</div>
+<ul class="simple">
+<li>Login to HWIOS and go to the backend&#8217;s dsm controlpanel. In the services tab you should see a &#8220;Robust Grid&#8221; and &#8220;Simulator 1&#8221; service listed.</li>
+<li>Check the ROBUST service entry and start the service</li>
+<li>Check the Simulator service entry and start the service</li>
+<li>Render the initial map from backend &gt; settings &gt; maps &gt; Render</li>
+</ul>
+<p>The OpenSimulator tools should now allow you to manage regions of that simulator. You can also add new teknon clients from different hosts and/or add new simulators
+the same way. When creating new regions, you just select which simulator you want it to be running on.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Installation</a><ul>
+<li><a class="reference internal" href="#hwios-dependencies">HWIOS Dependencies</a><ul>
+<li><a class="reference internal" href="#optional">Optional</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#unix-installation">UNIX Installation</a></li>
+<li><a class="reference internal" href="#id1">Optional</a><ul>
+<li><a class="reference internal" href="#opensimulator">OpenSimulator</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="introduction.html"
+                        title="previous chapter">Introduction</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="write_module.html"
+                        title="next chapter">Writing a new module</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/narratives/installation.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="write_module.html" title="Writing a new module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="introduction.html" title="Introduction"
+             >previous</a> |</li>
+        <li><a href="../index.html">HWIOS v0.6 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, OS-Networks.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

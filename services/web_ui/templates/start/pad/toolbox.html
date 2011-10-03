@@ -1,0 +1,88 @@
+{% load i18n %}
+<div class='pp-toolbox ui-widget-content'>
+    <div id='pp-toolbox-colorpicker'>
+        <div id='pp-picker-hue'></div>
+        <div id='pp-picker-alpha-container'>
+            <div id='pp-picker-alpha'></div>
+        </div>
+        <div id='pp-picker-hsv-container'>
+            <div id='pp-picker-hsv'>
+                <div id='pp-picker-hsv-color'></div>
+                <div id='pp-picker-hsv-white'></div>
+                <div id='pp-picker-hsv-black'></div>
+            </div>
+        </div>
+        <div id='pp-color-slots'>
+            <div class='pp-gradient-color-container'>
+                <div id='pp-gradient-bgcolor'></div>
+            </div>
+            <div class='pp-gradient-color-container'>
+                <div id='pp-gradient-fgcolor'></div>
+            </div>
+        </div>
+        <div id='pp-toolbox-buttons'>
+            <div class='fg-buttonset-single'>
+                <button data-function='pad.select_brush_tool' class='btn-active-one fg-button ui-state-default fg-button-icon-left  ui-corner-all ui-state-active'><span class='ui-icon ui-icon-pencil'></span></button>
+                <button data-function='pad.select_shape_tool' class='btn-active-one fg-button ui-state-default fg-button-icon-left ui-corner-all'><span class='ui-icon ui-icon-radio-on'></span></button>
+                <button data-function='pad.select_fill_tool' class='btn-active-one fg-button ui-state-default fg-button-icon-left  ui-corner-all'><span class='ui-icon ui-icon-squaresmall-plus'></span></button>
+                <button data-function='pad.select_text_tool' class='btn-active-one fg-button ui-state-default fg-button-icon-left  ui-corner-all'><span class='ui-icon ui-icon-comment'></span></button>
+            </div>
+        </div>
+    </div>
+    <div id='pp-toolbox-buttons-helper'>
+        <div id="brush-tools">
+        <table>
+            <tr>
+            <td>{%trans "Brush"%}</td>
+            <td colspan='2'>
+            <select id="brush-selector">
+                <option value="0">{%trans "Basic"%}</option>
+                <option value="1">{%trans "Experimental"%}</option>
+            </select>
+            </td>
+            </tr>
+            <tr>
+            <td>{%trans "Size"%}</td>
+            <td><div id='brush-tools-size' class='button-menu-slider'></div></td>
+            <td class='indicator' id='brush-tools-size-indicator'></td>
+            </tr>
+        </table>
+        </div>
+        <div id="shape-tools">
+        <table>
+            <tr>
+            <td>{%trans "Shape"%}</td>
+            <td colspan='2'>
+            <select id="shape-selector">
+                <option value="rect">{%trans "Rectangle"%}</option>
+                <option value="circle">{%trans "Circle"%}</option>
+            </select>
+            </td>
+            </tr>
+            <tr>
+            <td>{%trans "Border"%}</td>
+            <td><div id='shape-tools-line-width' class='button-menu-slider'></div></td>
+            <td class='indicator' id='shape-tools-line-width-indicator'></td>
+            </tr>
+        </table>
+        </div>
+        <div id="text-tools">
+        <table>
+            <tr>
+            <td>{%trans "Text"%}</td>
+            <td colspan='2'><div><textarea type='text' id='text-input'></textarea></div></td>
+            </tr>
+            <tr>
+            <td>{%trans "Border"%}</td>
+            <td><div id='text-tools-line-width' class='button-menu-slider'></div><div></div></td>
+            <td class='indicator' id='text-tools-line-width-indicator'></td>
+            </tr>
+            <tr>
+            <td>{%trans "Size"%}</td>
+            <td><div id='text-tools-font-size' class='button-menu-slider'></div></td>
+            <td class='indicator' id='text-tools-font-size-indicator'></td>
+            </tr>
+        </table>
+        </div>
+    </div>
+</div>

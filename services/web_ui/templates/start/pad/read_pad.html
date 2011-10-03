@@ -1,0 +1,13 @@
+{% load i18n %}
+<div class='hwios-widget widget-clear' id='slide-context' data-id='{{page.slug|escape}}'>
+    <div class='ui-widget-header'>
+        <span>{%trans 'Slide'%}</span><span id='slide-title'></span>
+        <span>{%trans 'Draw'%}</span>
+    </div>
+    <div class='ui-widget-content'>
+        <div class='canvas-container'></div>
+        {% include "pad/toolbox.html" %}
+    </div>
+    
+</div> 
+

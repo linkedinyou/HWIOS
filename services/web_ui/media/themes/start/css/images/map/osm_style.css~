@@ -1,0 +1,95 @@
+.olPopup
+{
+	overflow:inherit;
+	-moz-border-radius:15px;
+	-webkit-border-top-right-radius:15px;
+	-webkit-border-bottom-right-radius:15px;
+	-webkit-border-bottom-left-radius:15px;
+	-webkit-box-shadow: 4px 4px 16px rgba(0,0,0,0.8);
+}
+
+.olPopup *
+{
+	font-size: 1em;
+	color:#000;
+	padding:5px;
+}
+
+.olPopup a.close
+{
+	width: 14px;
+	height: 14px;
+	position: absolute;
+	top: 10px;
+	right: 28px;
+	background: url('layer-switcher-minimize.png') no-repeat top left;
+	margin: 0px;
+	font-size: 1px;
+	padding: 0px;
+}
+
+.olPopupCloseBox {
+  background: url("layer-switcher-minimize.png") no-repeat !important;
+  cursor: pointer;
+  margin-top:5px;
+}
+
+.olPopup a.close:hover
+{
+	background: url('layer-switcher-minimize.png') no-repeat top left;
+}
+
+.olPopup .olPopupContent
+{
+	min-width:200px;
+	padding: 1px !important;
+	margin: 0px !important;
+	font-size: 0.80em;
+
+}
+
+.olPopup .olPopupContent h2
+{
+	font-size: small;
+	text-align: center;
+	padding: 2px 0px 2px 0px;
+	margin: 0px 6px 0px 6px;
+	text-transform:capitalize;
+}
+
+.olPopup .olPopupContent table
+{
+	border-collapse:collapse;
+	overflow: auto;
+	padding: 0px;
+}
+
+.olPopupContent table td
+{
+	padding: 4px;
+	border: 1px solid #cccccc;
+}
+
+.olControlAttribution { 
+	bottom: 0px !important; 
+	right:2px;
+}
+
+#map_popup_info {
+  margin-top:-5px;
+}
+
+#map_popup_info td {
+border:0px;
+}
+
+#map_popup_info_title {
+font-weight:bold;
+font-size:1.2em;
+margin-top:-15px;
+}
+
+#map {
+	background-color:#FFF;
+}
+

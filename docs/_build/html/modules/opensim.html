@@ -1,0 +1,820 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Opensim Module &mdash; HWIOS v0.6 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="HWIOS v0.6 documentation" href="../index.html" />
+    <link rel="next" title="Pad Module" href="pad.html" />
+    <link rel="prev" title="Wiki Module" href="wiki.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pad.html" title="Pad Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="wiki.html" title="Wiki Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">HWIOS v0.6 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="opensim-module">
+<h1>Opensim Module<a class="headerlink" href="#opensim-module" title="Permalink to this headline">¶</a></h1>
+<p>The opensim module provides synchronization between avatars and profiles, region management with visual map support,
+decentralized iar/oar(luggage and scenes) management and centralized simulator configuration-loading.</p>
+<div class="section" id="module-services.web_ui.models.opensim">
+<span id="code-references"></span><h2>Code References<a class="headerlink" href="#module-services.web_ui.models.opensim" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="services-web-ui-controllers-models-opensim">
+<h3>services.web_ui.controllers.models.opensim<a class="headerlink" href="#services-web-ui-controllers-models-opensim" title="Permalink to this headline">¶</a></h3>
+<p>The websocket controller for the wiki module</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">copyright:</th><td class="field-body">Copyright 2009-2011 OS-Networks.</td>
+</tr>
+<tr class="field"><th class="field-name">license:</th><td class="field-body">BSD, see LICENSE for details.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="services.web_ui.models.opensim.Luggage">
+<em class="property">class </em><tt class="descclassname">services.web_ui.models.opensim.</tt><tt class="descname">Luggage</tt><a class="reference internal" href="../_modules/services/web_ui/models/opensim.html#Luggage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.opensim.Luggage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Abstraction layer between teknon and general opensim concept of luggage.
+Handles basic commands that are involved with simulator management.</p>
+<dl class="classmethod">
+<dt id="services.web_ui.models.opensim.Luggage.delete_luggage">
+<em class="property">classmethod </em><tt class="descname">delete_luggage</tt><big>(</big><em>luggage_list</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/opensim.html#Luggage.delete_luggage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.opensim.Luggage.delete_luggage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete a luggage file from the local webdav share</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>luggage_list</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; A filename list of all the luggage files to delete</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">int or False - The amount of deleted files or False</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="services.web_ui.models.opensim.Luggage.get_luggage">
+<em class="property">classmethod </em><tt class="descname">get_luggage</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/opensim.html#Luggage.get_luggage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.opensim.Luggage.get_luggage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an overview of all available luggage files in our webdav share</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">list or Exception - Info about all available files or an IOError exception</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="services.web_ui.models.opensim.Maps">
+<em class="property">class </em><tt class="descclassname">services.web_ui.models.opensim.</tt><tt class="descname">Maps</tt><a class="headerlink" href="#services.web_ui.models.opensim.Maps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Map specific handler for the TMS service</p>
+<dl class="classmethod">
+<dt id="services.web_ui.models.opensim.Maps.render_cell">
+<em class="property">classmethod </em><tt class="descname">render_cell</tt><big>(</big><em>x</em>, <em>y</em>, <em>image_loc=None</em><big>)</big><a class="headerlink" href="#services.web_ui.models.opensim.Maps.render_cell" title="Permalink to this definition">¶</a></dt>
+<dd><p>Render a specific cell on the worldmap, based on a fixed start-z</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>x</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; the x grid-location on the worldmap to render</li>
+<li><strong>y</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; the y grid-location on the worldmap to render</li>
+<li><strong>image_loc</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Optional; where to get the image from(region map-tile uri for instance). Empty fills with a not-available image</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="services.web_ui.models.opensim.Maps.render_map">
+<em class="property">classmethod </em><tt class="descname">render_map</tt><big>(</big><big>)</big><a class="headerlink" href="#services.web_ui.models.opensim.Maps.render_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Render all region cells</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="services.web_ui.models.opensim.Maps.update_client_settings">
+<em class="property">classmethod </em><tt class="descname">update_client_settings</tt><big>(</big><big>)</big><a class="headerlink" href="#services.web_ui.models.opensim.Maps.update_client_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Push map-settings update to all clients</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="services.web_ui.models.opensim.Maps.update_service_settings">
+<em class="property">classmethod </em><tt class="descname">update_service_settings</tt><big>(</big><em>data</em><big>)</big><a class="headerlink" href="#services.web_ui.models.opensim.Maps.update_service_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dummy to update map settings. Not in use currently...</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="services.web_ui.models.opensim.Regions">
+<em class="property">class </em><tt class="descclassname">services.web_ui.models.opensim.</tt><tt class="descname">Regions</tt><a class="reference internal" href="../_modules/services/web_ui/models/opensim.html#Regions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.opensim.Regions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Abstraction layer between teknon and general opensim concept of regions.
+Handles basic commands that are involved with simulator management.</p>
+<dl class="classmethod">
+<dt id="services.web_ui.models.opensim.Regions.get_region">
+<em class="property">classmethod </em><tt class="descname">get_region</tt><big>(</big><em>region_uuid</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/opensim.html#Regions.get_region"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.opensim.Regions.get_region" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get region with uuid from Teknon clients</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>region_uuid</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The uuid of the region to lookup</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">dict or False - Info about the region or False</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.models.opensim.Regions.get_region_services">
+<tt class="descname">get_region_services</tt><big>(</big><em>format=None</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/opensim.html#Regions.get_region_services"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.opensim.Regions.get_region_services" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of regions from each online teknon host</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>format</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; select output type (&#8220;tuple&#8221; or &#8220;dict&#8221;)</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">dict or tuple - A list of region-services</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="services.web_ui.models.opensim.Regions.get_regions">
+<em class="property">classmethod </em><tt class="descname">get_regions</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/opensim.html#Regions.get_regions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.opensim.Regions.get_regions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of regions from each online teknon host</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">list - A list of regions from each teknon service that is a region service</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="services.web_ui.models.opensim.Scenes">
+<em class="property">class </em><tt class="descclassname">services.web_ui.models.opensim.</tt><tt class="descname">Scenes</tt><a class="reference internal" href="../_modules/services/web_ui/models/opensim.html#Scenes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.opensim.Scenes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Abstraction layer between teknon and general opensim concept of scenes.
+Handles basic commands that are involved with simulator management.</p>
+<dl class="classmethod">
+<dt id="services.web_ui.models.opensim.Scenes.delete_scenes">
+<em class="property">classmethod </em><tt class="descname">delete_scenes</tt><big>(</big><em>scene_list</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/opensim.html#Scenes.delete_scenes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.opensim.Scenes.delete_scenes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete a scene from the local webdav share</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>scene_list</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; A filename list of all the scenes to delete</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">int or False - The amount of deleted files or False</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="services.web_ui.models.opensim.Scenes.get_scenes">
+<em class="property">classmethod </em><tt class="descname">get_scenes</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/opensim.html#Scenes.get_scenes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.opensim.Scenes.get_scenes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an overview of all available scenes in our webdav share</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">list or Exception - Info about all available files or an IOError exception</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="services.web_ui.models.opensim.Simulators">
+<em class="property">class </em><tt class="descclassname">services.web_ui.models.opensim.</tt><tt class="descname">Simulators</tt><a class="reference internal" href="../_modules/services/web_ui/models/opensim.html#Simulators"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.opensim.Simulators" title="Permalink to this definition">¶</a></dt>
+<dd><p>Abstraction layer between teknon and general opensim concept of simulators.
+Handles basic commands that are involved with simulator management.</p>
+<dl class="classmethod">
+<dt id="services.web_ui.models.opensim.Simulators.get_simulator">
+<em class="property">classmethod </em><tt class="descname">get_simulator</tt><big>(</big><em>uuid</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/opensim.html#Simulators.get_simulator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.opensim.Simulators.get_simulator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a simulator based on service uuid</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>uuid</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The service uuid to get it from</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">dict - returns a client_service</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="services.web_ui.models.opensim.Simulators.get_simulators">
+<em class="property">classmethod </em><tt class="descname">get_simulators</tt><big>(</big><em>online=False</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/opensim.html#Simulators.get_simulators"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.opensim.Simulators.get_simulators" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all simulators from all tms clients</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>online</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; Returns only online simulators when true</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">dict - a list of simulators</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<span class="target" id="module-services.web_ui.controllers.ws.opensim"></span><div class="section" id="services-web-ui-controllers-ws-opensim">
+<h3>services.web_ui.controllers.ws.opensim<a class="headerlink" href="#services-web-ui-controllers-ws-opensim" title="Permalink to this headline">¶</a></h3>
+<p>The websocket controller for the wiki module</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">copyright:</th><td class="field-body">Copyright 2009-2011 OS-Networks.</td>
+</tr>
+<tr class="field"><th class="field-name">license:</th><td class="field-body">BSD, see LICENSE for details.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="services.web_ui.controllers.ws.opensim.OSUserAccounts">
+<em class="property">class </em><tt class="descclassname">services.web_ui.controllers.ws.opensim.</tt><tt class="descname">OSUserAccounts</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/opensim.html#OSUserAccounts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.opensim.OSUserAccounts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">django.db.models.base.Model</span></tt></p>
+<p>Representation of vanilla Opensim&#8217;s user account table</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="services.web_ui.controllers.ws.opensim.OSauth">
+<em class="property">class </em><tt class="descclassname">services.web_ui.controllers.ws.opensim.</tt><tt class="descname">OSauth</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/opensim.html#OSauth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.opensim.OSauth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">django.db.models.base.Model</span></tt></p>
+<p>Representation of vanilla Opensim&#8217;s auth table</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="services.web_ui.controllers.ws.opensim.OSinventoryfolders">
+<em class="property">class </em><tt class="descclassname">services.web_ui.controllers.ws.opensim.</tt><tt class="descname">OSinventoryfolders</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/opensim.html#OSinventoryfolders"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.opensim.OSinventoryfolders" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">django.db.models.base.Model</span></tt></p>
+<p>Representation of vanilla Opensim&#8217;s inventory table</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="services.web_ui.controllers.ws.opensim.WS_OpenSim">
+<em class="property">class </em><tt class="descclassname">services.web_ui.controllers.ws.opensim.</tt><tt class="descname">WS_OpenSim</tt><big>(</big><em>dispatcher</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/opensim.html#WS_OpenSim"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.opensim.WS_OpenSim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>Websocket handler for the opensim module.</p>
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.opensim.WS_OpenSim.backup_luggage">
+<tt class="descname">backup_luggage</tt><big>(</big><em>client</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/opensim.html#WS_OpenSim.backup_luggage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.opensim.WS_OpenSim.backup_luggage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Either renders the template that shows the dialog to backup lugguge,
+or handle the backup luggage process itself.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>profile_uuid</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The profile&#8217;s uuid to operate on</li>
+<li><strong>params</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Optional; contains the form parameters</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">dict - Status and Html-layout data response</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.opensim.WS_OpenSim.backup_region">
+<tt class="descname">backup_region</tt><big>(</big><em>client</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/opensim.html#WS_OpenSim.backup_region"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.opensim.WS_OpenSim.backup_region" title="Permalink to this definition">¶</a></dt>
+<dd><p>Either renders the template to confirm backing up a region, or handle the backup process ifself</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>region_uuid</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The region&#8217;s uuid to operate on</li>
+<li><strong>params</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Optional; contains the form parameters</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">dict - Status and Html-layout data response</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.opensim.WS_OpenSim.change_avatar">
+<tt class="descname">change_avatar</tt><big>(</big><em>client</em>, <em>profile</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/opensim.html#WS_OpenSim.change_avatar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.opensim.WS_OpenSim.change_avatar" title="Permalink to this definition">¶</a></dt>
+<dd><p>After hwios changes the profile, this observer takes care of updating the opensim profile.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>profile</strong> (<em>Profile</em>) &#8211; The profile that got updated</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.opensim.WS_OpenSim.create_region">
+<tt class="descname">create_region</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/opensim.html#WS_OpenSim.create_region"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.opensim.WS_OpenSim.create_region" title="Permalink to this definition">¶</a></dt>
+<dd><p>Either renders the template to create a new region, or handle the creation process</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>params</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Optional; contains the form parameters</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">dict - Html-layout data response</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.opensim.WS_OpenSim.delete_avatar">
+<tt class="descname">delete_avatar</tt><big>(</big><em>client</em>, <em>profile_uuid</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/opensim.html#WS_OpenSim.delete_avatar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.opensim.WS_OpenSim.delete_avatar" title="Permalink to this definition">¶</a></dt>
+<dd><p>After hwios changes the profile, this observer takes care of deleting the opensim profile.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>profile_uuid</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The uuid of the profile to delete</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.opensim.WS_OpenSim.delete_luggage">
+<tt class="descname">delete_luggage</tt><big>(</big><em>client</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/opensim.html#WS_OpenSim.delete_luggage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.opensim.WS_OpenSim.delete_luggage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Either renders the template that shows the dialog to confirm lugguge deletion,
+or handle the luggage deletion process itself.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>params</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Optional; contains the form parameters</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">dict - Status and Html-layout data response</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.opensim.WS_OpenSim.delete_regions">
+<tt class="descname">delete_regions</tt><big>(</big><em>client</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/opensim.html#WS_OpenSim.delete_regions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.opensim.WS_OpenSim.delete_regions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Either renders the template to confirm deleting a region, or handle the deletion process ifself</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>params</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Optional; contains the form parameters</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">dict - Status and Html-layout data response</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.opensim.WS_OpenSim.delete_scenes">
+<tt class="descname">delete_scenes</tt><big>(</big><em>client</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/opensim.html#WS_OpenSim.delete_scenes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.opensim.WS_OpenSim.delete_scenes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Either renders the template to confirm deleting a scene, or handle the scene deletion process ifself</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>params</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Optional; contains the form parameters</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">dict - Status and Html-layout data response</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.opensim.WS_OpenSim.edit_region">
+<tt class="descname">edit_region</tt><big>(</big><em>client</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/opensim.html#WS_OpenSim.edit_region"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.opensim.WS_OpenSim.edit_region" title="Permalink to this definition">¶</a></dt>
+<dd><p>Either renders the template to edit an existing region, or handle the update process</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>region_uuid</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The region uuid reference to select the appropriate region for updating</li>
+<li><strong>params</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Optional; contains the form parameters</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">dict - Status and Html-layout data response</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.opensim.WS_OpenSim.handle_settings">
+<tt class="descname">handle_settings</tt><big>(</big><em>client</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/opensim.html#WS_OpenSim.handle_settings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.opensim.WS_OpenSim.handle_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Either renders the template to change opensim&#8217;s settings, or handle the update settings process itself</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>params</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Optional; contains the form parameters</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">dict - Status and Html-layout data response</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.opensim.WS_OpenSim.load_luggage">
+<tt class="descname">load_luggage</tt><big>(</big><em>client</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/opensim.html#WS_OpenSim.load_luggage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.opensim.WS_OpenSim.load_luggage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Either renders the template that shows the dialog to load lugguge,
+or handle the load luggage process itself.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>luggage_name</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The luggage&#8217;s name to operate on</li>
+<li><strong>params</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Optional; contains the form parameters</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">dict - Status and Html-layout data response</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.opensim.WS_OpenSim.load_scene">
+<tt class="descname">load_scene</tt><big>(</big><em>client</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/opensim.html#WS_OpenSim.load_scene"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.opensim.WS_OpenSim.load_scene" title="Permalink to this definition">¶</a></dt>
+<dd><p>Either renders the template to confirm loading up a region, or handle the scene loading process ifself</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>scene_name</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The scene&#8217;s name to operate on</li>
+<li><strong>params</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Optional; contains the form parameters</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">dict - Status and Html-layout data response</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.opensim.WS_OpenSim.render_maps">
+<tt class="descname">render_maps</tt><big>(</big><em>client</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/opensim.html#WS_OpenSim.render_maps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.opensim.WS_OpenSim.render_maps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Renders all opensim region cells of the map</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">dict - Status data response</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.opensim.WS_OpenSim.sync_avatars">
+<tt class="descname">sync_avatars</tt><big>(</big><em>client</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/opensim.html#WS_OpenSim.sync_avatars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.opensim.WS_OpenSim.sync_avatars" title="Permalink to this definition">¶</a></dt>
+<dd><p>Synchronizes between hwios and opensim accounts in both ways. Only works while opensim&#8217;s hashing method
+is used in HWIOS(default).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">dict - Status and Html-layout data response</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.opensim.WS_OpenSim.upload_luggage">
+<tt class="descname">upload_luggage</tt><big>(</big><em>client</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/opensim.html#WS_OpenSim.upload_luggage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.opensim.WS_OpenSim.upload_luggage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Renders the template that shows the upload luggage overview. We only provide the view here.
+File uploads over websocket doesn&#8217;t make sense atm with utf-8 only</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>params</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Optional; contains the form parameters</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">dict - Html-layout data response</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.opensim.WS_OpenSim.upload_scenes">
+<tt class="descname">upload_scenes</tt><big>(</big><em>client</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/opensim.html#WS_OpenSim.upload_scenes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.opensim.WS_OpenSim.upload_scenes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Renders the template that shows an upload overview of scenes. We only provide the view here.
+File uploads over websocket doesn&#8217;t make sense atm with utf-8 only.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>params</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Optional; contains the form parameters</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">dict - Status and Html-layout data response</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.opensim.WS_OpenSim.view_avatars">
+<tt class="descname">view_avatars</tt><big>(</big><em>client</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/opensim.html#WS_OpenSim.view_avatars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.opensim.WS_OpenSim.view_avatars" title="Permalink to this definition">¶</a></dt>
+<dd><p>Renders the template that shows the avatars available.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">dict - Html-layout data response</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.opensim.WS_OpenSim.view_regions">
+<tt class="descname">view_regions</tt><big>(</big><em>client</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/opensim.html#WS_OpenSim.view_regions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.opensim.WS_OpenSim.view_regions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Renders the current available regions view</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">dict - Html-layout data response</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<span class="target" id="module-services.web_ui.controllers.ws.maps"></span><div class="section" id="services-web-ui-controllers-ws-maps">
+<h3>services.web_ui.controllers.ws.maps<a class="headerlink" href="#services-web-ui-controllers-ws-maps" title="Permalink to this headline">¶</a></h3>
+<p>The websocket logics for the map. This is either going to the opensim module,
+or some code is going from the opensim module. It stays here until then.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">copyright:</th><td class="field-body">Copyright 2009-2011 OS-Networks.</td>
+</tr>
+<tr class="field"><th class="field-name">license:</th><td class="field-body">BSD, see LICENSE for details.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="services.web_ui.controllers.ws.maps.WS_Maps">
+<em class="property">class </em><tt class="descclassname">services.web_ui.controllers.ws.maps.</tt><tt class="descname">WS_Maps</tt><big>(</big><em>dispatcher</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/maps.html#WS_Maps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.maps.WS_Maps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>The websocket controller class for the mapping part in opensim</p>
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.maps.WS_Maps.load_maps">
+<tt class="descname">load_maps</tt><big>(</big><em>client</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/maps.html#WS_Maps.load_maps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.maps.WS_Maps.load_maps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Render the template for the worldmap to our client</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">dict - Html-layout data response</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.maps.WS_Maps.read_cell">
+<tt class="descname">read_cell</tt><big>(</big><em>client</em>, <em>lonlat</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/maps.html#WS_Maps.read_cell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.maps.WS_Maps.read_cell" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the position of the client&#8217;s mouseclick in the map, and return region information if there is a region at that location</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>lonlat</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#list" title="(in Python v2.7)"><em>list</em></a>) &#8211; The world-coordinates to lookup</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">dict - Coordinate data containing region-information if related</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Opensim Module</a><ul>
+<li><a class="reference internal" href="#module-services.web_ui.models.opensim">Code References</a><ul>
+<li><a class="reference internal" href="#services-web-ui-controllers-models-opensim">services.web_ui.controllers.models.opensim</a></li>
+<li><a class="reference internal" href="#services-web-ui-controllers-ws-opensim">services.web_ui.controllers.ws.opensim</a></li>
+<li><a class="reference internal" href="#services-web-ui-controllers-ws-maps">services.web_ui.controllers.ws.maps</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="wiki.html"
+                        title="previous chapter">Wiki Module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pad.html"
+                        title="next chapter">Pad Module</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/modules/opensim.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pad.html" title="Pad Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="wiki.html" title="Wiki Module"
+             >previous</a> |</li>
+        <li><a href="../index.html">HWIOS v0.6 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, OS-Networks.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,162 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>services.web_ui.models.notifications &mdash; HWIOS v0.6 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '0.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="HWIOS v0.6 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">HWIOS v0.6 documentation</a> &raquo;</li>
+          <li><a href="../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for services.web_ui.models.notifications</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    services.web_ui.models.notifications</span>
+<span class="sd">    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">    View notification takes care of rendering and delivering templates to watching clients</span>
+
+<span class="sd">    :copyright: Copyright 2009-2011 OS-Networks.</span>
+<span class="sd">    :license: BSD, see LICENSE for details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+
+<span class="kn">from</span> <span class="nn">hwios.core.application</span> <span class="kn">import</span> <span class="n">HWIOS</span>
+<span class="kn">from</span> <span class="nn">django.template.loader</span> <span class="kn">import</span> <span class="n">render_to_string</span>
+
+<span class="n">compiled_notify_patterns</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="k">def</span> <span class="nf">_refresh_templates</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">template_info</span><span class="p">,</span> <span class="n">profile</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Renders and returns a template&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">dom</span> <span class="o">=</span> <span class="n">message</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">][</span><span class="s">&#39;dom&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">dom</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">template_info</span><span class="p">:</span>
+                <span class="n">_tpl_info</span> <span class="o">=</span> <span class="n">template_info</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s">&#39;params&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                <span class="n">_tpl_info</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s">&#39;profile&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="p">})</span>
+                <span class="n">message</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">][</span><span class="s">&#39;dom&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="n">template_info</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s">&#39;tpl&#39;</span><span class="p">],</span> <span class="n">_tpl_info</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">message</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+
+<div class="viewcode-block" id="notify_others"><a class="viewcode-back" href="../../../../core/notification.html#services.web_ui.models.notifications.notify_others">[docs]</a><span class="k">def</span> <span class="nf">notify_others</span><span class="p">(</span><span class="n">source_client</span><span class="p">,</span> <span class="n">_message</span><span class="p">,</span> <span class="n">uri_route</span><span class="p">,</span> <span class="n">client_match_uri</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">_template_info</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">uri_state</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Re-renders a source-client&#39;s view for other clients, that are watching the same view</span>
+<span class="sd">    </span>
+<span class="sd">    :param Client source_client: The client which is responsible for the change</span>
+<span class="sd">    :param dict _message: Data that&#39;s being sent to the clients along with the template</span>
+<span class="sd">    :param str uri_route: The client-side url to route this view to</span>
+<span class="sd">    :param str client_match_uri: Regular expression filter to use for matching the current client&#39;s view</span>
+<span class="sd">    :param dict _template_info: Directions to use to render the appropriate template</span>
+<span class="sd">    :param str uri_state: Optional; Sometimes the view-state is supposed to change after notification. Specify new state here...</span>
+<span class="sd">    </span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c">#check if compiled regexp pattern exists yet. if not, add to list</span>
+    <span class="k">if</span> <span class="n">client_match_uri</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">compiled_notify_patterns</span><span class="p">:</span>
+        <span class="n">compiled_notify_patterns</span><span class="p">[</span><span class="n">client_match_uri</span><span class="p">]</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">client_match_uri</span><span class="p">)</span>    
+    <span class="n">_clients</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">get_clients</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">_clients</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">_message</span><span class="p">)</span>
+        <span class="n">template_info</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">_template_info</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">_client</span> <span class="ow">in</span> <span class="n">_clients</span><span class="p">:</span>
+            <span class="c">#process all, but our notification source client</span>
+            <span class="k">if</span> <span class="n">_client</span> <span class="o">!=</span> <span class="n">source_client</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">client_match_uri</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
+                        <span class="n">rp</span> <span class="o">=</span> <span class="n">compiled_notify_patterns</span><span class="p">[</span><span class="n">client_match_uri</span><span class="p">]</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">_client</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">view_history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                        <span class="k">if</span> <span class="n">rp</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">template_info</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
+                                <span class="n">message</span> <span class="o">=</span> <span class="n">_refresh_templates</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">template_info</span><span class="p">,</span> <span class="n">_client</span><span class="o">.</span><span class="n">profile</span><span class="p">)</span>
+                            <span class="n">_client</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="n">uri_route</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="n">uri_state</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
+                                <span class="n">_client</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">view_history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">uri_state</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">template_info</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
+                        <span class="n">message</span> <span class="o">=</span> <span class="n">_refresh_templates</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">template_info</span><span class="p">,</span> <span class="n">_client</span><span class="o">.</span><span class="n">profile</span><span class="p">)</span>
+                    <span class="n">_client</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="n">uri</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+                
+</div>
+<div class="viewcode-block" id="notify_all"><a class="viewcode-back" href="../../../../core/notification.html#services.web_ui.models.notifications.notify_all">[docs]</a><span class="k">def</span> <span class="nf">notify_all</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">uri</span><span class="p">,</span> <span class="n">same_page</span> <span class="o">=</span> <span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Dummy function which doens&#39;t have any functionality yet&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">_client</span> <span class="ow">in</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">get_clients</span><span class="p">():</span>
+        <span class="n">_client</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="n">uri</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">HWIOS v0.6 documentation</a> &raquo;</li>
+          <li><a href="../../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, OS-Networks.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

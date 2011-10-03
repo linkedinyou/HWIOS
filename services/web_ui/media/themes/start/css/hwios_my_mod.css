@@ -1,0 +1,22 @@
+#trips {
+    height:40px;
+    padding:10px;
+    font-size:17px;
+    font-weight:bold;
+}
+
+#trips div {
+    float:left;
+}
+
+#trips-total {
+    border:1px inset #67a2ce;
+    width:100px;
+    height:24px;
+}
+
+#trips-second {
+    border:1px inset #67a2ce;
+    width:100px;
+    height:24px;
+}

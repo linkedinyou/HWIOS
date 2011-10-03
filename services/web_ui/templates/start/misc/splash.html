@@ -1,0 +1,49 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<head><title>{% block title %}{%endblock%}</title>
+<link type="text/css" href="../../media/themes/{{settings.default_theme}}/css/hwios.splash.css" media="screen" rel="stylesheet" />
+<script type='text/javascript' src='../../media/scripts/lib/jquery/jquery.require.js'></script>
+<script type='text/javascript'>
+require({baseUrl: "/media/scripts/",waitSeconds: 1,locale: "en-US"},
+[
+'lib/jquery/jquery.ui',
+'lib/jquery/jquery.datatables'
+],
+function(ui, datatables){ 
+$('.datatable').dataTable({"bJQueryUI": true,"bAutoWidth": false });
+});
+</script>
+{% block script %}{% endblock %}
+</head>
+<body>
+<img class="splash_bg" src="../../media/themes/{{settings.default_theme}}/css/images/splash.jpg"/>
+<div id="content">
+    {% if show_status %}
+    <div id='grid-status'>
+        <div class="ui-widget-header ui-corner-top"><span>Region Status</span></div>
+        <div class="ui-widget-content ui-corner-bottom contenttext">
+            <table class="datatable">
+                <thead>
+                <tr>
+                <th>Name</th>
+                <th>Location</th>
+                <th>Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for region in regions %}
+                <tr>
+                <td>{{region.name}}</td>
+                <td>{{region.Location}}</td>
+                <td>{{region.status}}</td>
+                </tr>
+                {%endfor%}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+</body>
+</html>

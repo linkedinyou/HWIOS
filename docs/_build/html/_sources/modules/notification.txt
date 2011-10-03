@@ -1,0 +1,14 @@
+Notification
+============
+The HWIOS framework has several ways of notifying clients. Here you find references to the most common files.
+
+
+Code References
+---------------
+.. automodule:: services.web_ui.models.activity
+   :members:
+   :show-inheritance:
+
+.. automodule:: services.web_ui.models.notifications
+   :members:
+   :show-inheritance:

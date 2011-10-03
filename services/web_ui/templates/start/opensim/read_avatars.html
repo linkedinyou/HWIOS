@@ -1,0 +1,87 @@
+{%load i18n%}
+<div class='hwios-widget'>
+    <div class="ui-widget-header ui-corner-top">
+        <span>{%trans "Avatars"%}</span>
+        <span>{%trans "Overview"%}</span>
+    </div>
+    <div id='avatar-tabs'>
+        <ul>
+            <li><a href="#opensim-avatars">{%trans "Avatars"%}</a></li>
+            <li><a href="#opensim-avatars-luggage">{%trans "Luggage"%}</a></li>
+        </ul>
+        <div class='ui-widget-content ui-corner-bottom contenttext' id='opensim-avatars'>
+            <table class="datatable" id='table-avatars'>
+            <thead>
+                <tr>
+                <th class='datatable-cb'><input type='checkbox' id='cb-all' /></th>
+                <th>{%trans "Name"%}</th>
+                <th>{%trans "E-Mail"%}</th>
+                <th>{%trans "Options"%}</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for profile in profiles %}
+            <tr>
+            <td><input type='checkbox' id='{{profile.uuid}}' name='{{profile.uuid}}'/></td>
+            <td>{{profile.FirstName}} {{profile.LastName}}</td>
+            <td>{{profile.Email}}</td>
+            <td>
+            {%ifequal online_simulators 0 %}
+            <button data-function='opensim.backup_luggage' data-uuid='{{profile.uuid}}' class='action-icon action-icon-disabled backup-region-on backup-region-status-{{region.RegionUUID}}' value='{{profile.uuid}}'></button>
+            {%else%}
+            <button data-function='opensim.backup_luggage' data-uuid='{{profile.uuid}}' class='action-icon backup-region-on backup-region-status-{{region.RegionUUID}}' value='{{profile.uuid}}'></button>
+            {%endifequal%}
+            </td>
+            </tr>
+            {%endfor%}
+            </tbody>
+            </table>
+            <div class='hwios-toolbar'>
+                <div class='ui-helper-clearfix'>
+                    <div class="fg-buttonset fg-buttonset-single ui-helper-clearfix">
+                        <button data-function='opensim.sync_avatars' class='fg-button ui-state-default fg-button-icon-left ui-corner-all'><span class='ui-icon ui-icon-transfer-e-w'></span><span>{%trans "Sync"%}</span></button>
+                    </div>
+                </div>
+            </div>   
+        </div>        
+        <div class='ui-widget-content ui-corner-bottom' id='opensim-avatars-luggage'>
+            <table class="datatable" id='table-luggage'>
+            <thead>
+                <tr>
+                <th class='datatable-cb'><input type='checkbox' id='cb-all' /></th>
+                <th>{%trans "Description"%}</th>
+                <th>{%trans "Modified"%}</th>
+                <th>{%trans "Size"%}</th>
+                <th>{%trans "Options"%}</th>
+                </tr>
+            </thead>
+            <tbody>
+            {%for lugg in luggage%}
+            <tr>
+            <td><input type='checkbox' id='{{lugg.name}}' name='{{lugg.name}}'/></td>
+            <td>{{lugg.name}}</td>
+            <td>{{lugg.modified}}</td>
+            <td>{{lugg.size}}</td>
+            <td>
+            {%ifequal online_simulators 0 %}
+            <button data-function='opensim.load_luggage' data-name='{{lugg.name}}' class='action-icon action-icon-disabled scene-backup-load scene-backup-load-status-{{region.RegionUUID}}'  value='{{lugg.name}}'></button>
+            {%else%}
+            <button data-function='opensim.load_luggage' data-name='{{lugg.name}}' class='action-icon scene-backup-load scene-backup-load-status-{{region.RegionUUID}}' value='{{lugg.name}}'></button>
+            {%endifequal%}
+            <button data-function='opensim.download_luggage' data-name='{{lugg.name}}' class='action-icon scene-backup-download scene-backup-load-status-{{region.RegionUUID}}' value='{{lugg.name}}'></button>
+            </td>
+            </tr>
+            {%endfor%}
+            </tbody>
+            </table>
+            <div class='hwios-toolbar'>
+                <div class='ui-helper-clearfix'>
+                    <div class="fg-buttonset fg-buttonset-single ui-helper-clearfix">
+                        <button data-function='opensim.delete_luggage' class='btn-active-many fg-button ui-state-default fg-button-icon-left ui-corner-left ui-state-disabled'><span class='ui-icon ui-icon-scissors'></span><span>{%trans "Delete"%}</span></button>
+                        <button data-uri='/opensim/avatars/luggage/upload/' class='fg-button ui-state-default fg-button-icon-left ui-corner-right'><span class='ui-icon ui-icon-transfer-e-w'></span><span>{%trans "Upload"%}</span></button>
+                    </div>
+                </div>
+            </div>   
+        </div>
+    </div>
+</div>

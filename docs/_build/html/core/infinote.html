@@ -1,0 +1,416 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Infinote OT &mdash; HWIOS v0.6 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="HWIOS v0.6 documentation" href="../index.html" />
+    <link rel="next" title="Miscellaneous" href="misc.html" />
+    <link rel="prev" title="GIS-Related" href="gis.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="misc.html" title="Miscellaneous"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="gis.html" title="GIS-Related"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">HWIOS v0.6 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="infinote-ot">
+<h1>Infinote OT<a class="headerlink" href="#infinote-ot" title="Permalink to this headline">¶</a></h1>
+<p>HWIOS offers asynchronous collaborative text editing through the Operational transformation based infinote protocol. The infinote protocol
+became usable for the web, after the MIT-licensed javascript implementation jinfinote (<a class="reference external" href="http://www.jinfinote.com/">http://www.jinfinote.com/</a>) hit the web.
+HWIOS uses jinfinote on the clientside. A python port of jinfinote has been developed to keep track of the common document state on
+the server as well. Both together form the OT-based editing system that&#8217;s available in HWIOS. On the clientside, a javascript module
+has been developed to work with the ace code-editor. See the hyki and plasmoid system for some examples...</p>
+<div class="section" id="module-services.web_ui.models.infinote">
+<span id="code-references"></span><h2>Code References<a class="headerlink" href="#module-services.web_ui.models.infinote" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="services-web-ui-models-infinote">
+<h3>services.web_ui.models.infinote<a class="headerlink" href="#services-web-ui-models-infinote" title="Permalink to this headline">¶</a></h3>
+<p>A python port of the jinfinote library</p>
+<p>JInfinote</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">copyright:</th><td class="field-body">2009 Simon Veith &lt;<a class="reference external" href="mailto:simon&#37;&#52;&#48;jinfinote&#46;com">simon<span>&#64;</span>jinfinote<span>&#46;</span>com</a>&gt;</td>
+</tr>
+<tr class="field"><th class="field-name">license:</th><td class="field-body">MIT, see <a class="reference external" href="https://github.com/sveith/jinfinote/blob/master/LICENSE">https://github.com/sveith/jinfinote/blob/master/LICENSE</a></td>
+</tr>
+</tbody>
+</table>
+<p>Py-Infinote</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">copyright:</th><td class="field-body">Copyright 2009-2011 OS-Networks.</td>
+</tr>
+<tr class="field"><th class="field-name">license:</th><td class="field-body">BSD, see LICENSE for details.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="services.web_ui.models.infinote.InfinoteEditor">
+<em class="property">class </em><tt class="descclassname">services.web_ui.models.infinote.</tt><tt class="descname">InfinoteEditor</tt><a class="reference internal" href="../_modules/services/web_ui/models/infinote.html#InfinoteEditor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.infinote.InfinoteEditor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>The actual editor with functions to operate on the text, using infinote OT</p>
+<dl class="method">
+<dt id="services.web_ui.models.infinote.InfinoteEditor.get_log">
+<tt class="descname">get_log</tt><big>(</big><em>limit=None</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/infinote.html#InfinoteEditor.get_log"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.infinote.InfinoteEditor.get_log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the document&#8217;s log</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">list - The document&#8217;s log of operations</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.models.infinote.InfinoteEditor.get_state">
+<tt class="descname">get_state</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/infinote.html#InfinoteEditor.get_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.infinote.InfinoteEditor.get_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a document&#8217;s state</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">str - The document&#8217;s current text-state</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.models.infinote.InfinoteEditor.sync">
+<tt class="descname">sync</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/infinote.html#InfinoteEditor.sync"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.infinote.InfinoteEditor.sync" title="Permalink to this definition">¶</a></dt>
+<dd><p>Synchronizes a document based on it&#8217;s log file</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.models.infinote.InfinoteEditor.try_delete">
+<tt class="descname">try_delete</tt><big>(</big><em>params</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/infinote.html#InfinoteEditor.try_delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.infinote.InfinoteEditor.try_delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>try to perform a delete operation and add the operation to the log</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>params</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; The parameters used for the delete operation [user, vector, position, text_length]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.models.infinote.InfinoteEditor.try_insert">
+<tt class="descname">try_insert</tt><big>(</big><em>params</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/infinote.html#InfinoteEditor.try_insert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.infinote.InfinoteEditor.try_insert" title="Permalink to this definition">¶</a></dt>
+<dd><p>try to perform an insert operation and add the operation to the log</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>params</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; The parameters used for the insert operation [user, vector, position, text]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.models.infinote.InfinoteEditor.try_undo">
+<tt class="descname">try_undo</tt><big>(</big><em>params</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/infinote.html#InfinoteEditor.try_undo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.infinote.InfinoteEditor.try_undo" title="Permalink to this definition">¶</a></dt>
+<dd><p>try to perform an undo operation and add the operation to the log</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>params</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; The parameters used for the undo operation [user]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="services.web_ui.models.infinote.InfinotePool">
+<em class="property">class </em><tt class="descclassname">services.web_ui.models.infinote.</tt><tt class="descname">InfinotePool</tt><big>(</big><em>ws_handler</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/infinote.html#InfinotePool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.infinote.InfinotePool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>The infinote pool is used to track document&#8217;s and their changes by infinote text-editing clients</p>
+<dl class="method">
+<dt id="services.web_ui.models.infinote.InfinotePool.get_other_clients">
+<tt class="descname">get_other_clients</tt><big>(</big><em>client</em>, <em>app_pool</em>, <em>item_id</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/infinote.html#InfinotePool.get_other_clients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.infinote.InfinotePool.get_other_clients" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all clients connected to a certain editor environment</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>app_pool</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; General pool describer, for instance &#8216;wiki&#8217;</li>
+<li><strong>item_id</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The id of the item specifies an editor environment for that item in an app_pool</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">list - A list of clients connected to that editor environment</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.models.infinote.InfinotePool.get_state">
+<tt class="descname">get_state</tt><big>(</big><em>app_pool</em>, <em>item_id</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/infinote.html#InfinotePool.get_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.infinote.InfinotePool.get_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the document&#8217;s state of a certain editor environment</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>app_pool</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; General pool describer, for instance &#8216;wiki&#8217;</li>
+<li><strong>item_id</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The id of the item specifies an editor environment for that item in an app_pool</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">str - The document&#8217;s current state</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.models.infinote.InfinotePool.request_delete">
+<tt class="descname">request_delete</tt><big>(</big><em>client</em>, <em>app_pool</em>, <em>item_id</em>, <em>params</em>, <em>remote_callback</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/infinote.html#InfinotePool.request_delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.infinote.InfinotePool.request_delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Infinote client wants to perform a delete operation on the subscription log</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>app_pool</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; General pool describer, for instance &#8216;wiki&#8217;</li>
+<li><strong>item_id</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The id of the item specifies an editor environment for that item in an app_pool</li>
+<li><strong>params</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; The infinote parameters to use with this operation</li>
+<li><strong>remote_callback</strong> (<em>def</em>) &#8211; A function that&#8217;s called for callback afterwards</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.models.infinote.InfinotePool.request_insert">
+<tt class="descname">request_insert</tt><big>(</big><em>client</em>, <em>app_pool</em>, <em>item_id</em>, <em>params</em>, <em>remote_callback</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/infinote.html#InfinotePool.request_insert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.infinote.InfinotePool.request_insert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Infinote client wants to perform a insert operation on the subscription log</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>app_pool</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; General pool describer, for instance &#8216;wiki&#8217;</li>
+<li><strong>item_id</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The id of the item specifies an editor environment for that item in an app_pool</li>
+<li><strong>params</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; The infinote parameters to use with this operation</li>
+<li><strong>remote_callback</strong> (<em>def</em>) &#8211; A function that&#8217;s called for callback afterwards</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.models.infinote.InfinotePool.request_undo">
+<tt class="descname">request_undo</tt><big>(</big><em>client</em>, <em>app_pool</em>, <em>item_id</em>, <em>params</em>, <em>remote_callback</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/infinote.html#InfinotePool.request_undo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.infinote.InfinotePool.request_undo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Infinote client wants to perform an undo operation on the subscription log</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>app_pool</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; General pool describer, for instance &#8216;wiki&#8217;</li>
+<li><strong>item_id</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The id of the item specifies an editor environment for that item in an app_pool</li>
+<li><strong>params</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; The infinote parameters to use with this operation</li>
+<li><strong>remote_callback</strong> (<em>def</em>) &#8211; A function that&#8217;s called for callback afterwards</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.models.infinote.InfinotePool.subscribe">
+<tt class="descname">subscribe</tt><big>(</big><em>client</em>, <em>item_id</em>, <em>initial_text</em>, <em>app_pool</em>, <em>remote_callback</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/infinote.html#InfinotePool.subscribe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.infinote.InfinotePool.subscribe" title="Permalink to this definition">¶</a></dt>
+<dd><p>General pool subscriber for infinote clients</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>item_id</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The id of the item specifies an editor environment for that item in an app_pool</li>
+<li><strong>app_pool</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; General pool describer, for instance &#8216;wiki&#8217;</li>
+<li><strong>remote_callback</strong> (<em>def</em>) &#8211; A function that&#8217;s called for callback afterwards</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.models.infinote.InfinotePool.unsubscribe">
+<tt class="descname">unsubscribe</tt><big>(</big><em>client</em>, <em>app_pool</em>, <em>remote_callback</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/infinote.html#InfinotePool.unsubscribe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.infinote.InfinotePool.unsubscribe" title="Permalink to this definition">¶</a></dt>
+<dd><p>General pool unsubscriber for infinote clients</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>app_pool</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; General pool describer, for instance &#8216;wiki&#8217;</li>
+<li><strong>remote_callback</strong> (<em>def</em>) &#8211; A function that&#8217;s called for callback afterwards</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.models.infinote.InfinotePool.update_caret">
+<tt class="descname">update_caret</tt><big>(</big><em>client</em>, <em>app_pool</em>, <em>item_id</em>, <em>params</em>, <em>remote_callback</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/infinote.html#InfinotePool.update_caret"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.infinote.InfinotePool.update_caret" title="Permalink to this definition">¶</a></dt>
+<dd><p>Editing client wants to notify others of moving a cursor</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>app_pool</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; General pool describer, for instance &#8216;wiki&#8217;</li>
+<li><strong>item_id</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The id of the item specifies an editor environment for that item in an app_pool</li>
+<li><strong>params</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; The cursor parameters to use</li>
+<li><strong>remote_callback</strong> (<em>def</em>) &#8211; A function that&#8217;s called for callback afterwards</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Infinote OT</a><ul>
+<li><a class="reference internal" href="#module-services.web_ui.models.infinote">Code References</a><ul>
+<li><a class="reference internal" href="#services-web-ui-models-infinote">services.web_ui.models.infinote</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="gis.html"
+                        title="previous chapter">GIS-Related</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="misc.html"
+                        title="next chapter">Miscellaneous</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/core/infinote.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="misc.html" title="Miscellaneous"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="gis.html" title="GIS-Related"
+             >previous</a> |</li>
+        <li><a href="../index.html">HWIOS v0.6 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, OS-Networks.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

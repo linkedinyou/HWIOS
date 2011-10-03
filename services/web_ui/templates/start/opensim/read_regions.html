@@ -1,0 +1,97 @@
+{% load i18n %}
+<div class='hwios-widget'>
+    <div class='ui-widget-header ui-corner-top services'>
+        <span>{%trans "Regions"%}</span>
+        <span>{%trans "Overview"%}</span>
+    </div>
+    <div id='region-tabs'>
+        <ul>
+            <li><a href="#opensim-regions">{%trans "Regions"%}</a></li>
+            <li><a href="#opensim-scenes">{%trans "Scenes"%}</a></li>
+        </ul>
+        <div class='ui-widget-content' id='opensim-regions'>
+            <table class="datatable">
+            <thead>
+                <tr>
+                <th class='datatable-cb'><input type='checkbox' id='cb-all' /></th>
+                <th>{%trans "Description"%}</th>
+                <th>{%trans "Service"%}</th>
+                <th>{%trans "Port"%}</th>
+                <th>{%trans "Position"%}</th>
+                <th>{%trans "Status"%}</th>
+                <th>{%trans "Options"%}</th>                
+                </tr>
+            </thead>
+            <tbody>
+            {%for region in regions%}
+                <tr>
+                <td><input type='checkbox' id='{{region.RegionUUID}}' name='{{region.RegionUUID}}'/></td>
+                <td>{{region.name}}</td>                
+                <td>{{region_service.name}}</td>
+                <td>{{region.InternalPort}}</td>
+                <td>{{region.Location}}</td>
+                <td>{{region.status}}</td>
+                <td>
+                {%ifequal region.status 'Offline'%}
+                <button data-function='opensim.backup_region' data-uuid='{{region.RegionUUID}}' class='action-icon action-icon-disabled backup-region-on' value='{{region.RegionUUID}}'></button>
+                {%else%}
+                <button data-function='opensim.backup_region' data-uuid='{{region.RegionUUID}}' class='action-icon backup-region-on' value='{{region.RegionUUID}}'></button>
+                {%endifequal%}
+                </td>
+                </tr>
+            {%endfor%}
+            </tbody>
+            </table>
+            <div class='hwios-toolbar'>
+                <div class='ui-helper-clearfix'>
+                    <div class="fg-buttonset fg-buttonset-single ui-helper-clearfix" style="float:left;">
+                        <button data-uri='/opensim/regions/create/' class='fg-button ui-state-default fg-button-icon-left ui-corner-left'><span class='ui-icon ui-icon-document'></span><span>{%trans "New"%}</span></button>
+                        <button data-uripart='/opensim/regions/{id}/edit/' data-uriflag='cb-cid' class='btn-active-one fg-button ui-state-default fg-button-icon-left ui-state-disabled'><span class='ui-icon ui-icon-pencil'></span><span>{%trans "Edit"%}</span></button>
+                        <button data-function='opensim.delete_regions' class='btn-active-many fg-button ui-state-default fg-button-icon-left ui-corner-right ui-state-disabled'><span class='ui-icon ui-icon-scissors'></span><span>{%trans "Delete"%}</span></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class='ui-widget-content' id='opensim-scenes'>
+            <div>
+                <table class="datatable">
+                <thead>
+                    <tr>
+                    <th class='datatable-cb'><input type='checkbox' id='cb-all'/></th>
+                    <th>{%trans "Description"%}</th>
+                    <th>{%trans "Modified"%}</th>
+                    <th>{%trans "Size"%}</th>
+                    <th>{%trans "Options"%}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {%for scene in scenes%}
+                <tr>
+                <td><input type='checkbox' id='{{scene.name}}' name='{{scene.name}}'/></td>
+                <td>{{scene.name}}</td>
+                <td>{{scene.modified}}</td>
+                <td>{{scene.size}}</td>
+                <td>
+                {%ifequal online_regions 0 %}
+                <button data-function='opensim.load_scene' data-name='{{scene.name}}' class='action-icon action-icon-disabled scene-backup-load scene-backup-load-status-{{region.RegionUUID}}' value='{{scene.name}}'></button>
+                {%else%}
+                <button data-function='opensim.load_scene' data-name='{{scene.name}}' class='action-icon scene-backup-load scene-backup-load-status-{{region.RegionUUID}}' value='{{scene.name}}'></button>
+                {%endifequal%}
+                <button data-function='opensim.download_scene' data-name='{{scene.name}}' class='action-icon scene-backup-download scene-backup-load-status-{{region.RegionUUID}}' value='{{scene.name}}'></button>
+                </td>
+                </tr>
+                {%endfor%}
+                </tbody>
+                </table>
+            </div>
+                <div class='hwios-toolbar'>
+                    <div class='ui-helper-clearfix'>
+                        <div class="fg-buttonset fg-buttonset-single ui-helper-clearfix" style="float:left;">
+                            <button data-function='opensim.delete_scenes' class='btn-active-many fg-button ui-state-default fg-button-icon-left ui-corner-left ui-state-disabled'><span class='ui-icon ui-icon-scissors'></span><span>{%trans "Delete"%}</span></button>
+                            <button data-uri='/opensim/regions/scenes/upload/' class='fg-button ui-state-default fg-button-icon-left ui-corner-right'><span class='ui-icon ui-icon-transfer-e-w'></span><span>{%trans "Upload"%}</span></button>
+                        </div>
+                    </div>
+                </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,54 @@
+{%load i18n%}
+<div class='hwios-widget'>
+    <div class="ui-widget-header ui-corner-top">
+        <span>{%trans "Plasmoids"%}</span>
+        <span>{%trans "Overview"%}</span>
+    </div>
+    <div class='ui-widget-content ui-corner-bottom'>
+        <table class="datatable" >
+        <thead>
+            <tr>
+            <th class='datatable-cb'><input type='checkbox' id='cb-all' /></th>
+            <th>{%trans "Title"%}</th>             
+            <th>{%trans "Size"%}</th>
+            <th>{%trans "Type"%}</th>
+            <th>{%trans "Visible"%}</th>
+            <th>{%trans "Last Modified"%}</th>
+            <th>{%trans "Options"%}</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for plasmoid in plasmoids %}
+        <tr>
+        <td><input type='checkbox' id='{{plasmoid.pk}}' name='{{plasmoid.pk}}'/></td>
+        <td>{{plasmoid.slug}}</td>      
+        <td>{{plasmoid.script|length}}</td>
+        <td>{{plasmoid.type}}</td>
+        <td>
+        {%ifequal plasmoid.visible 0 %}
+        {%trans "All"%}
+        {%else%}
+        {%ifequal plasmoid.visible 1 %}
+        {%trans "Users"%}
+        {%else%}            
+        {%ifequal plasmoid.visible 2 %}
+        {%trans "Moderators"%}
+        {%endifequal%}{%endifequal%}{%endifequal%}
+        </td>
+        <td>{{plasmoid.last_modified|date:"SHORT_DATETIME_FORMAT" }}</td>
+        <td></td>
+        </tr>
+        {%endfor%}
+        </tbody>
+        </table>
+        <div class='hwios-toolbar'>
+            <div class="ui-helper-clearfix">
+                <div class="fg-buttonset fg-buttonset-single ui-helper-clearfix">                    
+                    <button data-uri='/plasmoids/new/' class='fg-button ui-state-default fg-button-icon-left ui-corner-left'><span class='ui-icon ui-icon-document'></span><span>{%trans "New"%}</span></button>
+                    <button data-uripart='/plasmoids/{id}/edit/' data-uriflag='cb-cid' class='btn-active-one fg-button ui-state-default fg-button-icon-left ui-state-disabled'><span class='ui-icon ui-icon-pencil'></span><span>{%trans "Edit"%}</span></button>
+                    <button data-function='plasmoids.delete_plasmoids' class='btn-active-many fg-button ui-state-default fg-button-icon-left ui-state-disabled ui-corner-right'><span class='ui-icon ui-icon-scissors'></span><span>{%trans "Delete"%}</span></button> 
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

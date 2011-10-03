@@ -1,0 +1,355 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>services.web_ui.controllers.ws.blog &mdash; HWIOS v0.6 documentation</title>
+    <link rel="stylesheet" href="../../../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '0.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="HWIOS v0.6 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">HWIOS v0.6 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for services.web_ui.controllers.ws.blog</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    services.web_ui.controllers.ws.blog</span>
+<span class="sd">    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">    The websocket controller for the blog module</span>
+
+<span class="sd">    :copyright: Copyright 2009-2011 OS-Networks.</span>
+<span class="sd">    :license: BSD, see LICENSE for details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">django.core.exceptions</span> <span class="kn">import</span> <span class="n">ObjectDoesNotExist</span>
+<span class="kn">from</span> <span class="nn">django.template.loader</span> <span class="kn">import</span> <span class="n">render_to_string</span>
+<span class="kn">from</span> <span class="nn">django.core</span> <span class="kn">import</span> <span class="n">serializers</span>
+<span class="kn">from</span> <span class="nn">django.forms</span> <span class="kn">import</span> <span class="n">model_to_dict</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">django.db</span> <span class="kn">import</span> <span class="n">models</span>
+
+<span class="kn">from</span> <span class="nn">hwios.core.application</span> <span class="kn">import</span> <span class="n">HWIOS</span>
+
+<span class="kn">from</span> <span class="nn">web_ui.models.ws_auth</span> <span class="kn">import</span> <span class="n">WSAuth</span>
+<span class="kn">from</span> <span class="nn">web_ui.models.blog</span> <span class="kn">import</span> <span class="n">BlogArticle</span><span class="p">,</span> <span class="n">BlogArticleComment</span>
+<span class="kn">from</span> <span class="nn">web_ui.forms.blog</span> <span class="kn">import</span> <span class="n">EditBlogArticleForm</span><span class="p">,</span> <span class="n">CreateArticleComment</span>
+
+<span class="kn">from</span> <span class="nn">web_ui.models.signal</span> <span class="kn">import</span> <span class="n">Signal</span>
+<span class="kn">from</span> <span class="nn">web_ui.models.notifications</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">web_ui.models.activity</span> <span class="kn">import</span> <span class="o">*</span>
+
+<div class="viewcode-block" id="WS_Blog"><a class="viewcode-back" href="../../../../../modules/blog.html#services.web_ui.controllers.ws.blog.WS_Blog">[docs]</a><span class="k">class</span> <span class="nc">WS_Blog</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Websocket Controller Class for the blog module</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dispatcher</span><span class="p">):</span>
+        <span class="k">pass</span>
+        <span class="c">#dispatcher.signals.subscribe(&#39;ws_disconnect&#39;, self.leave_hyki_article)</span>
+        <span class="c">#dispatcher.signals.subscribe(&#39;view_changed&#39;, self.leave_hyki_article, filters = [(r&#39;/hyki/(?P&lt;slug&gt;[^/]+)/&#39;,True),(r&#39;/hyki/(?P&lt;slug&gt;[^/]+)/edit/&#39;,False)])</span>
+
+
+<div class="viewcode-block" id="WS_Blog.view_blog"><a class="viewcode-back" href="../../../../../modules/blog.html#services.web_ui.controllers.ws.blog.WS_Blog.view_blog">[docs]</a>    <span class="k">def</span> <span class="nf">view_blog</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Renders the blog article view</span>
+
+<span class="sd">        :param client: The requesting client</span>
+<span class="sd">        :returns dict: The rendered html-template</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_blog</span><span class="p">(</span><span class="n">client</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        </div>
+<div class="viewcode-block" id="WS_Blog.view_blog_article"><a class="viewcode-back" href="../../../../../modules/blog.html#services.web_ui.controllers.ws.blog.WS_Blog.view_blog_article">[docs]</a>    <span class="k">def</span> <span class="nf">view_blog_article</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">slug</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Renders the blog article view</span>
+
+<span class="sd">        :param client: The requesting client</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_blog_article</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">slug</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    
+</div>
+    <span class="nd">@WSAuth.is_staff</span>
+<div class="viewcode-block" id="WS_Blog.create_blog_article"><a class="viewcode-back" href="../../../../../modules/blog.html#services.web_ui.controllers.ws.blog.WS_Blog.create_blog_article">[docs]</a>    <span class="k">def</span> <span class="nf">create_blog_article</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Handles creation of a new blog article, and notification to other watching clients&#39;&#39;&#39;</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">EditBlogArticleForm</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+            <span class="n">article</span> <span class="o">=</span> <span class="n">BlogArticle</span><span class="p">()</span>
+            <span class="n">article</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s">&#39;title&#39;</span><span class="p">]</span>
+            <span class="n">article</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s">&#39;text&#39;</span><span class="p">]</span>
+            <span class="n">article</span><span class="o">.</span><span class="n">author</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">profile</span>
+            <span class="n">article</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+            <span class="n">client_response</span><span class="p">,</span> <span class="n">tpl_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_blog</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
+            <span class="n">client_response</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                    <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;BLOG_ARTICLE_CREATED&#39;</span><span class="p">,</span>
+                    <span class="s">&#39;i18n&#39;</span><span class="p">:</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">username</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Article created succesfully...&#39;</span><span class="p">)),</span>
+                    <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">],</span>
+                    <span class="s">&#39;state&#39;</span><span class="p">:</span> <span class="s">&#39;/blog/&#39;</span>
+                <span class="p">}</span>
+            <span class="p">})</span>
+            <span class="n">notify_others</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">client_response</span><span class="p">,</span><span class="s">&#39;/blog/modified/&#39;</span><span class="p">,</span> <span class="s">&#39;/blog/&#39;</span><span class="p">,</span> <span class="n">tpl_params</span><span class="p">)</span>
+            <span class="n">publish_activity</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Blog article created&#39;</span><span class="p">),</span><span class="s">&#39;/blog/</span><span class="si">%s</span><span class="s">/&#39;</span> <span class="o">%</span> <span class="n">article</span><span class="o">.</span><span class="n">slug</span><span class="p">,[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">client_response</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">articles</span> <span class="o">=</span> <span class="n">BlogArticle</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+            <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;blog/read_blog.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&quot;articles&quot;</span><span class="p">:</span><span class="n">articles</span><span class="p">,</span><span class="s">&#39;profile&#39;</span><span class="p">:</span> <span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span><span class="s">&#39;form&#39;</span><span class="p">:</span><span class="n">form</span><span class="p">})</span>
+            <span class="n">response</span> <span class="o">=</span>  <span class="p">{</span>
+                <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                    <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;FORM_INVALID&#39;</span><span class="p">,</span>
+                    <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Invalid form!&#39;</span><span class="p">),</span>
+                    <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+                <span class="p">},</span>
+                <span class="s">&#39;data&#39;</span><span class="p">:{</span>
+                    <span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+            <span class="k">return</span> <span class="n">response</span>
+
+
+    <span class="c"># Handle edit view and save</span></div>
+    <span class="nd">@WSAuth.is_staff</span>
+<div class="viewcode-block" id="WS_Blog.edit_blog_article"><a class="viewcode-back" href="../../../../../modules/blog.html#services.web_ui.controllers.ws.blog.WS_Blog.edit_blog_article">[docs]</a>    <span class="k">def</span> <span class="nf">edit_blog_article</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">slug</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">params</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>            
+            <span class="n">article</span> <span class="o">=</span> <span class="n">BlogArticle</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">slug</span> <span class="o">=</span> <span class="n">slug</span><span class="p">)</span>
+            <span class="n">form</span> <span class="o">=</span> <span class="n">EditBlogArticleForm</span><span class="p">(</span><span class="n">initial</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;title&#39;</span><span class="p">:</span><span class="n">article</span><span class="o">.</span><span class="n">title</span><span class="p">,</span><span class="s">&#39;text&#39;</span><span class="p">:</span><span class="n">article</span><span class="o">.</span><span class="n">text</span><span class="p">})</span>
+            <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;blog/edit_article.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&quot;article&quot;</span><span class="p">:</span><span class="n">article</span><span class="p">,</span><span class="s">&#39;profile&#39;</span><span class="p">:</span> <span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span><span class="s">&#39;form&#39;</span><span class="p">:</span><span class="n">form</span><span class="p">})</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">}}}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">form</span> <span class="o">=</span> <span class="n">EditBlogArticleForm</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+                <span class="n">article</span> <span class="o">=</span> <span class="n">BlogArticle</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">slug</span> <span class="o">=</span> <span class="n">slug</span><span class="p">)</span>
+                <span class="n">article</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s">&#39;title&#39;</span><span class="p">]</span>
+                <span class="n">article</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s">&#39;text&#39;</span><span class="p">]</span>
+                <span class="n">article</span><span class="o">.</span><span class="n">author</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">profile</span>
+                <span class="n">article</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+                <span class="n">client_response</span><span class="p">,</span> <span class="n">tpl_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_blog</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
+                <span class="n">client_response</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                    <span class="s">&#39;status&#39;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;BLOG_ARTICLE_SAVED&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">username</span><span class="p">,</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Article updated succesfully...&#39;</span><span class="p">)),</span>
+                        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">],</span>
+                    <span class="p">}</span>
+                <span class="p">})</span>
+                <span class="c">#notify others viewing the main blog</span>
+                <span class="n">notify_others</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">client_response</span><span class="p">,</span><span class="s">&#39;/blog/modified/&#39;</span><span class="p">,</span> <span class="s">&#39;/blog/&#39;</span><span class="p">,</span> <span class="n">tpl_params</span><span class="p">)</span>
+                <span class="c">#notify othere viewing this article</span>
+                <span class="n">_response</span><span class="p">,</span> <span class="n">_tpl_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_blog_article</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">slug</span><span class="p">)</span>
+                <span class="n">_response</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">client_response</span><span class="p">)</span>
+                <span class="n">notify_others</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">_response</span><span class="p">,</span><span class="s">&#39;/blog/</span><span class="si">%s</span><span class="s">/modified/&#39;</span> <span class="o">%</span> <span class="n">slug</span><span class="p">,</span> <span class="s">&#39;/blog/</span><span class="si">%s</span><span class="s">/&#39;</span> <span class="o">%</span> <span class="n">slug</span><span class="p">,</span> <span class="n">_tpl_params</span><span class="p">)</span>
+                <span class="n">client_response</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">][</span><span class="s">&#39;state&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">set_uri</span><span class="p">(</span><span class="s">&#39;/blog/&#39;</span><span class="p">)</span>
+                <span class="n">publish_activity</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Blog article edited&#39;</span><span class="p">),</span><span class="s">&#39;/blog/</span><span class="si">%s</span><span class="s">/&#39;</span> <span class="o">%</span> <span class="n">slug</span><span class="p">,[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+                <span class="k">return</span> <span class="n">client_response</span>
+            <span class="k">else</span><span class="p">:</span>                
+                <span class="n">article</span> <span class="o">=</span> <span class="n">BlogArticle</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">slug</span> <span class="o">=</span> <span class="n">slug</span><span class="p">)</span>
+                <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;blog/edit_article.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&quot;article&quot;</span><span class="p">:</span><span class="n">article</span><span class="p">,</span><span class="s">&#39;profile&#39;</span><span class="p">:</span> <span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span><span class="s">&#39;form&#39;</span><span class="p">:</span><span class="n">form</span><span class="p">})</span>
+                <span class="n">client_response</span> <span class="o">=</span>  <span class="p">{</span>
+                    <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                        <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;FORM_INVALID&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Invalid form!&#39;</span><span class="p">),</span>
+                        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+                    <span class="p">},</span>
+                    <span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">}}</span>
+                <span class="p">}</span>
+                <span class="k">return</span> <span class="n">client_response</span>
+
+</div>
+    <span class="nd">@WSAuth.is_staff</span>
+<div class="viewcode-block" id="WS_Blog.delete_blog_article"><a class="viewcode-back" href="../../../../../modules/blog.html#services.web_ui.controllers.ws.blog.WS_Blog.delete_blog_article">[docs]</a>    <span class="k">def</span> <span class="nf">delete_blog_article</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">slug</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">params</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">article</span> <span class="o">=</span> <span class="n">BlogArticle</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">slug</span> <span class="o">=</span> <span class="n">slug</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">except</span> <span class="n">BlogArticle</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">False</span>
+            <span class="n">dialog</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;blog/confirm_delete_article.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&quot;article&quot;</span><span class="p">:</span><span class="n">article</span><span class="p">})</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;dialog&#39;</span><span class="p">:</span><span class="n">dialog</span><span class="p">}}}</span>
+            <span class="k">return</span> <span class="n">response</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">BlogArticle</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">slug</span> <span class="o">=</span> <span class="n">slug</span><span class="p">)</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+            <span class="n">client_response</span><span class="p">,</span> <span class="n">tpl_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_blog</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
+            <span class="n">client_response</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                <span class="s">&#39;status&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;BLOG_ARTICLE_DELETED&#39;</span><span class="p">,</span>
+                    <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">username</span><span class="p">,</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Article </span><span class="si">%(slug)s</span><span class="s"> removed succesfully...&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;slug&#39;</span><span class="p">:</span><span class="nb">str</span><span class="p">(</span><span class="n">slug</span><span class="p">)}),</span>
+                    <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">],</span>
+                    <span class="s">&#39;state&#39;</span><span class="p">:</span> <span class="s">&#39;/blog/&#39;</span>
+                <span class="p">}</span>
+            <span class="p">})</span>
+            <span class="c">#notify others viewing the main blog</span>
+            <span class="n">notify_others</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">client_response</span><span class="p">,</span><span class="s">&#39;/blog/modified/&#39;</span><span class="p">,</span> <span class="s">&#39;/blog/&#39;</span><span class="p">,</span> <span class="n">tpl_params</span><span class="p">)</span>
+            <span class="c">#notify others viewing the same deleted blog article. Moves their url to new state</span>
+            <span class="n">notify_others</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">client_response</span><span class="p">,</span><span class="s">&#39;/blog/modified/&#39;</span><span class="p">,</span> <span class="s">&#39;/blog/</span><span class="si">%s</span><span class="s">/&#39;</span> <span class="o">%</span> <span class="n">slug</span><span class="p">,</span> <span class="n">tpl_params</span><span class="p">,</span> <span class="s">&#39;/blog/&#39;</span><span class="p">)</span>
+            <span class="n">publish_activity</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Blog article deleted&#39;</span><span class="p">),</span><span class="s">&#39;/blog/&#39;</span><span class="p">,[</span><span class="mi">0</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">client_response</span>
+
+</div>
+    <span class="nd">@WSAuth.is_authenticated</span>
+<div class="viewcode-block" id="WS_Blog.create_article_comment"><a class="viewcode-back" href="../../../../../modules/blog.html#services.web_ui.controllers.ws.blog.WS_Blog.create_article_comment">[docs]</a>    <span class="k">def</span> <span class="nf">create_article_comment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">slug</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">CreateArticleComment</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+        <span class="n">article</span> <span class="o">=</span> <span class="n">BlogArticle</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">slug</span> <span class="o">=</span> <span class="n">slug</span><span class="p">)</span>
+        <span class="n">comments</span> <span class="o">=</span> <span class="n">article</span><span class="o">.</span><span class="n">blogarticlecomment_set</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+            <span class="n">comment</span> <span class="o">=</span> <span class="n">BlogArticleComment</span><span class="p">()</span>
+            <span class="n">comment</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s">&#39;text&#39;</span><span class="p">]</span>
+            <span class="n">comment</span><span class="o">.</span><span class="n">article</span> <span class="o">=</span> <span class="n">article</span>
+            <span class="n">comment</span><span class="o">.</span><span class="n">author</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">profile</span>
+            <span class="n">comment</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+            <span class="c">#prepare updated page for client and others</span>
+            <span class="n">client_response</span><span class="p">,</span> <span class="n">tpl_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_blog_article</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">slug</span><span class="p">)</span>
+            <span class="n">client_response</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                    <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;BLOG_COMMENT_SAVED&#39;</span><span class="p">,</span>
+                    <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">username</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Comment saved succesfully...&#39;</span><span class="p">)),</span>
+                    <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">],</span>
+                <span class="p">}</span>
+            <span class="p">})</span>
+            <span class="c">#notify others viewing the same blog article</span>
+            <span class="n">notify_others</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">client_response</span><span class="p">,</span> <span class="s">&#39;/blog/</span><span class="si">%s</span><span class="s">/modified/&#39;</span><span class="p">,</span> <span class="s">&#39;/blog/</span><span class="si">%s</span><span class="s">/&#39;</span> <span class="o">%</span> <span class="n">slug</span><span class="p">,</span> <span class="n">tpl_params</span><span class="p">)</span>
+            <span class="c">#notify others viewing the main blog</span>
+            <span class="n">_response</span><span class="p">,</span> <span class="n">_tpl_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_blog</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
+            <span class="n">_response</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">client_response</span><span class="p">)</span>
+            <span class="n">notify_others</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">_response</span><span class="p">,</span><span class="s">&#39;/blog/modified/&#39;</span><span class="p">,</span> <span class="s">&#39;/blog/&#39;</span><span class="p">,</span> <span class="n">_tpl_params</span><span class="p">)</span>
+            <span class="n">publish_activity</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Blog comment created&#39;</span><span class="p">),</span><span class="s">&#39;/blog/</span><span class="si">%s</span><span class="s">/&#39;</span> <span class="o">%</span> <span class="n">slug</span><span class="p">,[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">client_response</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">article</span> <span class="o">=</span> <span class="n">BlogArticle</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">slug</span> <span class="o">=</span> <span class="n">slug</span><span class="p">)</span>
+            <span class="n">comments</span> <span class="o">=</span> <span class="n">article</span><span class="o">.</span><span class="n">blogarticlecomment_set</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+            <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;blog/read_article.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;article&#39;</span><span class="p">:</span><span class="n">article</span><span class="p">,</span> <span class="s">&#39;comments&#39;</span><span class="p">:</span><span class="n">comments</span><span class="p">,</span> <span class="s">&#39;profile&#39;</span><span class="p">:</span> <span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span> <span class="s">&#39;form&#39;</span><span class="p">:</span><span class="n">form</span><span class="p">})</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                    <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;FORM_INVALID&#39;</span><span class="p">,</span>
+                    <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Invalid form!&#39;</span><span class="p">),</span>
+                    <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+                <span class="p">},</span>
+                <span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">}}</span>
+            <span class="p">}</span>
+            <span class="k">return</span> <span class="n">response</span>
+            
+            </div>
+    <span class="nd">@WSAuth.is_staff</span>
+<div class="viewcode-block" id="WS_Blog.delete_article_comment"><a class="viewcode-back" href="../../../../../modules/blog.html#services.web_ui.controllers.ws.blog.WS_Blog.delete_article_comment">[docs]</a>    <span class="k">def</span> <span class="nf">delete_article_comment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">slug</span><span class="p">,</span> <span class="n">uuid</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">params</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">comment</span> <span class="o">=</span> <span class="n">BlogArticleComment</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span> <span class="o">=</span> <span class="n">uuid</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">BlogArticle</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">False</span>
+            <span class="n">dialog</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;blog/confirm_delete_comment.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&quot;comment&quot;</span><span class="p">:</span><span class="n">comment</span><span class="p">})</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;dialog&#39;</span><span class="p">:</span><span class="n">dialog</span><span class="p">}}}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">BlogArticleComment</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span> <span class="o">=</span> <span class="n">uuid</span><span class="p">)</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+            <span class="n">client_response</span><span class="p">,</span> <span class="n">tpl_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_blog_article</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">slug</span><span class="p">)</span>
+            <span class="n">client_response</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                <span class="s">&#39;status&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;BLOG_COMMENT_DELETED&#39;</span><span class="p">,</span>
+                    <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">username</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Comment removed succesfully...&#39;</span><span class="p">)),</span>
+                    <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+                <span class="p">}</span>
+            <span class="p">})</span>
+            <span class="c">#notify others viewing the same blog article</span>
+            <span class="n">notify_others</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">client_response</span><span class="p">,</span> <span class="s">&#39;/blog/</span><span class="si">%s</span><span class="s">/modified/&#39;</span><span class="p">,</span> <span class="s">&#39;/blog/</span><span class="si">%s</span><span class="s">/&#39;</span> <span class="o">%</span> <span class="n">slug</span><span class="p">,</span> <span class="n">tpl_params</span><span class="p">)</span>
+            <span class="c">#notify others viewing the main blog</span>
+            <span class="n">_response</span><span class="p">,</span> <span class="n">_tpl_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_blog</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
+            <span class="n">_response</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">client_response</span><span class="p">)</span>
+            <span class="n">notify_others</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">_response</span><span class="p">,</span><span class="s">&#39;/blog/modified/&#39;</span><span class="p">,</span> <span class="s">&#39;/blog/&#39;</span><span class="p">,</span> <span class="n">_tpl_params</span><span class="p">)</span>
+            <span class="n">publish_activity</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Blog comment deleted&#39;</span><span class="p">),</span><span class="s">&#39;/blog/</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">slug</span><span class="p">,[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">client_response</span>
+
+</div>
+    <span class="k">def</span> <span class="nf">_get_blog</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
+        <span class="n">articles</span> <span class="o">=</span> <span class="n">BlogArticle</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">extra</span><span class="p">(</span><span class="n">select</span><span class="o">=</span><span class="p">{</span>
+            <span class="s">&#39;comments&#39;</span><span class="p">:</span> <span class="s">&#39;SELECT COUNT(*) FROM hwios_blog_comments WHERE hwios_blog_comments.article_id = hwios_blog_articles.uuid&#39;</span>
+            <span class="p">},)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="n">tpl_params</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;articles&quot;</span><span class="p">:</span><span class="n">articles</span><span class="p">,</span><span class="s">&#39;form&#39;</span><span class="p">:</span><span class="n">EditBlogArticleForm</span><span class="p">()}</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;blog/read_blog.html&quot;</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">tpl_params</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="o">+</span><span class="nb">dict</span><span class="p">({</span><span class="s">&#39;profile&#39;</span><span class="p">:</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">})</span><span class="o">.</span><span class="n">items</span><span class="p">()))}}},</span>
+            <span class="p">{</span><span class="s">&#39;main&#39;</span><span class="p">:{</span><span class="s">&#39;tpl&#39;</span><span class="p">:</span><span class="s">&#39;blog/read_blog.html&#39;</span><span class="p">,</span><span class="s">&#39;params&#39;</span><span class="p">:</span><span class="n">tpl_params</span><span class="p">}}</span>
+        <span class="p">]</span>
+
+
+    <span class="k">def</span> <span class="nf">_get_blog_article</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">slug</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;General helper function to get a blog article view ready&#39;&#39;&#39;</span>
+        <span class="n">article</span> <span class="o">=</span> <span class="n">BlogArticle</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">slug</span> <span class="o">=</span> <span class="n">slug</span><span class="p">)</span>
+        <span class="n">comments</span> <span class="o">=</span> <span class="n">article</span><span class="o">.</span><span class="n">blogarticlecomment_set</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">CreateArticleComment</span><span class="p">()</span>
+        <span class="n">tpl_params</span><span class="o">=</span> <span class="p">{</span><span class="s">&#39;article&#39;</span><span class="p">:</span><span class="n">article</span><span class="p">,</span><span class="s">&#39;comments&#39;</span><span class="p">:</span> <span class="n">comments</span><span class="p">,</span> <span class="s">&#39;form&#39;</span><span class="p">:</span><span class="n">form</span><span class="p">,</span><span class="s">&#39;form&#39;</span><span class="p">:</span> <span class="n">form</span><span class="p">}</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;blog/read_article.html&quot;</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">tpl_params</span><span class="o">.</span><span class="n">items</span><span class="p">()</span><span class="o">+</span><span class="nb">dict</span><span class="p">({</span><span class="s">&#39;profile&#39;</span><span class="p">:</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">})</span><span class="o">.</span><span class="n">items</span><span class="p">()))}}},</span>
+            <span class="p">{</span><span class="s">&#39;main&#39;</span><span class="p">:{</span><span class="s">&#39;tpl&#39;</span><span class="p">:</span><span class="s">&#39;blog/read_article.html&#39;</span><span class="p">,</span><span class="s">&#39;params&#39;</span><span class="p">:</span><span class="n">tpl_params</span><span class="p">}}</span>
+        <span class="p">]</span>
+        
+    </div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">HWIOS v0.6 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, OS-Networks.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

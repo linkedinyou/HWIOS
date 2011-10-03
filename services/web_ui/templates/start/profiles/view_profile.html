@@ -1,0 +1,36 @@
+{% load i18n %}
+<div class='hwios-widget' id='profiles-context'>
+    <div class="ui-widget-header ui-corner-top">
+        {%if profile.uuid == target_profile.uuid%}
+        <span>{%trans "My Profile"%}</span>
+        <span>{%trans "About"%}</span>
+        {% else %}
+        <span>{{target_profile.username}}</span>
+        <span>{%trans "About"%}</span>
+        {%endif%}
+    </div>
+    <div class="ui-widget-content" data-ctx-showid='{{target_profile.id}}' data-id='{{target_profile.username}}'>
+        <table id='profile-details'>
+        <tr>
+            <td>
+                {%if target_profile.photo%}
+                <div id='profile-avatar'><img src='/media/files/avatars/{{target_profile.photo}}'/></div>
+                {%else%}
+                <div id='profile-avatar' class='profile-unknown-avatar'></div>
+                {%endif%}
+            </td>
+            <td>
+                <table>
+                <tr><td>{%trans 'Screen Name'%}</td><td>{{target_profile.username}}</td></tr>
+                <tr><td>{%trans 'First Name'%}</td><td>{{target_profile.first_name}}</td></tr>
+                <tr><td>{%trans 'Last Name'%}</td><td>{{target_profile.last_name}}</td></tr>
+                <tr><td>{%trans 'Organisation'%}</td><td>{{target_profile.organisation}}</td></tr>
+                <tr><td>{%trans 'Time Zone'%}</td><td>{{target_profile.timezone}}</td></tr>
+                <tr><td>{%trans 'Karma'%}</td><td>{{target_profile.karma}}</td></tr>
+                </table>
+            </td>
+        </tr>
+        <tr><td colspan='2' class='profile-details-about'>{{target_profile.about}}</td></tr>
+        </table>
+    </div>
+</div>

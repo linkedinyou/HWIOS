@@ -1,0 +1,22 @@
+{% load i18n %}
+{% autoescape off %}
+<div class='hwios-widget' id='wiki-context'>
+    <div class='ui-widget-header ui-corner-top'>
+        <span>{{page.slug|escape}}</span>
+        {%if profile.is_staff%}         
+        <span class='article-option hwios-button ui-icon ui-icon-trash' data-function='wiki.delete_article' data-id='{{page.slug}}'></span>
+        {%endif%}
+        {%if profile.is_authenticated%}
+        <span class='article-option hwios-button ui-icon ui-icon-pencil' data-uri='/wiki/{{page.slug}}/edit/' data-id='{{page.slug}}'></span>
+        {%endif%}
+        <span>{{page.last_modified|date:"M d Y H:i"}}</span>        
+    </div>
+    <div class='ui-widget-content ui-corner-bottom contenttext' data-id='{{page.slug|escape}}' data-ctxmatch='["delete-document","edit-document","view-document-history"]'>
+        <div id='wiki-markdown'></div>
+        <div id='wiki-editor' class='editor-hidden'></div>
+    </div>
+</div>
+{% endautoescape %}
+
+
+

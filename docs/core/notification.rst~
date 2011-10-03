@@ -1,0 +1,40 @@
+Notification systems
+====================
+The HWIOS framework provides some preliminary helpers that make automated notification to clients easier. There is a rough distinction
+between message-notification, view-notification and scripted notification.
+
+
+Message notification
+~~~~~~~~~~~~~~~~~~~~
+The activity widget is meant to notify users of other user's actions. The code is generally called within a websocket controller view,
+and sends a message-notification of the action together with a link as an activity-widget update to an involved client-group.
+This method is used when you want users to be more aware of each other's actions in certain parts of the application,
+without distracting them too much. If you want a more obvious message notification, use the status response which triggers a
+pop-up widget notification.
+
+.. automodule:: services.web_ui.models.activity
+   :members:
+   :show-inheritance:
+
+View notification
+~~~~~~~~~~~~~~~~~
+Most of the time, when the content of a page changes, it's desired that other user's are aware of this change as well. The notification
+code can be used to trigger a view update to a participating group of clients, even when their authentication levels and views are different.
+
+.. automodule:: services.web_ui.models.notifications
+   :members:
+   :show-inheritance:
+
+Scripted notification
+~~~~~~~~~~~~~~~~~~~~~
+The plasmoids scripting system is a moderator-accessible javascripting-environment, that can be used to deliver small javascript-widgets
+to groups of users, based on view and/or authentication level. See the wiki-plasmoid for an example. This kind of notification is more
+like a persistent functionality expansion, but can be seen as a type of notification as well...
+
+.. automodule:: services.web_ui.models.plasmoids
+   :members:
+   :show-inheritance:
+
+.. automodule:: services.web_ui.controllers.ws.plasmoids
+   :members:
+   :show-inheritance:

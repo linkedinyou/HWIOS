@@ -1,0 +1,77 @@
+/* popup related styles */
+.olPopup {
+    background: none !important;
+    height:170px;
+}
+
+.olPopup .hwios-widget {
+    border-radius:5px;
+    box-shadow: 4px 4px 16px rgba(0,0,0,0.8);
+    padding:0px;
+    margin:0px;
+    height:90px;
+    margin-bottom:80px !important;
+}
+
+.olPopup .ui-widget-header span {
+    font-weight:bold;
+    font-size:1.1em !important;
+}
+
+.olPopup .ui-widget-content {
+    padding:15px;
+    font-size:1em;
+}
+
+.olPopup a.close
+{
+    width: 14px;
+    height: 14px;
+    position: absolute;
+    top: 10px;
+    right: 38px;
+    background: url('images/map/layer-switcher-minimize.png') no-repeat top left;
+    margin: 0px;
+    font-size: 1px;
+    padding: 0px;
+}
+
+.olPopupCloseBox {
+    right: 38px;
+    cursor: pointer;
+    margin-top:5px;
+}
+
+.olPopup a.close:hover
+{
+    background: url('images/map/layer-switcher-minimize.png') no-repeat top left;
+}
+
+.olPopup .olPopupContent table
+{
+    border-collapse:collapse;
+
+    padding: 0px;
+}
+
+.olPopupContent table td
+{
+    padding: 4px;
+}
+
+.olControlAttribution {
+    bottom: 0px !important;
+    left:2px;
+}
+
+#map_popup_info {
+
+}
+
+#map_popup_info td {
+    border:0px;
+}
+
+#map {
+    background-color:#e8f4ff;
+}

@@ -1,0 +1,70 @@
+#activity-widget {
+    width:100%;
+    height:97px;
+    overflow: auto;
+    overflow-x: hidden;
+    position:relative;
+    margin-bottom:5px;
+    resize: vertical;
+    border-bottom:1px dotted #00aeef;
+}
+
+#activity-widget * {
+    resize:none;
+}
+
+.activity-avatar {
+    width:16px;
+    height:16px;
+    float:left;
+}
+
+.activity-avatar img {
+    width:16px;
+    height:16px;
+}
+
+#activity-text {
+    float:left;
+}
+
+#activity-loading {
+    padding:5px;
+}
+
+.activity-entry {
+    width:100%;
+    float:left;
+    margin-bottom:8px;
+}
+
+.activity-entry-header {
+    font-size:12px;
+    font-style:italic;
+    border-bottom:1px dotted #ddd;
+    height:18px;
+}
+
+.activity-entry-header-text {
+    padding-top:3px;
+    padding-left:4px;
+    float:left;
+}
+
+.activity-entry-message {
+    width:100%;
+}
+
+.activity-entry-message-text {
+    padding-left:4px;
+}
+
+.activity-entry-message a {
+    font-size:15px;
+    font-weight:normal !important;
+}
+
+.activity-type {
+    float:left;
+    margin-top:3px;
+}

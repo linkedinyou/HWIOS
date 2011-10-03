@@ -1,0 +1,18 @@
+{% load i18n %}
+<div class='hwios-widget'>
+    <div class="ui-widget-header ui-corner-top"><span>{%trans "Customize"%} {{service.name}}</span></div>
+    <div class='ui-widget-content ui-corner-bottom contenttext' id='settings-grid'>
+        <form method="post" action="{% url web_ui.controllers.xhr.backend.settings.views.editSettings %}">
+        {{ form.as_p }}
+        </form>
+        
+        <div class='hwios-widget'>
+            <div class="action-bar fg-toolbar ui-widget-header ui-corner-all ui-helper-clearfix">
+                <div class="fg-buttonset fg-buttonset-single ui-helper-clearfix" style="float:left;">
+                    <button id='btn-edit-sim-slave-ini-cancel' class='fg-button ui-state-default fg-button-icon-left ui-corner-left'><span class='ui-icon ui-icon-gear'></span><span>{%trans "Cancel"%}</span></button>
+                    <button id='btn-edit-sim-slave-ini-save' class='btn-select0 fg-button ui-state-default fg-button-icon-left ui-corner-left' value='{{service.name}}_{{service.uuid}}'><span class='ui-icon ui-icon-gear'></span><span>{%trans "Save"%}</span></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

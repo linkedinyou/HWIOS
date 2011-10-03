@@ -1,0 +1,44 @@
+
+
+#plasmoid-form-container {
+    width:100%;
+    height:300px;
+    position:relative;
+}
+
+#plasmoid-form {
+    float:left;
+    width:60%;
+}
+
+.plasmoid-preview {
+    width:40%;
+    height:300px;
+    background-color:#fff;
+    -webkit-border-radius: 8px;
+    border:1px solid #5891b5;
+    position:absolute;
+    overflow:hidden;
+    right:0px;
+}
+
+.hwios-plasmoid {
+    height:200px;
+    width:100%;
+    position:relative;
+    display:block;
+
+}
+
+.plasmoid-container {
+    width:100%;
+    height:100%;
+}
+
+.hwios-plasmoid canvas {
+    height:100%;
+    width:100%;
+    position:absolute;
+}
+
+

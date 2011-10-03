@@ -1,0 +1,419 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Pad Module &mdash; HWIOS v0.6 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="HWIOS v0.6 documentation" href="../index.html" />
+    <link rel="next" title="Teknon Module" href="teknon.html" />
+    <link rel="prev" title="Opensim Module" href="opensim.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="teknon.html" title="Teknon Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="opensim.html" title="Opensim Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">HWIOS v0.6 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pad-module">
+<h1>Pad Module<a class="headerlink" href="#pad-module" title="Permalink to this headline">¶</a></h1>
+<p>The pad module provides a simple collaborative painting application. It offers remote mouse-cursor sharing and basic paint functionality,
+like brush, fill, shape and text. It&#8217;s a proof of concept, initially started to show the responsiveness nature of websockets, but can
+be extended to offer more useful functionality, like offering a collaborative space to create presentations and flowcharts.
+Lately there has been some interesting development in the field of vector-graphics and html5, getting available within the
+canvas element through libraries like fabric.js and paper.js. Further development should probably go in that direction. Another
+useful thing would be a serverside canvas renderer, so the initial image-data can be send(which is faster), instead of only a
+log of operations.</p>
+<div class="section" id="module-services.web_ui.models.pad">
+<span id="code-references"></span><h2>Code References<a class="headerlink" href="#module-services.web_ui.models.pad" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="services-web-ui-models-pad">
+<h3>services.web_ui.models.pad<a class="headerlink" href="#services-web-ui-models-pad" title="Permalink to this headline">¶</a></h3>
+<p>General Pad model</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">copyright:</th><td class="field-body">Copyright 2009-2011 OS-Networks.</td>
+</tr>
+<tr class="field"><th class="field-name">license:</th><td class="field-body">BSD, see LICENSE for details.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="services.web_ui.models.pad.Pad">
+<em class="property">class </em><tt class="descclassname">services.web_ui.models.pad.</tt><tt class="descname">Pad</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/pad.html#Pad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.pad.Pad" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">django.db.models.base.Model</span></tt></p>
+<p>ORM Model for pad drawings</p>
+</dd></dl>
+
+</div>
+<span class="target" id="module-services.web_ui.controllers.ws.pad"></span><div class="section" id="services-web-ui-controllers-ws-pad">
+<h3>services.web_ui.controllers.ws.pad<a class="headerlink" href="#services-web-ui-controllers-ws-pad" title="Permalink to this headline">¶</a></h3>
+<p>Websocket handling for the pad module</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">copyright:</th><td class="field-body">Copyright 2009-2011 OS-Networks.</td>
+</tr>
+<tr class="field"><th class="field-name">license:</th><td class="field-body">BSD, see LICENSE for details.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="services.web_ui.controllers.ws.pad.WS_Pad">
+<em class="property">class </em><tt class="descclassname">services.web_ui.controllers.ws.pad.</tt><tt class="descname">WS_Pad</tt><big>(</big><em>dispatcher</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/pad.html#WS_Pad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.pad.WS_Pad" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>Websocket controller class for the pad module</p>
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.pad.WS_Pad.bc_mouse_position">
+<tt class="descname">bc_mouse_position</tt><big>(</big><em>client</em>, <em>pad_id</em>, <em>params</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/pad.html#WS_Pad.bc_mouse_position"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.pad.WS_Pad.bc_mouse_position" title="Permalink to this definition">¶</a></dt>
+<dd><p>Broadcast a client&#8217;s mouse location to other connected clients</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>pad_id</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The pad_id to specify the broadcast pool</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.pad.WS_Pad.change_layer_order">
+<tt class="descname">change_layer_order</tt><big>(</big><em>client</em>, <em>pad_id</em>, <em>layer_id</em>, <em>to_position</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/pad.html#WS_Pad.change_layer_order"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.pad.WS_Pad.change_layer_order" title="Permalink to this definition">¶</a></dt>
+<dd><p>Broadcast that the client has changed the ordening of layers.
+HWIOS keeps a serverside mirror of these layer-ordening as well.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>pad_id</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The pad_id to specify the broadcast pool</li>
+<li><strong>to_position</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The list-position the layer is supposed to go to</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.pad.WS_Pad.clear_pad">
+<tt class="descname">clear_pad</tt><big>(</big><em>client</em>, <em>pad_id</em>, <em>params</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/pad.html#WS_Pad.clear_pad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.pad.WS_Pad.clear_pad" title="Permalink to this definition">¶</a></dt>
+<dd><p>Broadcast that the client is clearing the whole pad.
+TODO: make it only clear a layer instead</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>pad_id</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The pad_id to specify the broadcast pool</li>
+<li><strong>params</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; The parameters that come with clearing the pad.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.pad.WS_Pad.create_layer">
+<tt class="descname">create_layer</tt><big>(</big><em>client</em>, <em>pad_id</em>, <em>layer_name</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/pad.html#WS_Pad.create_layer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.pad.WS_Pad.create_layer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Broadcast that the client has created a new layer</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>pad_id</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The pad_id to specify the broadcast pool</li>
+<li><strong>layer_name</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the layer to create</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.pad.WS_Pad.delete_layer">
+<tt class="descname">delete_layer</tt><big>(</big><em>client</em>, <em>pad_id</em>, <em>layer_name</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/pad.html#WS_Pad.delete_layer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.pad.WS_Pad.delete_layer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Broadcast that the client has deleted a layer</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>pad_id</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The pad_id to specify the broadcast pool</li>
+<li><strong>layer_name</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Name of the layer to delete</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.pad.WS_Pad.draw_brush">
+<tt class="descname">draw_brush</tt><big>(</big><em>client</em>, <em>pad_id</em>, <em>layer_id</em>, <em>params</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/pad.html#WS_Pad.draw_brush"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.pad.WS_Pad.draw_brush" title="Permalink to this definition">¶</a></dt>
+<dd><p>Broadcast that the client is drawing a brush. Params looks like:
+[x,y,color,dragging,size,brush_type,delta_time]</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>pad_id</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The pad_id to specify the broadcast pool</li>
+<li><strong>layer_id</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The id of the layer to draw on</li>
+<li><strong>params</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; The parameters that come with drawing a brush.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.pad.WS_Pad.draw_fill">
+<tt class="descname">draw_fill</tt><big>(</big><em>client</em>, <em>pad_id</em>, <em>layer_id</em>, <em>params</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/pad.html#WS_Pad.draw_fill"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.pad.WS_Pad.draw_fill" title="Permalink to this definition">¶</a></dt>
+<dd><p>Broadcast that the client is drawing a fill. Params looks like:
+[x,y,color[],border,font,text,layer]</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>pad_id</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The pad_id to specify the broadcast pool</li>
+<li><strong>layer_id</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The id of the layer to draw on</li>
+<li><strong>params</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; The parameters that come with drawing a fill.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.pad.WS_Pad.draw_shape">
+<tt class="descname">draw_shape</tt><big>(</big><em>client</em>, <em>pad_id</em>, <em>layer_id</em>, <em>params</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/pad.html#WS_Pad.draw_shape"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.pad.WS_Pad.draw_shape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Broadcast that the client is drawing a shape. Params looks like:
+[x[],y[],color[],border,type,layer]</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>pad_id</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The pad_id to specify the broadcast pool</li>
+<li><strong>layer_id</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The id of the layer to draw on</li>
+<li><strong>params</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; The parameters that come with drawing a shape.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.pad.WS_Pad.draw_text">
+<tt class="descname">draw_text</tt><big>(</big><em>client</em>, <em>pad_id</em>, <em>layer_id</em>, <em>params</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/pad.html#WS_Pad.draw_text"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.pad.WS_Pad.draw_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Broadcast that the client is drawing text. Params looks like:
+[x,y,color[],border,font,text,layer]</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>pad_id</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The pad_id to specify the broadcast pool</li>
+<li><strong>layer_id</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The id of the layer to draw on</li>
+<li><strong>params</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; The parameters that come with drawing text.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.pad.WS_Pad.leave_mouse">
+<tt class="descname">leave_mouse</tt><big>(</big><em>client</em>, <em>pad_id</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/pad.html#WS_Pad.leave_mouse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.pad.WS_Pad.leave_mouse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flag other clients to hide this client&#8217;s mouse position, because it&#8217;s out of bounds</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>pad_id</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The pad_id to specify the broadcast pool</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.pad.WS_Pad.save_pad">
+<tt class="descname">save_pad</tt><big>(</big><em>client</em>, <em>pad_id</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/pad.html#WS_Pad.save_pad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.pad.WS_Pad.save_pad" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saves a pad and notify others of this event</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>pad_id</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The pad_id of the pad to modify</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">dict - Status and html-layout data response</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.pad.WS_Pad.sync_pad">
+<tt class="descname">sync_pad</tt><big>(</big><em>client</em>, <em>pad_id</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/pad.html#WS_Pad.sync_pad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.pad.WS_Pad.sync_pad" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the current pad drawing state and renders the pad view</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>pad_id</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The pad_id of the pad to modify</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">dict - data and html-layout data response</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Pad Module</a><ul>
+<li><a class="reference internal" href="#module-services.web_ui.models.pad">Code References</a><ul>
+<li><a class="reference internal" href="#services-web-ui-models-pad">services.web_ui.models.pad</a></li>
+<li><a class="reference internal" href="#services-web-ui-controllers-ws-pad">services.web_ui.controllers.ws.pad</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="opensim.html"
+                        title="previous chapter">Opensim Module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="teknon.html"
+                        title="next chapter">Teknon Module</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/modules/pad.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="teknon.html" title="Teknon Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="opensim.html" title="Opensim Module"
+             >previous</a> |</li>
+        <li><a href="../index.html">HWIOS v0.6 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, OS-Networks.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

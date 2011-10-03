@@ -1,0 +1,25 @@
+{% load i18n %}
+<div class='hwios-widget'>
+    <div class='ui-widget-header ui-corner-top services'>
+        <span>{%trans "Settings"%}</span>
+        <span>{%trans "Modify"%}</span>
+    </div>
+    <div id='settings_tabs'>
+        <ul>
+            <li><a href="#settings-general">{%trans "General"%}</a></li>
+        </ul>
+        <div id='settings-general'>
+                <form method="post" action="">
+                    {{ general_form.as_p }}
+                </form>
+                <div class='hwios-toolbar'>
+                    <div class="action-bar ui-corner-all ui-helper-clearfix">
+                        <div class="fg-buttonset fg-buttonset-single ui-helper-clearfix" style="float:left;">
+                            <button data-function='settings.update_settings' class='btn-select0 fg-button ui-state-default fg-button-icon-left ui-corner-all'><span class='ui-icon ui-icon-gear'></span><span>{%trans "Update"%}</span></button>
+                        </div>
+                    </div>
+                </div>
+        </div>
+    </div>
+</div>
+

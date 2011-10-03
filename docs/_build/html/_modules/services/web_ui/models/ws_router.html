@@ -1,0 +1,331 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>services.web_ui.models.ws_router &mdash; HWIOS v0.6 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '0.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="HWIOS v0.6 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">HWIOS v0.6 documentation</a> &raquo;</li>
+          <li><a href="../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for services.web_ui.models.ws_router</h1><div class="highlight"><pre>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">Copyright (c) OS-Networks, http://os-networks.net</span>
+
+<span class="sd">Redistribution and use in source and binary forms, with or without</span>
+<span class="sd">modification, are permitted provided that the following conditions are met:</span>
+<span class="sd">    * Redistributions of source code must retain the above copyright</span>
+<span class="sd">    notice, this list of conditions and the following disclaimer.</span>
+<span class="sd">    * Redistributions in binary form must reproduce the above copyright</span>
+<span class="sd">    notice, this list of conditions and the following disclaimer in the</span>
+<span class="sd">    documentation and/or other materials provided with the distribution.</span>
+<span class="sd">    * Neither the name of the HWIOS Project nor the</span>
+<span class="sd">    names of its contributors may be used to endorse or promote products</span>
+<span class="sd">    derived from this software without specific prior written permission.</span>
+
+<span class="sd">THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS&#39;&#39; AND ANY</span>
+<span class="sd">EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED</span>
+<span class="sd">WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE</span>
+<span class="sd">DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY</span>
+<span class="sd">DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES</span>
+<span class="sd">(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;</span>
+<span class="sd">LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND</span>
+<span class="sd">ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT</span>
+<span class="sd">(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS</span>
+<span class="sd">SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.&#39;&#39;&#39;</span>
+
+<span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">JSONRPC code used from MIT-licensed libhjw (http://code.google.com/p/libhjw/source/browse/trunk/testbed/carcassonne/json_rpc.py?r=171)</span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="kn">import</span> <span class="nn">os</span><span class="o">,</span><span class="nn">sys</span>
+
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">deque</span>
+
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">django.contrib.sessions.models</span> <span class="kn">import</span> <span class="n">Session</span>
+<span class="kn">from</span> <span class="nn">django.contrib.sessions.backends.db</span> <span class="kn">import</span> <span class="n">SessionStore</span>
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.core.exceptions</span> <span class="kn">import</span> <span class="n">ObjectDoesNotExist</span>
+<span class="kn">from</span> <span class="nn">django.utils</span> <span class="kn">import</span> <span class="n">translation</span>
+
+<span class="kn">from</span> <span class="nn">twisted.python</span> <span class="kn">import</span> <span class="n">failure</span><span class="p">,</span> <span class="n">log</span>
+<span class="kn">from</span> <span class="nn">twisted.internet</span> <span class="kn">import</span> <span class="n">defer</span>
+<span class="kn">from</span> <span class="nn">twisted.python</span> <span class="kn">import</span> <span class="n">log</span>
+<span class="kn">from</span> <span class="nn">twisted.internet</span> <span class="kn">import</span> <span class="n">reactor</span>
+
+<span class="kn">from</span> <span class="nn">hwios.core.application</span> <span class="kn">import</span> <span class="n">HWIOS</span>
+<span class="kn">import</span> <span class="nn">web_ui.settings</span> <span class="kn">as</span> <span class="nn">settings</span>
+
+<span class="kn">from</span> <span class="nn">web_ui.models.profiles</span> <span class="kn">import</span> <span class="n">Profile</span>
+<span class="kn">from</span> <span class="nn">web_ui.models.http</span> <span class="kn">import</span> <span class="n">WebSocketHandler</span><span class="p">,</span> <span class="n">WebSocketSite</span><span class="p">,</span><span class="n">WebSocketTransport</span>
+
+
+<div class="viewcode-block" id="JsonRPCErr"><a class="viewcode-back" href="../../../../core/hwm.html#services.web_ui.models.ws_router.JsonRPCErr">[docs]</a><span class="k">class</span> <span class="nc">JsonRPCErr</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;code&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">code</span><span class="p">,</span> <span class="s">&#39;message&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">message</span><span class="p">}</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">:</span>
+            <span class="n">ret</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">ret</span><span class="p">;</span></div>
+<span class="k">class</span> <span class="nc">ParseErr</span><span class="p">(</span><span class="n">JsonRPCErr</span><span class="p">):</span>
+    <span class="n">code</span> <span class="o">=</span> <span class="o">-</span><span class="mi">32700</span>
+    <span class="n">message</span> <span class="o">=</span> <span class="s">&quot;Parse error.&quot;</span>
+<span class="k">class</span> <span class="nc">InvalidReq</span><span class="p">(</span><span class="n">JsonRPCErr</span><span class="p">):</span>
+    <span class="n">code</span> <span class="o">=</span> <span class="o">-</span><span class="mi">32600</span>
+    <span class="n">message</span> <span class="o">=</span> <span class="s">&quot;Invalid Request.&quot;</span>
+<span class="k">class</span> <span class="nc">MethodNotFound</span><span class="p">(</span><span class="n">JsonRPCErr</span><span class="p">):</span>
+    <span class="n">code</span> <span class="o">=</span> <span class="o">-</span><span class="mi">32601</span>
+    <span class="n">message</span> <span class="o">=</span> <span class="s">&quot;Method not found.&quot;</span>
+<span class="k">class</span> <span class="nc">InvalidParams</span><span class="p">(</span><span class="n">JsonRPCErr</span><span class="p">):</span>
+    <span class="n">code</span> <span class="o">=</span> <span class="o">-</span><span class="mi">32602</span>
+    <span class="n">message</span> <span class="o">=</span> <span class="s">&quot;Invalid params.&quot;</span>
+<span class="k">class</span> <span class="nc">InternalError</span><span class="p">(</span><span class="n">JsonRPCErr</span><span class="p">):</span>
+    <span class="n">code</span> <span class="o">=</span> <span class="o">-</span><span class="mi">32603</span>
+    <span class="n">message</span> <span class="o">=</span> <span class="s">&quot;Internal error.&quot;</span>    
+
+   
+
+<div class="viewcode-block" id="WebSocketRouter"><a class="viewcode-back" href="../../../../core/hwm.html#services.web_ui.models.ws_router.WebSocketRouter">[docs]</a><span class="k">class</span> <span class="nc">WebSocketRouter</span><span class="p">(</span><span class="n">WebSocketHandler</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    JSONRPC handler over web socket.</span>
+<span class="sd">    Client sends RPC calls, which are routed to the right function(ws_ prefix). Server </span>
+<span class="sd">    can access client_pool and transport&#39;s remote functions, using transport.remote	</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transport</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transport</span> <span class="o">=</span> <span class="n">transport</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">instance_paths</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">view_history</span> <span class="o">=</span> <span class="n">deque</span><span class="p">(</span><span class="n">maxlen</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+        <span class="c">#translation.activate(&#39;nl&#39;)</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">cookie</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="n">cookie_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">cookie</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;;&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">cookie_params</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s">&#39;sessionid&#39;</span> <span class="ow">in</span> <span class="n">param</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;=&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span><span class="o">.</span><span class="n">get_decoded</span><span class="p">()</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">session_store</span> <span class="o">=</span> <span class="n">SessionStore</span><span class="p">(</span><span class="n">session_key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">session_store</span><span class="p">[</span><span class="s">&#39;online_since&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">session_store</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="s">&#39;_auth_user_id&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">session</span><span class="p">:</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">profile</span> <span class="o">=</span> <span class="n">Profile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">session</span><span class="p">[</span><span class="s">&#39;_auth_user_id&#39;</span><span class="p">])</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">is_authenticated</span> <span class="o">=</span> <span class="bp">True</span>
+                        <span class="k">except</span> <span class="n">Profile</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">:</span>
+                            <span class="k">try</span><span class="p">:</span>
+                                <span class="n">Session</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+                            <span class="k">except</span> <span class="n">Session</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">:</span> <span class="k">pass</span>  
+                            <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">profile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_anonymous_user</span><span class="p">()</span>
+                    <span class="k">else</span><span class="p">:</span> 
+                        <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">profile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_anonymous_user</span><span class="p">()</span>
+                <span class="k">except</span> <span class="n">ObjectDoesNotExist</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">session_store</span> <span class="o">=</span> <span class="n">SessionStore</span><span class="p">(</span><span class="n">session_key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">session_store</span><span class="p">[</span><span class="s">&#39;online_since&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">session_store</span><span class="p">[</span><span class="s">&#39;language&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;en-us&#39;</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">session_store</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+                    <span class="c">#print self.session_id</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">)</span><span class="o">.</span><span class="n">get_decoded</span><span class="p">()</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">profile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_anonymous_user</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span> 
+                <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">profile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_anonymous_user</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">profile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_anonymous_user</span><span class="p">()</span>  
+
+    
+    <span class="k">def</span> <span class="nf">connectionMade</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">request</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">add_client</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">view_history</span> <span class="o">=</span> <span class="p">[]</span>
+        
+
+    <span class="k">def</span> <span class="nf">frameReceived</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s">&#39;language&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">session</span><span class="p">:</span>
+            <span class="n">translation</span><span class="o">.</span><span class="n">activate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">session</span><span class="p">[</span><span class="s">&#39;language&#39;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">translation</span><span class="o">.</span><span class="n">activate</span><span class="p">(</span><span class="s">&#39;en-us&#39;</span><span class="p">)</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">plasmoids</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span> 
+                <span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">json_decode</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+                <span class="k">if</span> <span class="s">&#39;data&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">view_history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+                    <span class="n">plasmoids</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">plasmoids</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">view_history</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">profile</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">view_history</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
+                        <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s">&#39;view_changed&#39;</span><span class="p">,</span> <span class="n">client</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">_client</span><span class="p">,</span> <span class="n">filters</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">view_history</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">view_history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> WS/76/HRM&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span><span class="n">system</span><span class="o">=</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">,IN&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">getPeer</span><span class="p">()</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> WS/76/HRM&#39;</span> <span class="o">%</span> <span class="s">&#39;Parsing error&#39;</span><span class="p">,</span><span class="n">system</span><span class="o">=</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">,IN&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">getPeer</span><span class="p">()</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">False</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">InvalidReq</span><span class="p">()</span>            
+            <span class="n">method</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">dispatcher</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">method</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">raise</span> <span class="n">MethodNotFound</span><span class="p">()</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">t</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
+                <span class="c">#mix client and list params in</span>
+                <span class="n">method</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="s">&#39;client&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">_client</span>
+                <span class="n">method</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="s">&#39;params&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span>
+                <span class="n">res</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">method</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">method</span><span class="p">[</span><span class="mi">1</span><span class="p">])(</span><span class="o">**</span><span class="n">method</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">t</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">:</span> 
+                <span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">method</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+                <span class="n">params</span><span class="p">[</span><span class="s">&#39;client&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">_client</span>
+                <span class="n">res</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">method</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">method</span><span class="p">[</span><span class="mi">1</span><span class="p">])(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span> <span class="k">raise</span> <span class="n">InvalidParams</span><span class="p">()</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">defer</span><span class="o">.</span><span class="n">Deferred</span><span class="p">):</span>
+                <span class="n">res</span><span class="o">.</span><span class="n">addBoth</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">respAny</span><span class="p">)</span>
+                <span class="k">return</span>
+            <span class="k">if</span> <span class="n">plasmoids</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">res</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">][</span><span class="s">&#39;plasmoids&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">plasmoids</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">e</span>
+        
+        <span class="c">#print res</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">respAny</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+        
+
+    <span class="k">def</span> <span class="nf">respAny</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">failure</span><span class="o">.</span><span class="n">Failure</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">respResult</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+
+        <span class="n">log</span><span class="o">.</span><span class="n">err</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">failure</span><span class="o">.</span><span class="n">Failure</span><span class="p">):</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">JsonRPCErr</span><span class="p">):</span>         <span class="c"># convert to JsonRPCErr</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="n">InternalError</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">respErr</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+        
+        
+    <span class="k">def</span> <span class="nf">respResult</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">HWIOS</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">json_encode</span><span class="p">([</span><span class="n">result</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">]))</span>
+        
+            
+    <span class="k">def</span> <span class="nf">respErr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">err</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">HWIOS</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">json_encode</span><span class="p">({</span><span class="s">&#39;error&#39;</span><span class="p">:</span><span class="s">&#39;error&#39;</span><span class="p">}))</span>
+            
+        
+    <span class="k">def</span> <span class="nf">notify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="o">*</span><span class="n">params</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">HWIOS</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">json_encode</span><span class="p">([</span><span class="n">method</span><span class="p">,</span> <span class="n">params</span><span class="p">]))</span>
+        
+        
+    <span class="k">def</span> <span class="nf">connectionLost</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">foo</span><span class="p">):</span>
+        <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">rm_client</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s">&#39;online_since&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_store</span><span class="p">:</span>
+                <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_store</span><span class="p">[</span><span class="s">&#39;online_since&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session_store</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        
+        
+    <span class="k">def</span> <span class="nf">get_anonymous_user</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">profile</span> <span class="o">=</span> <span class="n">Profile</span><span class="p">()</span>
+        <span class="n">profile</span><span class="o">.</span><span class="n">is_authenticated</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="n">pk</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10001</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">username</span> <span class="o">=</span> <span class="s">&#39;anonymous_</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">pk</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">name_taken</span><span class="p">(</span><span class="n">username</span><span class="p">):</span>
+                <span class="n">profile</span><span class="o">.</span><span class="n">username</span> <span class="o">=</span> <span class="n">username</span>
+                <span class="n">profile</span><span class="o">.</span><span class="n">pk</span> <span class="o">=</span> <span class="n">pk</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">profile</span><span class="o">.</span><span class="n">uuid</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid5</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">NAMESPACE_DNS</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">))</span>
+                    
+                <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                    <span class="n">profile</span><span class="o">.</span><span class="n">uuid</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid5</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">NAMESPACE_DNS</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">getPeer</span><span class="p">()</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
+                <span class="k">break</span>
+        <span class="k">return</span> <span class="n">profile</span>
+        
+        
+    <span class="k">def</span> <span class="nf">remote_delay_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">method</span><span class="p">,</span><span class="n">params</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">delay</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">remote_delay</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">method</span><span class="p">,</span><span class="n">params</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">HWIOS</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">json_encode</span><span class="p">([</span><span class="n">method</span><span class="p">,</span> <span class="n">params</span><span class="p">]))</span> 
+            <span class="n">log</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> WS/76/HRM&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">method</span><span class="p">),</span><span class="n">system</span><span class="o">=</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">,OUT&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">getPeer</span><span class="p">()</span><span class="o">.</span><span class="n">host</span><span class="p">)</span> 
+        <span class="n">reactor</span><span class="o">.</span><span class="n">callLater</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_delay</span><span class="p">,</span><span class="n">method</span><span class="p">,</span><span class="n">params</span><span class="p">)</span>
+    </div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">HWIOS v0.6 documentation</a> &raquo;</li>
+          <li><a href="../../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, OS-Networks.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>
