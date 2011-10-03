@@ -1,9 +1,0 @@
-Misc module
-===========
-The misc module is used for all websocket calls that don't fit clearly inside another module
-
-Code References
----------------
-.. automodule:: services.web_ui.controllers.ws.misc
-   :members:
-   :show-inheritance:
