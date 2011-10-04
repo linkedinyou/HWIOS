@@ -9,7 +9,7 @@
         <thead>
             <tr>
             <th class='datatable-cb'><input type='checkbox' id='cb-all' /></th>
-            <th>{%trans "Description"%}</th>
+            <th>{%trans "Username"%}</th>
             <th>{%trans "Email"%}</th>
             <th>{%trans "Active"%}</th>
             <th>{%trans "Staff"%}</th>
@@ -19,8 +19,8 @@
         <tbody>
         {% for profile in profiles %}
         <tr>
-        <td><input type='checkbox' data-uuid='{{profile.uuid}}' data-first_name='{{profile.first_name}}' data-last_name='{{profile.last_name}}' id='{{profile.first_name}}_{{profile.last_name}}' name='{{profile.first_name}}_{{profile.last_name}}'/></td>
-        <td>{{profile.first_name}} {{profile.last_name}}</td>
+        <td><input type='checkbox' data-uuid='{{profile.uuid}}' data-username='{{profile.username}}' id='{{profile.username}}' name='{{profile.first_name}}_{{profile.last_name}}'/></td>
+        <td>{{profile.username}}</td>
         <td>{{profile.email}}</td>
         <td>
         {%ifequal profile.is_active 1 %}

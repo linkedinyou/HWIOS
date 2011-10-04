@@ -1,3 +1,13 @@
+{%load i18n%}
 <div>
-Sorry, websockets are not supported on your current browser.
+{%trans "Sorry, websockets (hybi-10/hixie-76) are not available in your current browser configuration."%}
+{%trans "Supported browsers are:"%}
+<ul>
+<li>Firefox 6 or later</li>
+<li>Chrome/Chromium 12 or later</li>
+<li>Opera 11.1 or later</li>
+</ul>
+<p class='comment'>Please notice that Webkit browsers tend to work best on HWIOS, especially in combination
+with the V8 javascript engine(Chrome/Chromium). Opera doesn't have support for the history API,
+so url's won't work on that browser...</p>
 </div>

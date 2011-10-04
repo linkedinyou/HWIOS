@@ -451,7 +451,6 @@
  * http://docs.jquery.com/UI/Dialog#theming
  */
 .ui-dialog {
-    position: absolute;
     padding: 0px;
     width: 300px;
     overflow:visible !important;

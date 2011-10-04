@@ -13,6 +13,8 @@ require.packaged = true;
 var application = {functions:{},modules:{},plasmoids:{}}
 
 define('app',[
+'modules/ui',
+'lib/codemirror2/codemirror',
 'lib/tools/xregexp',
 'lib/tools/math',
 'lib/jquery/jquery.serialobj',
@@ -20,7 +22,6 @@ define('app',[
 'lib/jquery/jquery.ws',
 'lib/jquery/jquery.context',
 'lib/tools/diff_match_patch',
-'order!lib/codemirror2/codemirror',
 'order!lib/codemirror2/mode/xml/xml',
 'order!lib/codemirror2/mode/javascript/javascript',
 'order!lib/codemirror2/mode/markdown/markdown',
@@ -249,24 +250,22 @@ function(settings){
         $(document).bind('BAD_BROWSER',function(e, err_code){
             if(err_code == 'NO_WEBSOCKET'){
                 $.post("/misc/bad_browser/",{code:err_code}, function(response){
+                    $('body').html('<div id="bad-browser">'+gettext('Bad Browser!')+'</div>');
                     var i18nButtons = {};
-                    i18nButtons[gettext('Cancel')] = function(){
-                        $(this).dialog("close");
-                    };
-                    i18nButtons[gettext('Ok')] = function(){
-                        
+                    i18nButtons[gettext('Get a real browser')] = function(){
+                    window.open ("http://build.chromium.org/f/chromium/snapshots/","mywindow");
                     }
                     $login = $(response.data.dom.dialog).dialog({
                     dialogClass: 'badbrowser-dialog',autoOpen: true,position:"center", width:450,
-                    title: '<span class="ui-icon ui-icon-person"></span><span>'+gettext('Bad Browser!')+'</span>',
-                    resizable: false,draggable: true,modal: true, buttons: i18nButtons, zIndex:1000000
+                    title: '<span class="ui-icon ui-icon-cancel"></span><span>'+gettext('Bad Browser!')+'</span>',
+                    resizable: false,draggable: true,modal: true, buttons: i18nButtons, zIndex:1000000,
+                    close: function(){                        
+                        window.open ("/","_self");
+                    },
                     });
 
                 },"json");
             }
-            console.log(params);
-            console.log(e);
-
         });
         var ws_uri = application.settings.services.web_ui.uri;
         var ssl = application.settings.services.web_ui.ssl;

@@ -16,7 +16,8 @@ from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.http import HttpResponse
 from django.contrib.auth.models import AnonymousUser
-
+from django.template.loader import render_to_string
+from django.utils.translation import ugettext as _
 
 from web_ui.models.elFinder import connector
 

@@ -71,7 +71,6 @@ function bind_functions() {
             }
             else {
                 application.functions.ui.transition(kwargs.data.dom.main, $('.main'));
-                $('.datatable').dataTable({"bJQueryUI": true,"bAutoWidth": false,"aoColumnDefs":[{"aTargets":[0],"bSearchable":false,"bSortable": false}]});
                 var _tabs = $('#personal_tabs').tabs();
                 _tabs.tabs('option', 'selected',selected_tab);
             }
@@ -207,8 +206,7 @@ function bind_functions() {
                     switch(response.status.code) {
                         case 'PROFILE_CREATE_OK':
                         application.functions.ui.transition(response.data.dom.main, $('.main'));
-                        application.cb_selected = 0;
-                        $('.datatable').dataTable({"bJQueryUI": true,"bAutoWidth": false,"aoColumnDefs":[{"aTargets":[0],"bSearchable":false,"bSortable": false}]});
+                        application.cb_selected = 0;                        
                         $('#personal_tabs').tabs();
                         break;
                         case 'FORM_INVALID':
@@ -224,32 +222,31 @@ function bind_functions() {
         },
         
         delete_profiles: function(kwargs) {
-            application.ws.remote('/data/profiles/delete/',{},function(response){ 
+            application.ws.remote('/data/profiles/delete/',{},function(response){
+                var i18nButtons = {};
+                i18nButtons[gettext('Cancel')] = function(){
+                    $(this).dialog("close");
+                }
+                i18nButtons[gettext('Delete')] = function(){
+                    var profiles = {};
+                    $.each($(":checkbox:checked:visible"),function(idx, value){
+                        profiles[$(this).data('uuid')] = {first_name: $(this).data('first_name'), last_name: $(this).data('last_name')};
+                    });
+                        application.ws.remote('/data/profiles/delete/',{params:profiles},function(response){
+                            application.functions.ui.transition(response.data.dom.main, $('.main'));
+                            _dialog.dialog('destroy');
+                            _dialog = undefined;
+                            $('#personal_tabs').tabs();
+                        });
+                    $(this).dialog('close');
+                }
                 var _dialog = $(response.data.dom.dialog).dialog({                
                     resizable: false,width:300, modal: true, zIndex:1000000,
-                    title: gettext("Please confirm")+"...",
+                    title:'<span class="ui-icon ui-icon-alert"></span><span>'+gettext("Warning")+'!</span>',
                     open: function(event, ui) {
                     $('.confirm-list').html(get_cb_names());     
                     },
-                    buttons: {
-                        Cancel: function() {
-                            $(this).dialog('close');
-                        },
-                        Delete: function() {
-                            var profiles = {};
-                            $.each($(":checkbox:checked:visible"),function(idx, value){
-                                profiles[$(this).data('uuid')] = {first_name: $(this).data('first_name'), last_name: $(this).data('last_name')};
-                            });
-                                application.ws.remote('/data/profiles/delete/',{params:profiles},function(response){
-                                    application.functions.ui.transition(response.data.dom.main, $('.main'));
-                                    _dialog.dialog('destroy');
-                                    _dialog = undefined;
-                                    $('.datatable').dataTable({"bJQueryUI": true,"bAutoWidth": false,"aoColumnDefs":[{"aTargets":[0],"bSearchable":false,"bSortable": false}]});
-                                    $('#personal_tabs').tabs();
-                                });
-                            $(this).dialog('close');
-                        }
-                    }
+                    buttons: i18nButtons
                 });
             });
         },
@@ -308,8 +305,7 @@ function bind_functions() {
                     break;
                     case 'PROFILE_EDIT_OK':
                         application.functions.ui.transition(response.data.dom.main, $('.main'));
-                        application.cb_selected = 0;
-                        $('.datatable').dataTable({"bJQueryUI": true,"bAutoWidth": false,"aoColumnDefs":[{"aTargets":[0],"bSearchable":false,"bSortable": false}]});
+                        application.cb_selected = 0;                        
                         $('#personal_tabs').tabs();
                     break;
                 }

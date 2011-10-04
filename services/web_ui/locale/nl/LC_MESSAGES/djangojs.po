@@ -116,3 +116,6 @@ msgstr "Waarschuwing"
 
 msgid "You"
 msgstr "U"
+
+msgid "Profiles"
+msgstr "Profielen"

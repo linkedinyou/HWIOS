@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-09-28 17:30+0200\n"
+"POT-Creation-Date: 2011-10-04 13:19+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Jeroen van Veen <info@os-networks.net>\n"
 "Language-Team: HWIOS Translators <info@os-networks.net>\n"
@@ -17,93 +17,93 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: settings.py:93
+#: settings.py:79
 msgid "Dutch"
 msgstr "Nederlands"
 
-#: settings.py:94
+#: settings.py:80
 msgid "English"
 msgstr "Engels"
 
-#: controllers/http/misc.py:103
+#: controllers/http/misc.py:89
 msgid "Oops! You are using an incompatible browser..."
 msgstr ""
 
-#: controllers/http/opensim.py:58
+#: controllers/http/opensim.py:44
 msgid "File(s) succesfully uploaded"
 msgstr "Bestand succesvol geupload"
 
-#: controllers/http/profiles.py:68
+#: controllers/http/profiles.py:56
 msgid "Succesfully logged in!"
 msgstr "Succesvol ingelogd!"
 
-#: controllers/http/profiles.py:72
+#: controllers/http/profiles.py:60
 msgid "Profile login"
 msgstr "Profiel login"
 
-#: controllers/http/profiles.py:78
+#: controllers/http/profiles.py:66
 msgid "Your account has not been activated yet..."
 msgstr "Uw account is nog niet geactiveerd..."
 
-#: controllers/http/profiles.py:89
+#: controllers/http/profiles.py:77
 msgid "Invalid user/password entered..."
 msgstr "Ongeldige gebruiker/wachtwoord gegevens..."
 
-#: controllers/http/profiles.py:100
+#: controllers/http/profiles.py:88
 msgid "Invalid form input!"
 msgstr "Fout formulier!"
 
-#: controllers/http/profiles.py:110
+#: controllers/http/profiles.py:98
 msgid "Profile logout"
 msgstr "Profiel loguit"
 
-#: controllers/http/profiles.py:119
+#: controllers/http/profiles.py:107
 msgid "You just logged out. Thank you for visiting..."
 msgstr "U bent net uitgelogd. Dank u voor het bezoek..."
 
-#: controllers/ws/blog.py:87
+#: controllers/ws/blog.py:89
 msgid "Article created succesfully..."
 msgstr "Artikel succesvol aangemaakt..."
 
-#: controllers/ws/blog.py:92
+#: controllers/ws/blog.py:94
 msgid "Blog article created"
 msgstr ""
 
-#: controllers/ws/blog.py:100 controllers/ws/blog.py:153
-#: controllers/ws/blog.py:248 controllers/ws/opensim.py:874
+#: controllers/ws/blog.py:102 controllers/ws/blog.py:155
+#: controllers/ws/blog.py:250 controllers/ws/opensim.py:874
 msgid "Invalid form!"
 msgstr "Fout formulier!"
 
-#: controllers/ws/blog.py:134
+#: controllers/ws/blog.py:136
 msgid "Article updated succesfully..."
 msgstr "Artikel succesvol bijgewerkt..."
 
-#: controllers/ws/blog.py:145
+#: controllers/ws/blog.py:147
 msgid "Blog article edited"
 msgstr "Blog artikel bewerkt"
 
-#: controllers/ws/blog.py:185
+#: controllers/ws/blog.py:187
 #, python-format
 msgid "Article %(slug)s removed succesfully..."
 msgstr "Artikel %(slug)s succesvol verwijderd..."
 
-#: controllers/ws/blog.py:194
+#: controllers/ws/blog.py:196
 msgid "Blog article deleted"
 msgstr "Blog artikel verwijderd"
 
-#: controllers/ws/blog.py:223 controllers/ws/blog.py:234
+#: controllers/ws/blog.py:225 controllers/ws/blog.py:236
 msgid "Comment saved succesfully..."
 msgstr "Commentaar succesvol bewaard..."
 
-#: controllers/ws/blog.py:239
+#: controllers/ws/blog.py:241
 msgid "Blog comment created"
 msgstr "Blog commentaar aangemaakt"
 
-#: controllers/ws/blog.py:281
+#: controllers/ws/blog.py:283
 msgid "Comment removed succesfully..."
 msgstr "Commentaar succesvol verwijderd..."
 
-#: controllers/ws/blog.py:291
+#: controllers/ws/blog.py:293
 msgid "Blog comment deleted"
 msgstr "Blog commentaar verwijderd"
 
@@ -523,235 +523,235 @@ msgstr ""
 msgid "Wiki revision restored"
 msgstr "Wiki Revisie herstelt"
 
-#: forms/opensim.py:36 forms/opensim.py:49
+#: forms/opensim.py:22 forms/opensim.py:35
 #: templates/start/opensim/read_avatars.html:17
 msgid "Name"
 msgstr "Naam"
 
-#: forms/opensim.py:37
+#: forms/opensim.py:23
 msgid "Owner"
 msgstr "Eigenaar"
 
-#: forms/opensim.py:38
+#: forms/opensim.py:24
 msgid "Simulator"
 msgstr "Simulatoren"
 
-#: forms/opensim.py:39
+#: forms/opensim.py:25
 msgid "X Location"
 msgstr "X Locatie"
 
-#: forms/opensim.py:39 forms/opensim.py:40
+#: forms/opensim.py:25 forms/opensim.py:26
 msgid "Click on the map"
 msgstr "Klik op de kaart"
 
-#: forms/opensim.py:40
+#: forms/opensim.py:26
 msgid "Y Location"
 msgstr "Y Locatie"
 
-#: forms/opensim.py:55
+#: forms/opensim.py:41
 msgid "Target region"
 msgstr "Doel Regio"
 
-#: forms/opensim.py:74 forms/opensim.py:99
+#: forms/opensim.py:60 forms/opensim.py:85
 msgid "Designated simulator"
 msgstr "Toegewezen simulator"
 
-#: forms/opensim.py:75 forms/opensim.py:100
+#: forms/opensim.py:61 forms/opensim.py:86
 msgid "Luggage name"
 msgstr "Baggage"
 
-#: forms/opensim.py:76
+#: forms/opensim.py:62
 msgid "Target avatar"
 msgstr "Doel avatar"
 
-#: forms/opensim.py:77 forms/opensim.py:101
+#: forms/opensim.py:63 forms/opensim.py:87
 msgid "Avatar password"
 msgstr "Avatar wachtwoord"
 
-#: forms/opensim.py:78 forms/opensim.py:102
+#: forms/opensim.py:64 forms/opensim.py:88
 msgid "Inventory directory"
 msgstr "Inventaris map"
 
-#: forms/opensim.py:125
+#: forms/opensim.py:111
 msgid "master ini"
 msgstr "Hoofd ini"
 
-#: forms/opensim.py:129
+#: forms/opensim.py:115
 msgid "OpenStreetMap"
 msgstr "OpenStreetMap"
 
-#: forms/opensim.py:129
+#: forms/opensim.py:115
 msgid "Place regions on earth"
 msgstr "Plaats regio's op aarde"
 
-#: forms/opensim.py:130
+#: forms/opensim.py:116
 msgid "Center Position (X)"
 msgstr "Centreer Positie (X)"
 
-#: forms/opensim.py:130
+#: forms/opensim.py:116
 msgid "Defines the x-position to focus the map on after opening"
 msgstr "Definieert de x-positie waarop de kaart gecentreerd is bij opening"
 
-#: forms/opensim.py:131
+#: forms/opensim.py:117
 msgid "Center Position (Y)"
 msgstr "Centreer Positie (Y)"
 
-#: forms/opensim.py:131
+#: forms/opensim.py:117
 msgid "Defines the y-position to focus the map on after opening"
 msgstr "Definieert de y-positie waarop de kaart gecentreerd is bij opening"
 
-#: forms/opensim.py:132
+#: forms/opensim.py:118
 msgid "Center Position (Z)"
 msgstr "Centreer Positie (Z)"
 
-#: forms/opensim.py:132
+#: forms/opensim.py:118
 msgid "Defines the zoom-level that's being used by the map after opening"
 msgstr "Definieert het zoom niveau waarop de kaart gecentreerd is bij opening"
 
-#: forms/plasmoids.py:30 templates/start/plasmoids/read_plasmoids.html:12
+#: forms/plasmoids.py:16 templates/start/plasmoids/read_plasmoids.html:12
 msgid "Title"
 msgstr "Titel"
 
-#: forms/plasmoids.py:31 templates/start/plasmoids/read_plasmoids.html:14
+#: forms/plasmoids.py:17 templates/start/plasmoids/read_plasmoids.html:14
 msgid "Type"
 msgstr "Type"
 
-#: forms/plasmoids.py:32
+#: forms/plasmoids.py:18
 msgid "Access Level"
 msgstr ""
 
-#: forms/plasmoids.py:33
+#: forms/plasmoids.py:19
 msgid "URL Target"
 msgstr "URL Doel"
 
-#: forms/plasmoids.py:34
+#: forms/plasmoids.py:20
 msgid "Auto Preview"
 msgstr "Auto Voorvertoning"
 
-#: forms/profiles.py:35 forms/profiles.py:67
+#: forms/profiles.py:23 forms/profiles.py:55
 #: templates/start/profiles/registration_complete.html:5
 msgid "First name"
 msgstr "Voornaam"
 
-#: forms/profiles.py:36 forms/profiles.py:68
+#: forms/profiles.py:24 forms/profiles.py:56
 #: templates/start/profiles/registration_complete.html:6
 msgid "Last name"
 msgstr "Achternaam"
 
-#: forms/profiles.py:37 forms/profiles.py:69 forms/profiles.py:77
-#: forms/profiles.py:84 templates/start/profiles/manage_profiles.html:13
+#: forms/profiles.py:25 forms/profiles.py:57 forms/profiles.py:65
+#: forms/profiles.py:72 templates/start/profiles/manage_profiles.html:13
 msgid "Email"
 msgstr "Email"
 
-#: forms/profiles.py:38 templates/start/profiles/view_profile.html:27
+#: forms/profiles.py:26 templates/start/profiles/view_profile.html:27
 msgid "Organisation"
 msgstr "Organisatie"
 
-#: forms/profiles.py:39 forms/profiles.py:70 forms/profiles.py:85
-#: forms/profiles.py:113 forms/profiles.py:117
+#: forms/profiles.py:27 forms/profiles.py:58 forms/profiles.py:73
+#: forms/profiles.py:101 forms/profiles.py:105
 #: templates/start/profiles/registration_complete.html:7
 msgid "Password"
 msgstr "Wachtwoord"
 
-#: forms/profiles.py:40 forms/profiles.py:71
+#: forms/profiles.py:28 forms/profiles.py:59
 msgid "Is active"
 msgstr "Is actief"
 
-#: forms/profiles.py:41 forms/profiles.py:72
+#: forms/profiles.py:29 forms/profiles.py:60
 msgid "Is staff"
 msgstr "Is personeel"
 
-#: forms/profiles.py:42 forms/profiles.py:73
+#: forms/profiles.py:30 forms/profiles.py:61
 msgid "Is superuser"
 msgstr "Is supergebruiker"
 
-#: forms/profiles.py:78
+#: forms/profiles.py:66
 msgid "Change Password"
 msgstr "Verander Wachtwoord"
 
-#: forms/profiles.py:79
+#: forms/profiles.py:67
 msgid "About me"
 msgstr ""
 
-#: forms/profiles.py:83 forms/profiles.py:112
+#: forms/profiles.py:71 forms/profiles.py:100
 msgid "Username"
 msgstr "Gebruikersnaam"
 
-#: forms/wiki.py:31 forms/wiki.py:35
+#: forms/wiki.py:17 forms/wiki.py:21
 msgid "Comments"
 msgstr "Commentaar"
 
-#: forms/wiki.py:36
+#: forms/wiki.py:22
 msgid "Revision History"
 msgstr "Revisie Historie"
 
-#: forms/wiki.py:40
+#: forms/wiki.py:26
 msgid "Enter search term"
 msgstr "Voer zoekterm in"
 
-#: forms/wiki.py:41
+#: forms/wiki.py:27
 msgid "Search content"
 msgstr "Zoek content"
 
-#: models/settings.py:37
+#: models/settings.py:23
 msgid "Site Name"
 msgstr "Site Naam"
 
-#: models/settings.py:38
+#: models/settings.py:24
 msgid "Default Template"
 msgstr "Standaard sjabloon"
 
-#: models/settings.py:39
+#: models/settings.py:25
 msgid "Activation Type"
 msgstr "Activatie type"
 
-#: models/settings.py:40
+#: models/settings.py:26
 msgid "Moderator Notify"
 msgstr "Moderator Notificatie"
 
-#: models/settings.py:41
+#: models/settings.py:27
 msgid "Mail From"
 msgstr "Mail Van"
 
-#: models/settings.py:42
+#: models/settings.py:28
 msgid "Mail Header"
 msgstr "Mail Kop"
 
-#: models/settings.py:43
+#: models/settings.py:29
 msgid "Mail Body"
 msgstr "Mail Tekst"
 
-#: models/statics.py:34 templates/start/messenger/context_menu.html:20
+#: models/statics.py:20 templates/start/messenger/context_menu.html:20
 msgid "Register"
 msgstr "Registreer"
 
-#: models/statics.py:35 templates/start/messenger/context_menu.html:13
+#: models/statics.py:21 templates/start/messenger/context_menu.html:13
 #: templates/start/profiles/context_menu.html:10
 msgid "Logout"
 msgstr "Loguit"
 
-#: models/statics.py:36 templates/start/maps/worldmap.html:4
+#: models/statics.py:22 templates/start/maps/worldmap.html:4
 #: templates/start/opensim/read_maps.html:4
 msgid "Maps"
 msgstr "Kaarten"
 
-#: models/statics.py:37 templates/start/profiles/manage_profiles.html:4
+#: models/statics.py:23 templates/start/profiles/manage_profiles.html:4
 msgid "Profiles"
 msgstr "Profielen"
 
-#: models/statics.py:38
+#: models/statics.py:24
 msgid "Profile Management"
 msgstr "Profiel Beheer"
 
-#: models/statics.py:39
+#: models/statics.py:25
 msgid "Region Management"
 msgstr "Regio Beheer"
 
-#: models/statics.py:40
+#: models/statics.py:26
 msgid "Avatar Management"
 msgstr "Avatar Beheer"
 
-#: models/statics.py:41 templates/start/settings/read_settings.html:4
+#: models/statics.py:27 templates/start/settings/read_settings.html:4
 msgid "Settings"
 msgstr "Instellingen"
 
@@ -788,7 +788,7 @@ msgstr "Nieuw Artikel"
 #: templates/start/blog/edit_article.html:13
 #: templates/start/opensim/create_region.html:20
 #: templates/start/opensim/edit_region.html:25
-#: templates/start/opensim/upload_luggage.html:21
+#: templates/start/opensim/upload_luggage.html:20
 #: templates/start/opensim/upload_scene.html:21
 #: templates/start/plasmoids/create_plasmoid.html:22
 #: templates/start/plasmoids/edit_plasmoid.html:22
@@ -913,6 +913,7 @@ msgstr "Weet u zeker dat u de volgende scenes wilt verwijderen?"
 
 #: templates/start/opensim/edit_region.html:5
 #: templates/start/opensim/read_regions.html:49
+#: templates/start/opensim/read_settings.html:5
 #: templates/start/plasmoids/read_plasmoids.html:48
 #: templates/start/profiles/edit_profile.html:6
 #: templates/start/profiles/manage_profiles.html:54
@@ -941,7 +942,7 @@ msgid "Overview"
 msgstr "Overzicht"
 
 #: templates/start/opensim/read_avatars.html:10
-#: templates/start/opensim/upload_luggage.html:5
+#: templates/start/opensim/upload_luggage.html:4
 msgid "Luggage"
 msgstr "Baggage"
 
@@ -993,7 +994,7 @@ msgstr "Verwijder"
 
 #: templates/start/opensim/read_avatars.html:81
 #: templates/start/opensim/read_regions.html:91
-#: templates/start/opensim/upload_luggage.html:6
+#: templates/start/opensim/upload_luggage.html:5
 #: templates/start/opensim/upload_scene.html:6
 msgid "Upload"
 msgstr "Upload"
@@ -1020,7 +1021,7 @@ msgstr "Positie"
 msgid "Status"
 msgstr ""
 
-#: templates/start/opensim/read_settings.html:5
+#: templates/start/opensim/read_settings.html:4
 msgid "OpenSim Preferences"
 msgstr "OpenSim Voorkeuren"
 
@@ -1042,17 +1043,17 @@ msgstr "Bijwerken"
 msgid "Render"
 msgstr "Verwerk"
 
-#: templates/start/opensim/upload_luggage.html:10
+#: templates/start/opensim/upload_luggage.html:9
 #: templates/start/opensim/upload_scene.html:10
 msgid "Selected files"
 msgstr "Geselecteerde bestanden"
 
-#: templates/start/opensim/upload_luggage.html:13
+#: templates/start/opensim/upload_luggage.html:12
 #: templates/start/opensim/upload_scene.html:13
 msgid "Progress"
 msgstr "Progressie"
 
-#: templates/start/opensim/upload_luggage.html:22
+#: templates/start/opensim/upload_luggage.html:21
 #: templates/start/opensim/upload_scene.html:22
 #: templates/start/teknon/read_pool.html:57
 msgid "Start"

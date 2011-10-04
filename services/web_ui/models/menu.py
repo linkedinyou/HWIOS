@@ -9,7 +9,7 @@
     :license: LGPL, See LICENSE for details.
 """
 from django.db import models
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext as _
 import re
 
 class MenuTree(models.Model):
@@ -68,9 +68,11 @@ class Menu(object):
                         for match in iterator:
                             replace_attr = str(match.group()[1:-1])
                             node.view = node.view.replace(match.group(), getattr(self.user, replace_attr))
-                        self.menu_structure +='<div class="menu-item" data-uri="%s">%s</div></li>' % (node.view, node.title)
+                        print _(node.title)
+                        self.menu_structure +='<div class="menu-item" data-uri="%s">%s</div></li>' % (node.view, _(node.title))
                     else:                        
-                        self.menu_structure +='<div class="menu-item" data-function="%s">%s</div></li>' % (node.view, node.title)
+                        self.menu_structure +='<div class="menu-item" data-function="%s">%s</div></li>' % (node.view, _(node.title))
+                        print _(node.title)
         if parent != 0:
             self.menu_structure +='</ul></li>'   
         
