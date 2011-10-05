@@ -11,7 +11,10 @@
     -webkit-user-select: auto;
     -moz-user-select: auto;
     border-bottom:1px dotted #ddd;
-    font-size:16px;
+    font-size:13px;
+    background: url('images/chatbubble.png') no-repeat;
+    background-position:center;
+    background-size:70%;
 }
 
 #message_input_field {
@@ -19,15 +22,13 @@
     display:block;
     -webkit-box-sizing:border-box;
     -moz-box-sizing:border-box;
-    border-top:0;
-    border-right:0px !important;
+
 }
 
 #message_input {
     width:100%;
     -webkit-box-sizing:border-box;
     -moz-box-sizing:border-box;
-
 }
 
 #online-box {
@@ -40,23 +41,29 @@
     -webkit-box-sizing:border-box;
     -moz-box-sizing:border-box;
     border-bottom:1px dotted #00aeef;
-    font-size:16px;
+    font-size:12px;
+    font-weight:bold;
+    font-style:oblique;
     resize:vertical;
     cursor:default;
 }
 
 
-.message-container {
-    margin-bottom:5px;
+/*each message*/
+.message-container:nth-child(even) {
+    background:rgba(66,66,66,0.1);
 }
 
-.message-container:nth-child(even) {
-    background:#efefef;
-}
+
 
 .message-header {
     color:#333;
     font-size:13px;
+}
+
+/*author*/
+.message-header span:first-child {
+    font-weight:bold;
 }
 
 /*time*/
@@ -72,37 +79,44 @@
 
 .messenger-participant {
     width:100%;
-    height:30px;
     -webkit-box-sizing:border-box; 
     -moz-box-sizing:border-box;
 }
 
 /*row coloring*/
-.messenger-participant:nth-child(even) {
-    background:#efefef;
-}
 
-.messenger-participant:hover {
-    background:#dfdfdf;
-    -webkit-transition: all 0.5s ease;
-    -moz-transition: all 0.5s ease;
-}
 
-.messenger-participant div {
+
+/* user-online avatar div*/
+.messenger-participant div:first-child {
     float:left;
-    margin-right:3px;
+    margin-right:-100%;
+    width:24px;
+    height:24px;
 }
 
+/* user-online title text*/
 .messenger-participant div:last-child {
-    margin-top:3px;
-    margin-left:5px;
-    font-style:oblique;
+    margin-left:25px;
+    padding:2px;
+    padding-left:8px;
+    padding-top:5px;
+    -webkit-box-sizing:border-box;
+    -moz-box-sizing:border-box;
+    border-top: 1px solid #fff;
+    border-bottom: 1px solid #ddd;
+    background:rgb(245,245,245);
+}
+
+.messenger-participant div:last-child:hover {
+    background:rgb(250,250,250);
+    border-top: 1px solid #fff;
+    border-bottom: 1px solid #ccc;
 }
 
 .messenger-avatar {
-    border:1px solid #ddd;
-    width:25px;
-    height:25px;
+    border:1px solid #ddd;    
+    margin-top:1px;
 }
 
 .messenger-avatar img {

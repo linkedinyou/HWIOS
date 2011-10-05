@@ -1,18 +1,22 @@
 .article-option {
     margin:5px;
     margin-right:0px;
+    margin-top:1px;
 }
 
 .article-avatar {
-    width:75px;
-    height:75px;
-    border:1px dotted #ddd;
+    width:70px;
+    height:70px;
+    border-left:1px dotted #ddd;
+    border-top:1px dotted #ddd;
+    padding:5px;
     float:left;
+    margin-top:25px;
 }
 
 .article-avatar img {
-    width:75px;
-    height:75px;    
+    width:70px;
+    height:70px;
 }
 
 .comment-avatar {
@@ -33,15 +37,14 @@
 
 .blog-article {
     margin-bottom:40px;
-    line-height:1.2;
+    line-height:1.4;
     position:relative;
     overflow:auto;
 }
 
 .blog-article-header {
-    font-size:20px;
+    font-size:16px;
     font-weight:bold;
-    margin-top:5px;
     margin-bottom:10px;
     border-bottom:1px dotted #ddd;
     padding-bottom:5px;
@@ -82,23 +85,22 @@
 .blog-article-text {
     width:100%;
     color:#333 !important;
-    font-size:16px;
     min-height:100px;
 }
 
 .blog-article-text:first-letter {
-   font-size:20px;
+   font-size:18px;
    font-weight:bold;
 }
 
 
 .blog-article-created {
     font-size:12px;
+    font-style:oblique;
     font-weight:bold;
-    color:#999;
     float:left;
     padding-top:5px;
-    margin-left:1px;
+    margin-left:5px;
 }
 
 .blog-article-by {
@@ -116,9 +118,8 @@
 }
 
 .blog-article-toolbar {
-    padding-top:7px;
+    padding-top:2px;
 }
-
 
 
 .blog-comments-title {

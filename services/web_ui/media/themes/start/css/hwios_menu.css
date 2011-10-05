@@ -116,6 +116,7 @@ ul.sf-menu li li li:hover ul {
 
 .sf-menu > li ul {
     font-weight:normal;
+    font-size:13px !important;
 }
 
 /*First level menu hover */

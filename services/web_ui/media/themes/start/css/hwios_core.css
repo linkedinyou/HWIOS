@@ -2,7 +2,7 @@
 html, body {
     margin:0px;
     padding:0px;
-    font-size:15px;
+    font-size:13px;
     font-family:"FreeSans","Bitstream Vera Sans","Arial";
 }
 
@@ -34,14 +34,14 @@ html > * {
 
 
 a, a:visited {
-    color:#000;
+    color:#333;
     font-weight:bold;
     text-decoration:none;
     outline: none;
 }
 
 a:hover {
-    color:#;
+    color:#00aeef;
 }
 
 hr {
@@ -52,13 +52,12 @@ hr {
 #header {
     z-index:5000;
     height:90px;
-    font-size:15px;
+    font-size:14px;
     border-bottom:1px dotted #ddd;
     min-width:600px;
 }
 
 #copyright {
-    font-weight:bold;
     font-size:9px;
     float:right;
     margin-top:69px;
@@ -69,13 +68,15 @@ hr {
     color:#00aeef !important;
 }
 
+/*right vertical hwios text*/
 #hwios {
     font-size:20px;
+    font-weight:bold;
     float:right;
     margin-top:30px;
     overflow:auto;
     margin-right:-28px;
-    font-weight:bold;
+
 }
 
 #hwios-highlight {
@@ -91,7 +92,8 @@ hr {
     -webkit-box-sizing:border-box;
     -moz-box-sizing:border-box;
     margin-right:-100%;
-    margin-top:10px;
+    margin-top:0px;
+    padding-right:30px;
 }
 
 /*the right fluid main-column*/
@@ -100,15 +102,15 @@ hr {
     -moz-box-sizing:border-box;
 
     margin-left:300px;
-    margin-top:20px;
+    margin-top:10px;
 }
 
-
+/*hwios logo at the left*/
 #logo {
     left:3px;
     margin-top:20px;
     float:left;
-    width:75px;
+    width:74px;
     height:52px;
     background: url('images/logo.png') no-repeat;
 }
@@ -195,7 +197,7 @@ select {
     border:1px solid #ddd;
     outline: none;
     padding:4px;
-    font-size:15px;
+    font-size:13px;
 }
 select:hover {
     border:1px inset #efefef;
@@ -280,7 +282,7 @@ form label {
     display:block;
     -webkit-box-sizing:border-box;
     -moz-box-sizing:border-box;
-    font-size:16px;
+    font-size:13px;
     font-style:oblique;
 }
 
@@ -340,7 +342,7 @@ form .ui-icon-info {
 button {
     cursor:pointer;
     position: relative;
-    padding:8px;
+    padding:4px;
     font-size:13px;
     margin:0px !important;
     outline:None;
@@ -400,7 +402,7 @@ button::-moz-focus-inner { border: 0; }
     padding-left:5px;
     background:#dfdfdf;
     border-top:1px dotted #ddd;
-    height:37px;
+    height:30px;
 }
 .fg-toolbar .fg-buttonset { margin-right:1.5em; padding-left: 1px; }
 
@@ -443,12 +445,12 @@ button::-moz-focus-inner { border: 0; }
 
  .hwios-widget .ui-widget-header {
     color:#000;
-    font-size:20px;
+    font-size:16px;
     font-weight:bold;
     display:block;
     padding-left:7px;
     border-bottom:1px dotted #ddd;
-    height:26px;
+    height:25px;
 }
 
 /* all hwios widgets have a top-left icon, a text and optionally a right-floated info-text */
@@ -467,6 +469,7 @@ button::-moz-focus-inner { border: 0; }
 .hwios-widget > .ui-widget-header span:first-child {
     float:left;
     padding-right:5px;
+    padding-top:3px;
 }
 
 /* hwios widget left header text */
@@ -475,7 +478,7 @@ button::-moz-focus-inner { border: 0; }
     color:#00aeef;
 }
 
-/* hwios widget left header text */
+/* hwios widget right header text */
 .hwios-widget > .ui-widget-header span:last-child {
     display:block;
     float:right;
@@ -781,12 +784,11 @@ code {
 
 .profile-details-about:first-letter {
     font-weight:bold;
-    font-size:20px;
+    font-size:18px;
 }
 
 #profile-details table{
     padding:0px;
-    font-size:14px;
 }
 
 
@@ -934,6 +936,7 @@ code {
     overflow:auto;
     color:#aaa;
     z-index:10000000;
+    font-size:13px;
 }
 
 .context-menu .hwios-button {
@@ -956,8 +959,6 @@ code {
 .context-menu-option:first-letter {
     font-weight:bold;
 }
-
-
 
 .context-menu-option:hover {
     background-color:#fff;
@@ -1030,13 +1031,26 @@ code {
 }
 
 .infinote-participant-name {
-    font-size:15px;
+    font-size:13px;
     font-style:oblique;
+}
+
+
+@-moz-keyframes caret_pulse {
+    0%   {opacity: 1;}
+    50%  {opacity: 0;}
+    100% {opacity: 1;}
 }
 
 @-webkit-keyframes caret_pulse {
     0%   {opacity: 1;}
     50%  {opacity: 0;}
+    100% {opacity: 1;}
+}
+
+@-moz-keyframes selection_pulse {
+    0%   {opacity: 1;}
+    50%  {opacity: 0.5;}
     100% {opacity: 1;}
 }
 
@@ -1047,10 +1061,16 @@ code {
 }
 
 .remote-selection {
-    -webkit-animation-name: selection_pulse;
+    /*this produces some artifacts. no real gfx improvement
+    /*-webkit-animation-name: selection_pulse;
     -webkit-animation-duration: 2s;
     -webkit-animation-iteration-count: infinite;
-    -webkit-animation-timing-function: ease-in-out;
+    -webkit-animation-timing-function: ease-in-out;    
+    -moz-animation-name: selection_pulse;
+    -moz-animation-duration: 2s;
+    -moz-animation-iteration-count: infinite;
+    -moz-animation-timing-function: ease-in-out;
+    */
 }
 
 .remote-cursor {
@@ -1061,7 +1081,11 @@ code {
     -webkit-animation-iteration-count: infinite;
     -webkit-animation-timing-function: ease-in-out;
     position:absolute;
-    margin-top:-18px;
+    margin-top:-18px;    
+    -moz-animation-name: caret_pulse;
+    -moz-animation-duration: 0.6s;    
+    -moz-animation-iteration-count: infinite;
+    -moz-animation-timing-function: ease-in-out;
 }
 
 .rotate-90 {

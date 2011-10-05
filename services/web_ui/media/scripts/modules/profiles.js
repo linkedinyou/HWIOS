@@ -110,7 +110,7 @@ function bind_functions() {
                 var _dialog = $(response.data.dom.dialog).dialog({
                     dialogClass: 'registerDialog',autoOpen: true,position:"center",width:450,
                     title: '<span class="ui-icon ui-icon-pencil"></span><span>'+gettext('Register')+'</span>',
-                    resizable: false,draggable: true,modal: true, buttons: i18nButtons, zIndex:1000000
+                    resizable: false,draggable: true,modal: true, buttons: i18nButtons
                 });
             },"html");
         },
@@ -171,10 +171,10 @@ function bind_functions() {
                     },"json");
                 }                    
                 $login = $(response.data.dom.dialog).dialog({
-                dialogClass: 'loginDialog',autoOpen: true,position:"center", width:450,
+                dialogClass: 'loginDialog',position:"center", width:450,
                 title: '<span class="ui-icon ui-icon-person"></span><span>'+gettext('Login')+'</span>',
-                resizable: false,draggable: true,modal: true, buttons: i18nButtons, zIndex:1000000                      
-                });
+                resizable: false,draggable: true,modal: true, buttons: i18nButtons, autoOpen: true
+                });                
             });
         },
         //logs a user out of HWIOS, closes the websocket and updates the navigation bar

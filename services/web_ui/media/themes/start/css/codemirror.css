@@ -1,6 +1,6 @@
 .CodeMirror {
-  line-height: 1.2em;
-  font-size:16px;
+  line-height: 1.4;
+  font-size:13px;
 }
 
 .CodeMirror-scroll {
@@ -14,13 +14,14 @@
 .CodeMirror-gutter {
   position: absolute; left: 0; top: 0;
   z-index: 10;
-  background-color: #f7f7f7;
-  border-right: 1px solid #eee;
+  background-color: #efefef;
+  border-left: 1px solid #ddd;
+  border-right: 1px solid #ddd;
   min-width: 2em;
   height: 100%;
 }
 .CodeMirror-gutter-text {
-  color: #666;
+  color: #000;
   text-align: right;
   padding: .4em .2em .4em .4em;
 }
@@ -54,6 +55,10 @@
     -webkit-animation-duration: 0.6s;
     -webkit-animation-iteration-count: infinite;
     -webkit-animation-timing-function: ease-in-out;
+    -moz-animation-name: caret_pulse;
+    -moz-animation-duration: 0.6s;
+    -moz-animation-iteration-count: infinite;
+    -moz-animation-timing-function: ease-in-out;
 }
 .CodeMirror-focused .CodeMirror-cursor {
   visibility: visible;

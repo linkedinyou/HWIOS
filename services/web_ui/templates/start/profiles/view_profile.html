@@ -1,8 +1,8 @@
 {% load i18n %}
 <div class='hwios-widget' id='profiles-context'>
-    <div class="ui-widget-header ui-corner-top">
+    <div class="ui-widget-header">
         {%if profile.uuid == target_profile.uuid%}
-        <span>{%trans "My Profile"%}</span>
+        <span>{%trans "My profile"%}</span>
         <span>{%trans "About"%}</span>
         {% else %}
         <span>{{target_profile.username}}</span>

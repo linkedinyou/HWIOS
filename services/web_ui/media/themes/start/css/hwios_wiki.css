@@ -7,33 +7,32 @@
 #wiki-markdown {
     min-height:150px;
     -webkit-user-select: auto;
-    font-size:15px;
-    line-height:1.2;
+    font-size:13px;
+    line-height:1.4;
 }
 
 #wiki-markdown p:first-letter {
     font-weight:bold;
-   font-size:20px;
+    font-size:16px;
 }
 
 #wiki-markdown h1 {
-    font-size:26px;
+    font-size:18px;
     font-weight:bold;
-    color:#00aeef;
+    font-style:oblique;
 }
 
+
 #wiki-markdown h2 {
-    font-size:20px;
+    font-size:17px;
     color:#000;
 }
 
-#wiki-markdown h2:first-letter {
-    color:#00aeef;
-}
 
 #wiki-markdown h3 {
-    font-size:16px;
+    font-size:15px;
     font-style:bold;
+    text-decoration: underline;
 }
 
 #wiki-markdown h4 {
@@ -78,14 +77,6 @@
     background-color:#6ba5d0;
 }
 
-#wiki-markdown a {
-    color:#aaa;
-    font-weight:bold;
-}
-
-#wiki-markdown a:hover {
-    color:#ff6c00;
-}
 
 #wiki-markdown img {
     border:1px solid #666;
@@ -105,6 +96,7 @@
     background-color:#fff;
     resize:vertical;
     border-top:1px dotted #ddd;
+    border-left:1px dotted #ddd;
 }
 
 /*Editor container*/

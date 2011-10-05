@@ -166,7 +166,7 @@ function(settings){
     
     application.set_plasmoid_widget = function(container, plasmoid) {
         if($('#widget_'+plasmoid.uuid).length == 0) {
-            $(container).prepend('<div id=widget_'+plasmoid.uuid+' class="hwios-widget hwios-plasmoid">\
+            $(container).append('<div id=widget_'+plasmoid.uuid+' class="hwios-widget hwios-plasmoid">\
                                     <div class="ui-widget-header ui-corner-top"></div>\
                                     <div id="plasmoid_'+plasmoid.uuid+'" class="ui-widget-content plasmoid-container"></div></div>');
         }

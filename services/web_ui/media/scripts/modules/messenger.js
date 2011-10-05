@@ -33,7 +33,24 @@ define('modules/messenger',[
     }
     
     function bind_events() {
-        $('#message_input_field').keypress(function(e){if (e.which == 13) {send_message();}});  
+        $('#message_input_field').val(gettext("Type a message..."));
+        $('#message_input_field').keypress(function(e){
+            if (e.which == 13) {send_message();}
+        });
+        $('#message_input_field').focus(function(e){
+            if($('#message_input_field').val() == gettext("Type a message...")) {
+            $('#message_input_field').val('');
+            }
+        });
+        $('#message_input_field').blur(function(e){
+            if($('#message_input_field').val() != gettext("Type a message...") &&
+               $('#message_input_field').val() != '') {
+            
+            }
+            else {
+            $('#message_input_field').val(gettext("Type a message..."));
+            }
+        });
         $(document).bind('WS_ONLINE', function(event) {
             application.ws.remote('/data/modules/messenger/init/',{},function(response){
                 if(messenger_context === undefined){
@@ -97,10 +114,10 @@ define('modules/messenger',[
             var _user_dom;
             if(user.id == application.settings.user.id){
                 if(user.name.indexOf('visitor') != -1){
-                    _user_dom = '<div data-id="'+user.name+'" data-ctx-showid="'+user.id+'" class="messenger-participant"><div class="messenger-avatar"><img src="'+_avatar+'"/></div><div>'+user.name+' (you)</div></div>';
+                    _user_dom = '<div data-id="'+user.name+'" data-ctx-showid="'+user.id+'" class="messenger-participant"><div class="messenger-avatar"><img src="'+_avatar+'"/></div><div>'+user.name+' ('+gettext('You')+')</div></div>';
                 }
                 else {
-                    _user_dom = '<div data-id="'+user.name+'" data-ctx-showid="'+user.id+'" data-ctxmatch="view-profile" class="messenger-participant"><div class="messenger-avatar"><img src="'+_avatar+'"/></div><div>'+user.name+' (you)</div></div>';
+                    _user_dom = '<div data-id="'+user.name+'" data-ctx-showid="'+user.id+'" data-ctxmatch="view-profile" class="messenger-participant"><div class="messenger-avatar"><img src="'+_avatar+'"/></div><div>'+user.name+' ('+gettext('You')+')</div></div>';
                 }
                 $('#online-box').prepend(_user_dom);
             }
