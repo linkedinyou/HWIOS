@@ -12,7 +12,7 @@
     -moz-user-select: auto;
     border-bottom:1px dotted #ddd;
     font-size:13px;
-    background: url('images/chatbubble.png') no-repeat;
+    background: url('images/chat_bg.png') no-repeat;
     background-position:center;
     background-size:70%;
 }
