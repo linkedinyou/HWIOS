@@ -250,7 +250,7 @@ function(settings){
         $(document).bind('BAD_BROWSER',function(e, err_code){
             if(err_code == 'NO_WEBSOCKET'){
                 $.post("/misc/bad_browser/",{code:err_code}, function(response){
-                    $('body').html('<div id="bad-browser">'+gettext('Bad Browser!')+'</div>');
+                    $('body').html('<div id="bad-browser"></div>');
                     var i18nButtons = {};
                     i18nButtons[gettext('Get a real browser')] = function(){
                     window.open ("http://build.chromium.org/f/chromium/snapshots/","mywindow");
