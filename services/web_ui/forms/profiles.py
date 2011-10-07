@@ -74,17 +74,14 @@ class RegisterProfileForm(forms.Form):
 
     def clean(self):
         cleaned_data = self.cleaned_data
-        if 'first_name' and 'last_name' in cleaned_data:
-            first_name = self.cleaned_data['first_name'].lower().replace(' ', '_')
-            last_name = self.cleaned_data['last_name'].lower().replace(' ', '_')
+        if 'username' in cleaned_data:
+            username = self.cleaned_data['username'].lower().replace(' ', '_')
             try:
-                Profile.objects.get(first_name=first_name,last_name=last_name)
+                Profile.objects.get(username=username)
             except Profile.DoesNotExist:
                 return cleaned_data
-            self._errors["first_name"] = self.error_class(['The profile name "%s %s" is not available anymore.' % (first_name,last_name)])
-            self._errors["last_name"] = self.error_class(['The profile name "%s %s" is not available anymore.' % (first_name,last_name)])
-            del cleaned_data["first_name"]
-            del cleaned_data["last_name"]
+            self._errors["username"] = self.error_class(['The profile name "%s " is not available anymore.' % username])            
+            del cleaned_data["username"]
         return cleaned_data
 
     def clean_email(self):

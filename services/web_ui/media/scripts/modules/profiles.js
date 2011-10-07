@@ -81,24 +81,33 @@ function bind_functions() {
                 var i18nButtons = {};
                 i18nButtons[gettext('Cancel')] = function() {
                     $(this).dialog("destroy"); 
-                    $register = undefined;
+                    _dialog = undefined;
                 };
                 i18nButtons[gettext('Register')] = function() {
+                    //Make our dialog read-only while processing is going on
+                    $(".ui-dialog-buttonpane").find("button").hide();
+                    $(_dialog).find("input").attr('readonly',true);
+                    _dialog.dialog('option', 'title', '<span class="ui-icon ui-icon-person"></span><span>'+gettext('Registration pending')+'</span>');
                     var form_data = $("form:visible").serializeObject();
                     application.ws.remote('/data/profiles/register/',{params:form_data},function(response){ 
                         switch(response.status.code) {
                             case 'REGISTER_OK':
                             $('.registerDialog > .ui-dialog-content').html(response.data.dom.dialog);
-                            _dialog.dialog('option', 'title', 'Registration completed');
-                                _dialog.dialog('option', 'buttons', {
-                                        Ok: function() {
-                                            $(this).dialog("destroy"); 
-                                            $register = undefined;
-                                        }
-                                });
+                            _dialog.dialog('option', 'title', '<span class="ui-icon ui-icon-person"></span><span>'+gettext('Registration completed')+'</span>');
+                                var i18nButtons = {};
+                                i18nButtons[gettext('Close')] = function() {
+                                    $(this).dialog("destroy");
+                                    _dialog = undefined;
+                                }
+                                _dialog.dialog('option', 'buttons', i18nButtons);
                             break;
                             case 'FORM_INVALID':
-                            $('.registerDialog > .ui-dialog-content').html(response.data.dom.dialog);
+                                //undo our pending changes to the dialog
+                                $(".ui-dialog-buttonpane").find("button").show();
+                                $(_dialog).find("input").attr('readonly',false);
+                                _dialog.dialog('option', 'title', '<span class="ui-icon ui-icon-person"></span><span>'+gettext('Register')+'</span>');
+                                
+                                $('.registerDialog > .ui-dialog-content').html(response.data.dom.dialog);
                                 $.each($('.registerDialog .errorlist'), function () {
                                 $(this).next().prepend('<span class="ui-icon ui-icon-info"></span>');
                                 })      
@@ -106,11 +115,22 @@ function bind_functions() {
                             default:
                         }
                     });
-                };
+                }
                 var _dialog = $(response.data.dom.dialog).dialog({
                     dialogClass: 'registerDialog',autoOpen: true,position:"center",width:450,
                     title: '<span class="ui-icon ui-icon-pencil"></span><span>'+gettext('Register')+'</span>',
-                    resizable: false,draggable: true,modal: true, buttons: i18nButtons
+                    resizable: false,draggable: true,modal: true, buttons: i18nButtons,
+                    open: function(event, ui) {
+                    // Get the dialog
+                        var dialog = $(event.target).parents(".ui-dialog.ui-widget");
+                        var buttons = dialog.find(".ui-dialog-buttonpane").find("button");
+                        var cancelButton = buttons[0];
+                        var registerButton = buttons[1];
+                        // Add class to the buttons
+                        // Add class to the buttons
+                        $(cancelButton).addClass("dialog-button");
+                        $(registerButton).addClass("dialog-button");
+                    } 
                 });
             },"html");
         },

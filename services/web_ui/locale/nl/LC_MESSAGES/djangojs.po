@@ -119,3 +119,12 @@ msgstr "U"
 
 msgid "Profiles"
 msgstr "Profielen"
+
+msgid "Registration completed"
+msgstr "Registratie voltooid"
+
+msgid "Registration pending"
+msgstr "Registratie controle"
+
+msgid "Close"
+msgstr "Sluiten"

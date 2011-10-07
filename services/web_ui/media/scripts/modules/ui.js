@@ -71,7 +71,7 @@ function bind_functions() {
         },
         add_widgets: function(left_widgets, right_widgets) {
             $.each(left_widgets, function(idx, widget) {
-                $('.sidebar').prepend(widget).hide().fadeIn('fast');
+                $('.sidebar').append(widget).hide().fadeIn('fast');
             });
         },
         transition: function(content, target, transition_type){
@@ -181,10 +181,12 @@ function bind_events() {
     * Hides and shows django form validation indicators on hover
     */
     $('p:has(.ui-icon-info)').live('mouseover', function () {
-        $(this).prev('.errorlist').addClass('ui-corner-all errorlist-show');
+        $(this).prev('.errorlist').addClass('errorlist-show');
+        $(this).prev('.errorlist').removeClass('errorlist-hide');
     });
     $('p:has(.ui-icon-info)').live('mouseout', function () {
-        $(this).prev('.errorlist').removeClass('ui-corner-all errorlist-show');
+        $(this).prev('.errorlist').removeClass('errorlist-show');
+        $(this).prev('.errorlist').addClass('errorlist-hide');
     })  
         
     /**

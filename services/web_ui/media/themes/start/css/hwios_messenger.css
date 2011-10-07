@@ -106,6 +106,7 @@
     border-top: 1px solid #fff;
     border-bottom: 1px solid #ddd;
     background:rgb(245,245,245);
+    color:#333;
 }
 
 .messenger-participant div:last-child:hover {

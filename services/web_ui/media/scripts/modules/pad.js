@@ -28,17 +28,8 @@ function(){
     var resizeTimeoutId;
     var urls;
 
-    var slide_context;
-    
-    function add_widgets(left_widgets, right_widgets) {
-        $.each(left_widgets, function(idx, widget) {
-            $('.sidebar').prepend(widget);
-        });
-        $.each(right_widgets, function(idx, widget) {
-            $('.menu').prepend(widget);
-        });
-    }
-    
+    var slide_context;    
+   
     
     function switch_tool(tool) {
         cpaint.tool = tool;

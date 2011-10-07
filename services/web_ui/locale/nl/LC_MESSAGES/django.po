@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-10-04 13:19+0200\n"
+"POT-Creation-Date: 2011-10-07 14:36+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Jeroen van Veen <info@os-networks.net>\n"
 "Language-Team: HWIOS Translators <info@os-networks.net>\n"
@@ -25,9 +25,9 @@ msgstr "Nederlands"
 msgid "English"
 msgstr "Engels"
 
-#: controllers/http/misc.py:89
+#: controllers/http/misc.py:90
 msgid "Oops! You are using an incompatible browser..."
-msgstr ""
+msgstr "Oep! U gebruikt een niet-geschikte browser..."
 
 #: controllers/http/opensim.py:44
 msgid "File(s) succesfully uploaded"
@@ -290,7 +290,7 @@ msgstr "Plasmoid %(slug)s opgeslagen..."
 msgid "Plasmoid saved"
 msgstr "Plasmoid opgeslagen"
 
-#: controllers/ws/plasmoids.py:144 controllers/ws/profiles.py:202
+#: controllers/ws/plasmoids.py:144 controllers/ws/profiles.py:203
 #: controllers/ws/wiki.py:324
 msgid "Invalid Form!"
 msgstr "Fout formulier"
@@ -304,47 +304,47 @@ msgstr "%s plasmoid(s) verwijderd..."
 msgid "Plasmoid(s) deleted"
 msgstr "Plasmoid(s) verwijderd"
 
-#: controllers/ws/profiles.py:85
+#: controllers/ws/profiles.py:86
 msgid "New user created!"
 msgstr "Nieuwe gebruiker aangemaakt!"
 
-#: controllers/ws/profiles.py:91
+#: controllers/ws/profiles.py:92
 msgid "Profile created"
 msgstr "Profiel aangemaakt"
 
-#: controllers/ws/profiles.py:98
+#: controllers/ws/profiles.py:99
 msgid "Please pay attention to the profile details..."
 msgstr "Controleer aub uw profiel gegevens..."
 
-#: controllers/ws/profiles.py:136
+#: controllers/ws/profiles.py:137
 msgid "Avatar succesfully updated"
 msgstr "Avatar succesvol bijgewerkt"
 
-#: controllers/ws/profiles.py:161
+#: controllers/ws/profiles.py:162
 msgid "Profile succesfully updated"
 msgstr "Profiel succesvol bijgewerkt"
 
-#: controllers/ws/profiles.py:193
+#: controllers/ws/profiles.py:194
 msgid "Profile own user change"
 msgstr ""
 
-#: controllers/ws/profiles.py:195
+#: controllers/ws/profiles.py:196
 msgid "Profile moderator change"
 msgstr ""
 
-#: controllers/ws/profiles.py:244
+#: controllers/ws/profiles.py:245
 #, python-format
 msgid "Succesfully removed %(profiles)s profile(s)!"
 msgstr "Succesvolle verwijdering van %(profiles)s profiel(en)!"
 
-#: controllers/ws/profiles.py:253
+#: controllers/ws/profiles.py:254
 #, python-format
 msgid ""
 "%(profiles)s profile(s) removed succesfully; you can't remove your own "
 "profile!"
 msgstr ""
 
-#: controllers/ws/profiles.py:260
+#: controllers/ws/profiles.py:261
 msgid "Profile deleted"
 msgstr "Profiel verwijderd"
 
@@ -629,12 +629,10 @@ msgid "Auto Preview"
 msgstr "Auto Voorvertoning"
 
 #: forms/profiles.py:23 forms/profiles.py:55
-#: templates/start/profiles/registration_complete.html:5
 msgid "First name"
 msgstr "Voornaam"
 
 #: forms/profiles.py:24 forms/profiles.py:56
-#: templates/start/profiles/registration_complete.html:6
 msgid "Last name"
 msgstr "Achternaam"
 
@@ -648,8 +646,7 @@ msgid "Organisation"
 msgstr "Organisatie"
 
 #: forms/profiles.py:27 forms/profiles.py:58 forms/profiles.py:73
-#: forms/profiles.py:101 forms/profiles.py:105
-#: templates/start/profiles/registration_complete.html:7
+#: forms/profiles.py:98 forms/profiles.py:102
 msgid "Password"
 msgstr "Wachtwoord"
 
@@ -673,7 +670,8 @@ msgstr "Verander Wachtwoord"
 msgid "About me"
 msgstr ""
 
-#: forms/profiles.py:71 forms/profiles.py:100
+#: forms/profiles.py:71 forms/profiles.py:97
+#: templates/start/profiles/manage_profiles.html:12
 msgid "Username"
 msgstr "Gebruikersnaam"
 
@@ -755,7 +753,7 @@ msgstr "Avatar Beheer"
 msgid "Settings"
 msgstr "Instellingen"
 
-#: templates/start/activity/view_activities.html:25
+#: templates/start/activity/view_activities.html:18
 msgid "No entries yet..."
 msgstr ""
 
@@ -846,6 +844,15 @@ msgstr "Bewerk mijn profiel"
 #: templates/start/profiles/context_menu.html:14
 msgid "Login"
 msgstr "Login"
+
+#: templates/start/misc/bad_browser.html:3
+msgid ""
+"Sorry, websockets are not available in your current browser configuration."
+msgstr ""
+
+#: templates/start/misc/bad_browser.html:4
+msgid "Supported browsers are:"
+msgstr ""
 
 #: templates/start/misc/base.html:41 templates/start/misc/base.html.py:44
 msgid "Loading..."
@@ -967,7 +974,6 @@ msgstr "Sync"
 #: templates/start/opensim/read_avatars.html:52
 #: templates/start/opensim/read_regions.html:17
 #: templates/start/opensim/read_regions.html:61
-#: templates/start/profiles/manage_profiles.html:12
 #: templates/start/teknon/read_pool.html:17
 msgid "Description"
 msgstr "Beschrijving"
@@ -1168,7 +1174,6 @@ msgid "Are you sure that you want to delete the following profiles?"
 msgstr "Weet u zeker dat u de volgende profielen wilt verwijderen?"
 
 #: templates/start/profiles/edit_profile.html:5
-#: templates/start/profiles/view_profile.html:5
 msgid "My Profile"
 msgstr "Mijn Profiel"
 
@@ -1202,25 +1207,25 @@ msgstr "Gefeliciteerd!"
 
 #: templates/start/profiles/registration_complete.html:3
 msgid ""
-"You succesfully created a new account, A confirmation mail was sent to you "
-"with the following credentials"
+"You succesfully created a new account, A confirmation mail was sent to the "
+"email address that you used for registration."
 msgstr ""
 "U heeft succesvol een account aangemaakt. Er is een bevestigingsmail "
-"gestuurd naar u met de volgende gegevens"
+"verstuurd naar het door u opgegeven email adres."
 
-#: templates/start/profiles/registration_complete.html:10
+#: templates/start/profiles/registration_complete.html:5
 msgid "Your account was directly activated. Thank you for registering..."
 msgstr "Uw account was direct geactiveerd. Dank u voor het registreren..."
 
-#: templates/start/profiles/registration_complete.html:13
+#: templates/start/profiles/registration_complete.html:8
 msgid ""
 "Please check your e-mail for the activation link. Follow the link in order "
 "to activate this account. Thank you for registering..."
 msgstr ""
-"Controleer alstublieft uw email voor een activatie link. Volg deze link omuw "
-"account te activeren. Dank u voor het registreren..."
+"Bekijk uw email voor de activatie link. Volg deze link om uw account te "
+"activeren. Dank u voor het registreren..."
 
-#: templates/start/profiles/registration_complete.html:16
+#: templates/start/profiles/registration_complete.html:11
 msgid ""
 "Your registration request was sent to a moderator for further processing. "
 "You will be notified when the account request is approved. Thank you for "
@@ -1312,6 +1317,8 @@ msgid ""
 "is now active. You may now login with your new account, and check out our "
 "user-area. We wish you a pleasant stay at"
 msgstr ""
+"is nu actief. U kunt nu inloggen met uw nieuwe account en de gebruikersdelen "
+"van de site bekijken. We wensen u een prettig gebruik van "
 
 #: templates/start/profiles/registration_user_approved.html:5
 msgid "Kind regards"
@@ -1320,6 +1327,10 @@ msgstr "Vriendelijke groeten"
 #: templates/start/profiles/registration_user_approved.html:7
 msgid "Team"
 msgstr "Team"
+
+#: templates/start/profiles/view_profile.html:5
+msgid "My profile"
+msgstr "Mijn Profiel"
 
 #: templates/start/profiles/view_profile.html:6
 #: templates/start/profiles/view_profile.html:9
@@ -1447,7 +1458,3 @@ msgstr "Revisie Historie"
 #: templates/start/wiki/edit_history.html:17
 msgid "Restore"
 msgstr "Herstel"
-
-#~ msgid "Please confirm that you want to delete the following hyki page:"
-#~ msgstr ""
-#~ "Bevestigt u alstublieft dat u de volgende hyki pagina wilt verwijderen:"

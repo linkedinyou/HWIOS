@@ -22,6 +22,7 @@ from web_ui.models.ws_auth import WSAuth
 from web_ui.models.profiles import Profile
 from web_ui.models.notifications import *
 from web_ui.models.activity import *
+from web_ui.models.settings import Settings
 from web_ui.forms.profiles import *
 
 
@@ -288,20 +289,19 @@ class WS_Profiles(object):
         else:
             form = RegisterProfileForm(params)
             if form.is_valid():
-                profile_data = {'first_name': form.cleaned_data['first_name'], 
-                                'last_name': form.cleaned_data['last_name'], 
+                profile_data = {'username': form.cleaned_data['username'],
                                 'email': form.cleaned_data['email'], 
                                 'password': form.cleaned_data['password'], 
                                 'is_staff': 0, 
                                 'is_active': 0, 
-                                'organisation': form.cleaned_data['organisation'], 
                                 'timezone': 'Europe/Amsterdam', 
                                 'karma': 0, 
                                 'ip': client.transport.getPeer().host
                                 }
                 profile = Profile.objects.create_profile(profile_data, client = client)
+                acp_settings = Settings.objects.all()[0]
                 #general return template within the webinterface
-                dialog = render_to_string('profiles/registration_complete.html', {'profile': profile, 'activation_type': profile.acp_settings.activation_type})
+                dialog = render_to_string('profiles/registration_complete.html', {'profile': profile, 'activation_type': acp_settings.activation_type})
                 client_response, tpl_params = self._get_manage_profiles()
                 client_response.update({
                     'status':{'code':'REGISTER_OK',

@@ -102,7 +102,7 @@ class XAuthManager(models.Manager):
         """
         write_profile = True
         self.acp_settings = Settings.objects.all()[0]
-        required_keys = ['first_name','last_name','email','password','ip']
+        required_keys = ['username','email','password','ip']
         if acp:
             required_keys.extend(['is_staff','is_active'])
         missing_keys = []
@@ -115,35 +115,31 @@ class XAuthManager(models.Manager):
         #valid parameters, proceeed...
         else:
             try:                
-                profile = self.model.objects.get(first_name=profile_data['first_name'],last_name=profile_data['last_name'])                 
+                profile = self.model.objects.get(username=profile_data['username'])
+                print "PROFILE EXISTS!"
                 write_profile = False
             #doesnt exist. create a hwios profile
             except ObjectDoesNotExist: 
                 profile = self.model(**profile_data)
-                profile.username = '%s %s' % (profile_data['first_name'],profile_data['last_name'])
+                profile.username = profile_data['username']
                 profile.email = profile_data['email']
                 profile.uuid = uuid.uuid4()
                 profile.date_joined = datetime.datetime.now()
                 profile.set_password(profile_data['password'])
                 profile.raw_password = profile_data['password']
                 profile.ip = profile_data['ip']
-                #passed to the registration template later on
-                profile.acp_settings = self.acp_settings
-            #used in the activation body
-            profile.raw_password = profile_data['first_name']
-            #0: direct activation, 1: activation by user, 2:activation by moderator
-            if (self.acp_settings.activation_type == 1 or self.acp_settings.activation_type == 2) and not acp:
-                profile.is_active = 0                
-                self.activate_link = 'http://%s:%s/profiles/activate/%s/' % (settings.HWIOS_URI, settings.HWIOS_PORT, profile.uuid)
-                self._send_activation_mail(profile, acp)
-            elif not acp:
-                profile.is_active = 1
-                first_name = profile_data['first_name']
-                last_name = profile_data['last_name']
-                self._send_activation_mail(profile, acp)
+                #passed to the registration template later on                
+                #used in the activation body
+                #profile.raw_password = profile_data['first_name']
+                #0: direct activation, 1: activation by user, 2:activation by moderator
+                if (self.acp_settings.activation_type == 1 or self.acp_settings.activation_type == 2) and not acp:
+                    profile.is_active = 0
+                    self.activate_link = 'http://%s:%s/profiles/activate/%s/' % (settings.HWIOS_URI, settings.HWIOS_PORT, profile.uuid)
+                    self._send_activation_mail(profile, acp)
+                elif not acp:
+                    profile.is_active = 1
+                    self._send_activation_mail(profile, acp)
             if acp:
-                first_name = profile_data['first_name']
-                last_name = profile_data['last_name']
                 profile.is_active = profile_data['is_active']
                 profile.is_staff = profile_data['is_staff']
                 profile.is_superuser = profile_data['is_superuser']
@@ -227,7 +223,7 @@ class XAuthManager(models.Manager):
         c = Context({'profile': profile, 'activation_type': self.acp_settings.activation_type, 'activatelink': self.activate_link})
         user_email_msg = mail_tpl.render(c)
         try:
-            connection = mail.get_connection(fail_silently=False)
+            connection = mail.get_connection(fail_silently=True)
         except smtplib.SMTPException:
             feedback = 'Your account was made, but an email delivery failure occured. Please contact the administrator!'
             dialog = render_to_string('profiles/registration_complete.html', {'profile': profile, 'activation_type': self.acp_settings.activation_type})

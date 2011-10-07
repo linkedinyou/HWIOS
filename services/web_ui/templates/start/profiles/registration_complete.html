@@ -1,19 +1,15 @@
 {%load i18n%}
-<h2>{%trans "Congratulations!"%}</h2>
-<p>{%trans "You succesfully created a new account, A confirmation mail was sent to you with the following credentials"%}:</p>
-<table>
-<tr><td>{%trans "First name"%}</td><td><b>{{ profile.first_name }}</b></td><td><i></i></td></tr>
-<tr><td>{%trans "Last name"%}</td><td><b>{{ profile.last_name }}</b></td><td><i></i></td></tr>
-<tr><td>{%trans "Password"%}</td><td><b>*********</b></td><td><i></i></td></tr>
-</table>
+<h3>{%trans "Congratulations!"%}</h3>
+<p>{%trans "You succesfully created a new account, A confirmation mail was sent to the email address that you used for registration." %}
 {% ifequal activation_type 0%}
-<p>{%trans "Your account was directly activated. Thank you for registering..."%}</p>	
+    {%trans "Your account was directly activated. Thank you for registering..."%}
 {%else%}
     {% ifequal activation_type 1%}
-    <p>{%trans "Please check your e-mail for the activation link. Follow the link in order to activate this account. Thank you for registering..."%}</p>
+        {%trans "Please check your e-mail for the activation link. Follow the link in order to activate this account. Thank you for registering..."%}
     {% else %}
         {% ifequal activation_type 2 %}
-        <p>{%trans "Your registration request was sent to a moderator for further processing. You will be notified when the account request is approved. Thank you for your patience..."%}</p>
+        {%trans "Your registration request was sent to a moderator for further processing. You will be notified when the account request is approved. Thank you for your patience..."%}
         {% endifequal %}
     {% endifequal %}
 {% endifequal %}
+</p>
