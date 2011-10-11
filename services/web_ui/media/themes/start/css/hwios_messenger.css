@@ -48,13 +48,10 @@
     cursor:default;
 }
 
-
 /*each message*/
 .message-container:nth-child(even) {
-    background:rgba(66,66,66,0.1);
+    background:rgba(249,249,249,0.5);
 }
-
-
 
 .message-header {
     color:#333;
@@ -83,10 +80,6 @@
     -moz-box-sizing:border-box;
 }
 
-/*row coloring*/
-
-
-
 /* user-online avatar div*/
 .messenger-participant div:first-child {
     float:left;
@@ -105,7 +98,7 @@
     -moz-box-sizing:border-box;
     border-top: 1px solid #fff;
     border-bottom: 1px solid #ddd;
-    background:rgb(245,245,245);
+    background:rgb(249,249,249);
     color:#333;
 }
 

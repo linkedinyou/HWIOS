@@ -116,7 +116,7 @@
             ce.editor_colors[user.id] = user.color;
             var participant_line;
             if(user.id == application.settings.user.id) {
-                participant_line = '<div id="infinote-participant-'+user.id+'" class="infinote-participant"><div class="infinote-participant-color"></div><div class="infinote-participant-name">'+user.name+' (you)</div></div>';
+                participant_line = '<div id="infinote-participant-'+user.id+'" class="infinote-participant"><div class="infinote-participant-color"></div><div class="infinote-participant-name">'+user.name+' ('+gettext('You')+')</div></div>';
             }
             else {
                 participant_line = '<div id="infinote-participant-'+user.id+'" class="infinote-participant"><div class="infinote-participant-color"></div><div class="infinote-participant-name">'+user.name+'</div></div>';

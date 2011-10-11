@@ -9,8 +9,7 @@
         <span>{%trans "Edit Profile"%}</span>
         {%endif%}
     </div>
-    <div class="ui-widget-content ui-corner-bottom contenttext">
-    
+    <div class="ui-widget-content ui-corner-bottom">
     <form>
         <p>
             <label>{%trans "Avatar"%}</label>
@@ -21,11 +20,7 @@
             {%endif%}
             <div id='profile-drag-avatar'><span>{%trans "Drag Image"%}</span></div>
         </p>
-        {%if profile.uuid == target_profile.uuid%}
-        {{ my_form.as_p }}
-        {%else%}
-        {{ edit_form.as_p }}
-        {%endif%}
+        {{ form.as_p }}
     </form>
     </div>
 <div class='hwios-toolbar'>

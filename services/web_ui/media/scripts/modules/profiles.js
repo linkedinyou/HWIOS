@@ -225,12 +225,11 @@ function bind_functions() {
             application.ws.remote('/profiles/create/',{params:form_data},function(response){ 
                     switch(response.status.code) {
                         case 'PROFILE_CREATE_OK':
-                        application.functions.ui.transition(response.data.dom.main, $('.main'));
-                        application.cb_selected = 0;                        
+                        application.functions.ui.transition(response.data.dom.main, $('.main'));                  
                         $('#personal_tabs').tabs();
                         break;
                         case 'FORM_INVALID':
-                        application.functions.ui.transition(response.data.dom.main, $('.main'),'');
+                        application.functions.ui.transition(response.data.dom.main, $('.main'),response.status.code);
                         $.each($('.errorlist'), function () {$(this).next().prepend('<span class="ui-icon ui-icon-info"></span>');})
                         break;
                     }
@@ -261,7 +260,7 @@ function bind_functions() {
                     $(this).dialog('close');
                 }
                 var _dialog = $(response.data.dom.dialog).dialog({                
-                    resizable: false,width:300, modal: true, zIndex:1000000,
+                    resizable: false,width:300, modal: true,
                     title:'<span class="ui-icon ui-icon-alert"></span><span>'+gettext("Warning")+'!</span>',
                     open: function(event, ui) {
                     $('.confirm-list').html(get_cb_names());     
@@ -320,12 +319,11 @@ function bind_functions() {
             application.ws.remote('/profiles/'+kwargs.profile_name+'/edit/',{params:form_data},function(response){        
                 switch(response.status.code) {
                     case 'FORM_INVALID':
-                        application.functions.ui.transition(response.data.dom.main, $('.main'));
+                        application.functions.ui.transition(response.data.dom.main, $('.main'), response.status.code);
                         $.each($('.errorlist'), function () {$(this).next().prepend('<span class="ui-icon ui-icon-info"></span>');});
                     break;
                     case 'PROFILE_EDIT_OK':
-                        application.functions.ui.transition(response.data.dom.main, $('.main'));
-                        application.cb_selected = 0;                        
+                        application.functions.ui.transition(response.data.dom.main, $('.main'), response.status.code);                  
                         $('#personal_tabs').tabs();
                     break;
                 }

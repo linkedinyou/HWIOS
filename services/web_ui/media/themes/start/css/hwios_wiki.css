@@ -86,35 +86,75 @@
 
 .edit-wiki-page #wiki-markdown {
     width:100%;
-    padding:5px;
-    height:300px;
-    border-bottom:1px solid #ddd;
+    height:250px;
     overflow:auto;
-    -webkit-box-sizing: border-box; 
-    -moz-box-sizing: border-box; 
-    -webkit-user-select: none;
-    background-color:#fff;
     resize:vertical;
-    border-top:1px dotted #ddd;
-    border-left:1px dotted #ddd;
+    border-bottom:1px dotted #ddd;
+    margin-bottom:10px;
 }
+
+.wiki-fullscreen #wiki-markdown {
+    position:absolute;
+    right:0px;
+    top:0px;
+    width:48%;
+    height:100%;
+    background:#fff;
+    z-index:10000;
+    overflow:auto;
+    margin-bottom:0px;
+    resize:none;
+    padding-left:10px;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+}
+
 
 /*Editor container*/
-.edit-wiki-page > #wiki-editor {
+.edit-wiki-page #wiki-editor {
     width:100%;
-    border-left:1px dotted #ddd;
     border-bottom:1px solid #ddd;
-    border-bottom:1px solid #ddd;
+    border-top:1px dotted #ddd;
 }
 
+.wiki-fullscreen #wiki-editor {
+    position:absolute;
+    left:0px;
+    top:0px;
+    width:52%;
+    height:100%;
+    background:#fff;
+    z-index:10000;
+    overflow:auto;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+}
 
+.wiki-fullscreen .infinote-online {
+    width:15%;
+    height:100%;
+    left:0px;
+    top:0px;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+}
+
+.wiki-fullscreen #wiki-fullscreen-button {
+    position:absolute;
+    right:15px;
+    top:0px;
+    z-index:100000;
+    border:1px dotted #ddd;
+}
+
+.wiki-fullscreen #wiki-editor .CodeMirror-scroll {
+    overflow-y:show;
+    overflow:auto;
+    height:100%;
+}
 
 #wiki-listener {
     border:1px solid #333;
-}
-
-.profile-body {
-
 }
 
 .editor-hidden {

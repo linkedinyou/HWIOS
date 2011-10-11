@@ -131,7 +131,24 @@ function bind_functions() {
                 kwargs.id = $('#btn-frontend-wiki-edit').attr('data-url');
             }
             initEditor(kwargs.id);
-        }, 
+        },
+
+        edit_fullscreen: function(kwargs) {
+            var _parent = $('.edit-wiki-page');
+            //already in fullscreen mode
+            if($(_parent).hasClass('wiki-fullscreen')){
+                $(_parent).removeClass('wiki-fullscreen');
+                $('.sidebar').removeClass('sidebar-fullscreen');
+            }
+            else {
+                $(_parent).addClass('wiki-fullscreen');
+                //force the sidebar to be hidden, so it doesnt mess up the container height
+                $('.sidebar').addClass('sidebar-fullscreen');
+            }
+            //somehow messes up codemirror line positioning
+            //$('.edit-wiki-page').get(0).webkitRequestFullScreen();
+            editor.editor.refresh();
+        },
         
         cancel_edit_article: function(kwargs) {
             var form_data = $("form:visible").serializeObject();        
@@ -250,7 +267,7 @@ function bind_functions() {
                 }
                 var _dialog = $(response.data.dom.dialog).dialog({
                     resizable: false,width:300, modal: true, zIndex:1000000,
-                    title:'<span class="ui-icon ui-icon-document"></span><span>'+gettext("Warning")+'!</span>',
+                    title:'<span class="ui-icon ui-icon-alert"></span><span>'+gettext("Warning")+'!</span>',
                     buttons: i18nButtons
                 });
             });

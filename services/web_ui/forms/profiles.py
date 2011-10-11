@@ -52,8 +52,9 @@ class NewProfileForm(forms.Form):
     
     
 class EditProfileForm(forms.Form):
-    first_name = forms.CharField(max_length=32,label=_('First name'))
-    last_name = forms.CharField(max_length=32, label=_('Last name'))
+    username = forms.CharField(label=_('Username'), max_length=32)
+    first_name = forms.CharField(label=_('First name'), max_length=32, required=False)
+    last_name = forms.CharField(label=_('Last name'), max_length=32, required=False,)
     email = forms.EmailField(label=_('Email'))
     password = forms.CharField(widget=forms.PasswordInput,required=False, label=_('Password'))
     is_active = forms.BooleanField(required=False, initial=1,label=_('Is active'))

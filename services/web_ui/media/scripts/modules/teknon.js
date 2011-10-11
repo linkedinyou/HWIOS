@@ -287,9 +287,13 @@ function bind_functions() {
                     $(this).dialog('close');  
                 }
                 var _dialog = $(response.data.dom.dialog).dialog({
-                resizable: false,width:300, modal: true,title: '<span class="ui-icon ui-icon-gear"></span><span>'+gettext('Please confirm')+'...</span>',
-                    open: function(event, ui) {$('.confirm-list').html(_names);}, 
-                    buttons: i18nButtons,zIndex:1000000
+                    resizable: false, modal: true,
+                    title: '<span class="ui-icon ui-icon-alert"></span><span>'+gettext('Warning')+'!</span>',
+                    buttons: i18nButtons,
+                    open: function(event, ui) {
+                        $('.confirm-list').html(_names);
+                    }, 
+                    
                 });
             });
         },
@@ -347,8 +351,12 @@ function bind_functions() {
                     $(this).dialog('close');  
                 }
                 var _dialog = $(response.data.dom.dialog).dialog({
-                resizable: false,width:300, modal: true,title: '<span class="ui-icon ui-icon-gear"></span><span>'+gettext('Please confirm')+'...</span>',
-                    open: function(event, ui) {$('.confirm-list').html(_names);},
+                    resizable: false,width:300, modal: true,
+                    title: '<span class="ui-icon ui-icon-gear"></span><span>'+gettext('Please confirm')+'...</span>',
+                    open: function(event, ui) {
+                        //$('.confirm-list').html(_names);
+                        
+                    },
                     buttons: i18nButtons,zIndex:1000000
                 });
             });

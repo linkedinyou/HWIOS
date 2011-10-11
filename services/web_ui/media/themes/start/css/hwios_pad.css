@@ -42,6 +42,11 @@ canvas {
 .canvas-shape {cursor: url('images/cursors/shape.png'), default;}
 .canvas-text {cursor: url('images/cursors/text.png'), default;}
 
+#slide-title {
+    padding-top:3px;
+    float:left;
+    font-style:oblique;
+}
 
 #slide-overview {
     border-bottom:1px dotted #ddd;

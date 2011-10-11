@@ -4,16 +4,13 @@ html, body {
     padding:0px;
     font-size:13px;
     font-family:"FreeSans","Bitstream Vera Sans","Arial";
+    -webkit-box-sizing:border-box;
+    -moz-box-sizing:border-box;    
 }
 
 html {
-    overflow-y: scroll !important;
-    overflow-x: hidden;
     border-top:5px solid #000;
     width:100%;
-    height:100%;
-    -webkit-box-sizing:border-box;
-    -moz-box-sizing:border-box;
 }
 
 body {
@@ -21,17 +18,7 @@ body {
     margin:0 auto;
 }
 
-html > * {
-    -webkit-user-select: none;
-    -moz-user-select: none;
-}
-
-::selection {background:#ff6c00 !important;}
-
-.row-0 {background-color: #fff;}
-.row-1 {background-color: #f1f1f1;}
-
-
+::selection {background:#00aeef;}
 
 a, a:visited {
     color:#333;
@@ -96,13 +83,15 @@ hr {
     padding-right:30px;
 }
 
+/*hide the sidebar when in fullscreen mode*/
+.sidebar-fullscreen {
+    display:none;
+    height:0px !important;
+}
+
 /*the right fluid main-column*/
 .main {
-    -webkit-box-sizing:border-box;
-    -moz-box-sizing:border-box;
-
     margin-left:300px;
-    margin-top:10px;
 }
 
 /*hwios logo at the left*/
@@ -176,10 +165,6 @@ hr {
     display:block;
 }
 
-.contenttext {
-    padding:10px;
-}
-
 textarea {
     outline: none;
     color:#444;
@@ -216,7 +201,6 @@ input {
     color:#444;
     border:1px solid #ddd;
     margin:0px;
-
 }
 
 input:hover {
@@ -231,14 +215,11 @@ input:focus {
 }
 
 input[disabled='disabled'] {
-    background-color:#FFF;
-    color:#6f899a;
-    border:1px solid #999;
+    background:#fff;
+    color:#777;
+    border:1px dotted #ddd;
 }
 input[disabled='disabled']:hover {
-    background-color:#FFF;
-    color:#6f899a;
-    border:1px solid #999;
     cursor:crosshair;
 }
 input[type='file'] {
@@ -278,16 +259,15 @@ form label {
     width:200px;
     height:20px;
     float:left;
-    margin-left:20px;
+    margin-left:17px;
+    margin-top:6px;
     display:block;
     -webkit-box-sizing:border-box;
     -moz-box-sizing:border-box;
-    font-size:13px;
-    font-style:oblique;
 }
 
 form .ui-icon-info {
-    margin-top:2px;
+    margin-top:6px;
     margin-left:2px;
     position:absolute;
     height:16px;
@@ -346,10 +326,13 @@ form .ui-icon-info {
 button {
     cursor:pointer;
     position: relative;
-    padding:4px;
+    padding:5px;
     font-size:13px;
     margin:0px !important;
     outline:None;
+
+text-shadow: 0 1px 1px rgba(255,255,255,0.75);
+
 }
 
 /* icon in the button */
@@ -364,26 +347,19 @@ button .ui-icon {
     top: 50%;
     margin-right:4px;
     display:block;
-    margin-top:8px;
 }
 
 /* Text inside a button */
 button span:last-child {
-    padding-top:2px !important;
     display:block;
     float:left;
     padding-right:5px;
 }
 
-button .fg-button {
-    width:auto;
-    overflow:hidden;
-}
+
 
 button::-moz-focus-inner { border: 0; }
-.fg-button-icon-left {
-    padding-left: 3px;
-}
+
 .fg-button-icon-right { padding-right: 2.1em; }
 .fg-button-icon-left .ui-icon { right: auto; left: .2em; margin-left: 0; }
 .fg-button-icon-right .ui-icon { left: auto; right: .2em; margin-left: 0; }
@@ -402,13 +378,19 @@ button::-moz-focus-inner { border: 0; }
 
 .hwios-toolbar {
     margin-top:0px;
-    padding:2px;
+    padding:4px;
     padding-left:5px;
-    background:#dfdfdf;
-    border-top:1px dotted #ddd;
-    height:30px;
+    background:#efefef;
+    border:1px dotted #ddd;
+    float:left;
+    width:100%;
+    margin-top:10px;
+    border-radius:5px;
+    -webkit-box-sizing:border-box;
+    -moz-box-sizing:border-box;
 }
 .fg-toolbar .fg-buttonset { margin-right:1.5em; padding-left: 1px; }
+
 
 #upload-selected {
     padding:5px;
@@ -452,27 +434,22 @@ button::-moz-focus-inner { border: 0; }
     font-size:16px;
     font-weight:bold;
     display:block;
-    padding-left:7px;
     border-bottom:1px dotted #ddd;
-    height:25px;
+    height:28px;
 }
 
 /* all hwios widgets have a top-left icon, a text and optionally a right-floated info-text */
 
 /* hwios-widget header icon */
 .hwios-widget > .ui-widget-header > .ui-icon {
-    float:left;
-    margin:0px;
-    margin-right:5px;
     margin-top:5px;
-    padding:0px;
 }
 
 
 /* hwios widget left header text */
 .hwios-widget > .ui-widget-header span:first-child {
     float:left;
-    padding-right:5px;
+    padding-right:8px;
     padding-top:3px;
 }
 
@@ -494,9 +471,14 @@ button::-moz-focus-inner { border: 0; }
 }
 
  .hwios-widget > .ui-widget-content {
-    padding-left:10px;
     -webkit-box-sizing:border-box;
     -moz-box-sizing:border-box;
+ }
+
+ .header-option {
+    margin-right:1px;
+    margin-top:2px;
+    float:left;
  }
 
 /*action buttons in data-table*/
@@ -747,8 +729,8 @@ code {
 #profile-avatar {
     height:120px;
     width:120px;
-    border-left:1px solid #00aeef;
-    border-bottom: 1px solid #00aeef;
+    border-left:1px dotted #ddd;
+    border-top: 1px dotted #ddd;
     padding:5px;
     float:left;
 }
@@ -853,6 +835,8 @@ code {
     height: 10px;
 }
 
+::-webkit-scrollbar-button {background:#ddd;}
+
 ::-webkit-scrollbar-button:start:decrement,
 ::-webkit-scrollbar-button:end:increment  {
     height: 0px;
@@ -860,7 +844,7 @@ code {
 }
 
 ::-webkit-scrollbar-track-piece  {
-    background-color: #fff;
+    background-color: #efefef;
     border-left:1px dotted #ddd;
 
 }
@@ -873,7 +857,7 @@ code {
 
 ::-webkit-scrollbar-thumb:horizontal {
     height: 50px;
-    background: #fff;
+    background: #00aeef;
     border: 1px outset #a6c9e2;
 }
 
@@ -971,7 +955,13 @@ code {
 
 .confirm-list {
     font-weight:bold;
+}
 
+.confirm-list ul {
+    text-decoration:none;
+    list-style: none;
+padding: 0;
+margin: 0;
 }
 
 /*datatable css*/
@@ -981,6 +971,12 @@ code {
 
 .datatable td {
     padding:5px;
+}
+
+.datatable tr td:first-child {
+    width:10px;
+    padding-top:7px;
+    padding-bottom:0px;
 }
 
 .datatable tr:hover td {
@@ -997,26 +993,23 @@ code {
 }
 
 .datatable th {
-    font-size:15px;
     background:#fff;
     border-bottom:1px dotted #ddd;
     text-align:left;
     padding:5px;
+    font-style:oblique;
 }
 
-.datatable th:first-letter {
-    color:#00aeef;
-}
+
 
 /*Infinote editor related css here*/
 .infinote-online {
-    border-left:0;
     width:20%;
     float:left;
     top:0px;
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
-    position:relative !important;
+    position:relative;
 }
 
 .infinote-participant {
@@ -1038,6 +1031,8 @@ code {
     font-size:13px;
     font-style:oblique;
 }
+
+#infinote-textarea {}
 
 
 @-moz-keyframes caret_pulse {

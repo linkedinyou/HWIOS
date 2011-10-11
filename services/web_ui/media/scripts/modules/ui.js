@@ -105,15 +105,16 @@ function bind_events() {
     });
     
     $(':checkbox:not(#cb-all):visible').live("click",function() {application.functions.ui.update_buttons();});
-    $("#cb-all,.datatable-cb").live("click", function(event){
-        if($(this).find('input').attr('checked') == true) {
-        $(':checkbox:visible').attr('checked', true);
-        }
-        else if($(this).attr('checked') == true) {
-            $(':checkbox:visible').attr('checked', true);
+    $('#cb-all').live('click', function(event){
+        if($(this).attr('checked') == 'checked') {
+            $.each($(':checkbox:visible:not(#cb-all)'), function(idx, value){
+                $(this).attr('checked',true);
+            });
         }
         else {
-        $(':checkbox:visible').attr('checked', false);
+            $.each($(':checkbox:visible:not(#cb-all)'), function(idx, value){
+                $(this).attr('checked',false);
+            });
         }
     application.functions.ui.update_buttons();
     });     

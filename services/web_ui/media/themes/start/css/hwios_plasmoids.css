@@ -6,18 +6,19 @@
 
 #plasmoid-form {
     float:left;
-    width:60%;
+    margin-right:-100%;
+    border-bottom:1px dotted #ddd;
+    width:500px;
+    height:300px;
 }
 
 .plasmoid-preview {
-    width:40%;
     height:300px;
-    background-color:#fff;
-    -webkit-border-radius: 8px;
-    border:1px solid #5891b5;
-    position:absolute;
+    border-left:1px dotted #ddd;
+    border-bottom:1px dotted #ddd;
     overflow:hidden;
-    right:0px;
+    margin-left:500px;
+    background: url('images/opaque.jpg') repeat !important;    
 }
 
 .hwios-plasmoid {

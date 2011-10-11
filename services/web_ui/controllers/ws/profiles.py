@@ -123,11 +123,17 @@ class WS_Profiles(object):
                     'is_staff':profile.is_staff,
                     'is_superuser':profile.is_superuser,
                 }
-            edit_form = EditProfileForm(initial=data)
-            my_form = EditMyProfileForm(initial={'email': profile.email,'about':profile.about})
-            main = render_to_string('profiles/edit_profile.html', {'my_form': my_form,'edit_form':edit_form,'profile':client.profile, 'target_profile': profile})
+            if client.profile == profile:
+                form = EditMyProfileForm(initial={'email': profile.email,'about':profile.about})
+            else:
+                form = EditProfileForm(initial=data) 
+            main = render_to_string('profiles/edit_profile.html', {'form': form, 'profile':client.profile, 'target_profile': profile})
             return {'data':{'dom':{'main':main}}} 
         else:
+            if client.profile == profile:
+                form = EditMyProfileForm(params)
+            else:
+                form = EditProfileForm(params)
             #our user sends in an avatar update
             if 'avatar' in params:
                 profile = Profile.objects.update_profile(profile.uuid, params, client)                     
@@ -142,7 +148,6 @@ class WS_Profiles(object):
                     }
                 }
                 return response
-            form = EditMyProfileForm(params)
             if form.is_valid():
                 #try to get client instance for modified profile
                 
@@ -174,8 +179,10 @@ class WS_Profiles(object):
                         'is_staff':profile.is_staff,
                         'is_superuser':profile.is_superuser,
                     }
-                edit_form = EditProfileForm(initial=data)
-                my_form = EditMyProfileForm(initial=data)
+                if client.profile == profile:
+                    form = EditMyProfileForm(initial=data)
+                else:
+                    form = EditProfileForm(initial=data)
                 #notify other editors
                 _target_state = '/profiles/%s/edit/' % username
                 client_edit_response['status']['state'] = _target_state
@@ -183,7 +190,7 @@ class WS_Profiles(object):
                     client, client_edit_response,
                     '/profiles/manage/modified/',
                     r'^/profiles/%s/edit/$' % username,
-                    {'main':{'tpl':'profiles/edit_profile.html','params': {'my_form':my_form,'edit_form':edit_form, 'target_profile': profile}}},
+                    {'main':{'tpl':'profiles/edit_profile.html','params': {'form':form,'profile':client.profile,'target_profile': profile}}},
                     _target_state
                 )
                 #notify manage profile viewers
@@ -196,7 +203,7 @@ class WS_Profiles(object):
                     publish_activity(client.profile, _('Profile moderator change'),'/profiles/manage/',[0,0,1,0,0])
                 return client_overview_response
             else:
-                main = render_to_string("profiles/edit_profile.html", {'form':form, 'profile_uuid': profile_uuid})
+                main = render_to_string("profiles/edit_profile.html", {'form':form,'profile':client.profile, 'target_profile': profile})
                 return {
                     'status':{
                         'code':'FORM_INVALID',

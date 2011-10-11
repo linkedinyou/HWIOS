@@ -18,9 +18,9 @@
                         <span><a href='/blog/{{article.slug}}'>{{article.title}}</a></span>
                         <div class='blog-article-by'>{{article.author}}, {{article.pub_date|date:"H:i" }}</div>
                         {%if profile.is_staff%}
-                        <span class='article-option hwios-button ui-icon ui-icon-trash' data-function='blog.delete_article' data-id='{{article.slug}}'></span>
+                        <span class='header-option hwios-button ui-icon ui-icon-trash' data-function='blog.delete_article' data-id='{{article.slug}}'></span>
                         {% if profile == article.author%}
-                        <span class='article-option hwios-button ui-icon ui-icon-pencil' data-uri='/blog/{{article.slug}}/edit/' data-id='{{article.slug}}'></span>
+                        <span class='header-option hwios-button ui-icon ui-icon-pencil' data-uri='/blog/{{article.slug}}/edit/' data-id='{{article.slug}}'></span>
                         {%endif%}
                         {%endif%}
                     </div>

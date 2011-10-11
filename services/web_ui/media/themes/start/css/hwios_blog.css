@@ -1,9 +1,3 @@
-.article-option {
-    margin:5px;
-    margin-right:0px;
-    margin-top:1px;
-}
-
 .article-avatar {
     width:70px;
     height:70px;
@@ -52,6 +46,10 @@
     height:20px;
 }
 
+.blog-article-header span:first-child {
+    float:left;
+    padding-right:8px;
+}
 
 .blog-article-header span {
     float:left;    
