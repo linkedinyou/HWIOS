@@ -57,21 +57,22 @@ class Client(object):
 
 
     def get_ip(self, force_wanip = False):
+        #either lan or wan ip
         _ip = self.transport.getPeer().host
         #accessed from LAN, make distinction between wan/lan
-        if '192.168' or '10.0.' in _ip:
+        if _ip.startswith('192.168.') or _ip.startswith('10.0.'):
             lan_ip = self.transport.getPeer().host
             wan_ip = settings.HWIOS_WANIP
         else:
             wan_ip = self.transport.getPeer().host       
         #we need a clean wan-ip here
         if force_wanip:
-            if '192.168' or '10.0.' in _ip:
+            if '192.168.' or '10.0.' in _ip:
                 return settings.HWIOS_WANIP
             else:
                 return self.transport.getPeer().host
         else:
-            if '192.168' or '10.0.' in _ip:                
+            if '192.168.' or '10.0.' in _ip:                
                 return '%s - %s' % (lan_ip, wan_ip)
             else:
                 return wan_ip
