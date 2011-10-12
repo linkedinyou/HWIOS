@@ -72,7 +72,9 @@ class Client(object):
             else:
                 return self.transport.getPeer().host
         else:
-            if _ip.startswith('192.168.') or _ip.startswith('10.0.'):              
+            print _ip
+            if _ip.startswith('192.168.') or _ip.startswith('10.0.'):
+                print "MATCH!"
                 return '%s - %s' % (lan_ip, wan_ip)
             else:
                 return wan_ip
