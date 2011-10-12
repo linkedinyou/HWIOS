@@ -18,6 +18,7 @@ tls = False       ;Use TLS encryption when communicating with the SMTP server?
 lang = en-GB                           ;Locale to use for HWIOS
 cache = memcached://127.0.0.1:11211/   ;URI pointing to your memcache server (not sure if this is necessary or not)
 uri = 192.168.1.109                    ;URI pointing to the root of this installation
+wanip = 0.0.0.0			       ;The IP that's used as client wan-ip when HWIOS is accessed from a LAN
 time_zone = Europe/Amsterdam
 threadpool = 5
 template = start                       ;Which skin to use for the WebUI (more can be placed in services/web_ui/templates)
