@@ -923,7 +923,7 @@ code {
     background:#eee;
     position:absolute;
     display:none;
-    box-shadow: 7px 7px 10px #000;
+    box-shadow: 7px 7px 10px #333;
     overflow:auto;
     color:#aaa;
     z-index:10000000;

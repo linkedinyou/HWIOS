@@ -197,6 +197,8 @@ function bind_events() {
         $('.menu-item-selected').removeClass('menu-item-selected');
         if(!$(this).hasClass('menu-item-selected')) {
             $(this).addClass('menu-item-selected');
+            $(this).parents('li').addClass('menu-item-selected');
+            console.log('booh');
         }
         var params = $(this).data();
         if('uri' in params){

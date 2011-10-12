@@ -6,6 +6,7 @@
     padding:5px;
     float:left;
     margin-top:25px;
+    box-shadow: inset 1px 1px 3px #333;
 }
 
 .article-avatar img {
@@ -41,18 +42,22 @@
     font-weight:bold;
     margin-bottom:10px;
     border-bottom:1px dotted #ddd;
-    padding-bottom:5px;
+    padding-bottom:7px;
     width:100%;
-    height:20px;
+    height:18px;
 }
 
-.blog-article-header span:first-child {
-    float:left;
-    padding-right:8px;
+.blog-article-header .header-option {
+    margin-top:5px;
 }
 
 .blog-article-header span {
-    float:left;    
+    float:left;
+}
+
+.blog-article-header span:first-child {
+    padding-right:8px;
+    padding-top:3px;
 }
 
 .blog-article-header span:first-letter {
@@ -150,7 +155,7 @@
 .blog-comment-options {
     position:relative;
     height:20px;
-    float:left;
+    float:left;    
 }
 
 .blog-comment-created {
