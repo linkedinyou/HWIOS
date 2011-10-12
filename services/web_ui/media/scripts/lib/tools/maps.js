@@ -308,7 +308,13 @@ return {
         application.settings.services.tms.cache = new Date().getTime();
     },
     get_zoom: function() {
-    return map.getZoom();
-    }
+        return map.getZoom();
+    },
+    center_lonlat: function(lon, lat, zoom) {
+        zoom === undefined ? zoom = application.settings.services.tms.center[2] : zoom = zoom;
+        var lonlat = new OpenLayers.LonLat(lon, lat)
+        var center = new OpenLayers.LonLat(lonlat.lon, lonlat.lat).transform(new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject());
+        map.setCenter(center, zoom);
+    },
 }
 });

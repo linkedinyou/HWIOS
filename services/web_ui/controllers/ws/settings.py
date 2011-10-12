@@ -63,7 +63,6 @@ class WS_Settings(object):
                     'type': HWIOS.ws_realm._t['notify-info']
                 }
             })
-            print tpl_params
             notify_others(client, client_response,'/settings/modified/', r'^/settings/$', tpl_params)
             publish_activity(client.profile, _('Settings updated'),'/settings/',[0,0,4,0,0])
         else: 

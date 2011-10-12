@@ -171,15 +171,20 @@ class WebSocketPool(object):
         return __clients        
     
         
-    def get_client(self, profile_uuid):
+    def get_client(self, uuid = None, username = None):
         """Find a client in the general client-list, based on it's profile uuid
 
         :param str profile_uuid: The profile uuid to find the client with
         :return: client or None 
         """
-        for _client in self.clients:
-            if _client.profile.uuid == profile_uuid:
-                return _client
+        if uuid != None:
+            for _client in self.clients:
+                if _client.profile.uuid == uuid:
+                    return _client
+        elif username != None:
+            for _client in self.clients:
+                if _client.profile.username == username:
+                    return _client
         return None
         
         

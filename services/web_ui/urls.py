@@ -155,7 +155,8 @@ ws_patterns = [
     (r'^/profiles/manage/$', 'web_ui.controllers.ws.profiles', 'WS_Profiles', 'manage_profiles'),
     (r'^/profiles/my_profile/$', 'web_ui.controllers.ws.profiles', 'WS_Profiles', 'edit_my_profile'),
     (r'^/profiles/create/$', 'web_ui.controllers.ws.profiles', 'WS_Profiles', 'create_profile'),
-    (r'^/profiles/(?P<username>[^/]+)/$', 'web_ui.controllers.ws.profiles', 'WS_Profiles', 'view_profile'), 
+    (r'^/profiles/(?P<username>[^/]+)/$', 'web_ui.controllers.ws.profiles', 'WS_Profiles', 'view_profile'),
+    (r'^/profiles/(?P<username>[^/]+)/whois/$', 'web_ui.controllers.ws.profiles', 'WS_Profiles', 'whois_profile'),
     (r'^/profiles/(?P<username>[^/]+)/edit/$', 'web_ui.controllers.ws.profiles', 'WS_Profiles', 'edit_profile'),
     (r'^/profiles/activate/(?P<profile_uuid>[^/]+)/$','web_ui.controllers.ws.profiles', 'WS_Profiles', 'activate_profile'),
     

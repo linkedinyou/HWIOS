@@ -37,9 +37,10 @@ function bind_functions() {
                     [XRegExp('^/data/profiles/logout/$'),this.logout],
                     [XRegExp('^/data/profiles/register/$'),this.register],
                     [XRegExp('^/profiles/activate/(?<profile_uuid>[^/]+)/$'),this.activate],
-                    [XRegExp('^/profiles/manage/$'),this.manage_profiles],
+                    [XRegExp('^/profiles/manage/$'),this.manage_profiles],                    
                     [XRegExp('^/profiles/(?<profile_name>[^/]+)/$'),this.view_profile],                   
                     [XRegExp('^/profiles/create/$'),this.create_profile],
+                    [XRegExp('^/profiles/(?<profile_name>[^/]+)/whois/$'),this.whois_profile],
                     [XRegExp('^/profiles/(?<profile_name>[^/]+)/edit/$'),this.edit_profile],
                 ];
             }
@@ -267,6 +268,16 @@ function bind_functions() {
                     },
                     buttons: i18nButtons
                 });
+            });
+        },
+
+        whois_profile: function(kwargs) {
+            application.ws.remote('/profiles/'+kwargs.profile_name+'/whois/',{},function(response){
+                application.functions.ui.transition(response.data.dom.main, $('.main'));
+                var lonlat = $('.whois-map').data();
+                console.log(lonlat);
+                application.maps.connect();
+                application.maps.center_lonlat(lonlat.lon, lonlat.lat, 10);
             });
         },
         

@@ -13,6 +13,7 @@ require.packaged = true;
 var application = {functions:{},modules:{},plasmoids:{}}
 
 define('app',[
+'lib/tools/maps',
 'modules/ui',
 'lib/codemirror2/codemirror',
 'lib/tools/xregexp',
@@ -27,8 +28,10 @@ define('app',[
 'order!lib/codemirror2/mode/markdown/markdown',
 'order!lib/jinfinote/jinfinote',
 'order!lib/jquery/jquery.jinfinote',
+
 ],
-function(settings){
+function(maps){
+    application.maps = maps;
     _modules = [];
     var offline_trigger;
     var ssl = false;

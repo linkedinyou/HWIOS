@@ -30,6 +30,8 @@ hwios_config.read(os.path.join(HWIOS_ROOT,'hwios.ini'))
 
 HWIOS_URI = hwios_config.get('general','uri')
 HWIOS_PORT = service_config.get('service','port')
+HWIOS_WANIP = hwios_config.get('general','wanip')
+GEOIP_PATH = os.path.join(HWIOS_ROOT,'lib','geoip')
 
 DEBUG = hwios_config.getboolean('general','debug')
 TEMPLATE_DEBUG = DEBUG

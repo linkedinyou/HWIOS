@@ -1,0 +1,19 @@
+{% load i18n %}
+<div class='hwios-widget' id='profiles-context'>
+    <div class="ui-widget-header">
+        <span>{{target_profile.username}}</span>
+        <span>{%trans "Whois "%}</span>
+    </div>
+    <div class="ui-widget-content">
+        <div id='whois-info'>
+            <table class='datatable'>
+            <tr><td>{%trans 'Username'%}</td><td>{{target_profile.username}}</td></tr>
+            <tr><td>{%trans 'IP'%}</td><td>{{ip}}</td></tr>
+            <tr><td>{%trans 'Hostname'%}</td><td>{{hostname}}</td></tr>
+            <tr><td>{%trans 'Country'%}</td><td>{{geoip.country_name}}</td></tr>
+            <tr><td>{%trans 'City'%}</td><td>{{geoip.city}}</td></tr>
+            </table>
+        </div>
+        <div id='map' class='whois-map' data-lon='{{geoip.longitude}}' data-lat='{{geoip.latitude}}'></div>
+    </div>    
+</div>

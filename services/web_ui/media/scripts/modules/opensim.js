@@ -11,7 +11,6 @@
 */
 define('modules/opensim',[
 'lib/jquery/jquery.xhr_upload',
-'lib/tools/maps',
 ],
 function(xhr,maps){
     var urls;

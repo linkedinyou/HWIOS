@@ -10,12 +10,16 @@
 """
 import os,sys
 import time
+
 from datetime import datetime
-from twisted.internet import defer
+from twisted.internet import defer, reactor
+
+
 from django.template.loader import render_to_string
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.translation import ugettext as _
+
 
 from core.application import HWIOS
 from web_ui.models.ws_auth import WSAuth
@@ -23,6 +27,7 @@ from web_ui.models.profiles import Profile
 from web_ui.models.notifications import *
 from web_ui.models.activity import *
 from web_ui.models.settings import Settings
+
 from web_ui.forms.profiles import *
 
 
@@ -101,6 +106,22 @@ class WS_Profiles(object):
                     },
                     'data':{'dom':{'main':main}}
                 }
+
+               
+    @defer.inlineCallbacks
+    def whois_profile(self, client, username):
+        """
+        Lookup info about a client
+        """
+        target_client = HWIOS.ws_realm.pool.get_client(username = username)
+        if target_client != None:
+            ip = target_client.get_ip()
+            hostname = yield target_client.get_hostname()
+            geoip = target_client.get_geoip()
+        else:
+            _ip = _('Unknown')
+        main = render_to_string('profiles/whois_profile.html', {'ip': ip,'hostname':hostname,'geoip':geoip,'target_profile':target_client.profile})
+        defer.returnValue({'data':{'dom':{'main':main}}})
     
 
     @WSAuth.is_authenticated

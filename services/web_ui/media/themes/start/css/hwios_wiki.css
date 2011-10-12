@@ -107,6 +107,7 @@
     padding-left:10px;
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
+    overflow-y:scroll;
 }
 
 
@@ -125,9 +126,15 @@
     height:100%;
     background:#fff;
     z-index:10000;
-    overflow:auto;
+    overflow-y:scroll;
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
+}
+
+.wiki-fullscreen #wiki-editor .CodeMirror-scroll {
+    overflow-y:show;
+    overflow-x:hide;
+    height:100%;
 }
 
 .wiki-fullscreen .infinote-online {
@@ -145,12 +152,6 @@
     top:0px;
     z-index:100000;
     border:1px dotted #ddd;
-}
-
-.wiki-fullscreen #wiki-editor .CodeMirror-scroll {
-    overflow-y:show;
-    overflow:auto;
-    height:100%;
 }
 
 #wiki-listener {

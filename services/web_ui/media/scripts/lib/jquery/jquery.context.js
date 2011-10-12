@@ -79,6 +79,7 @@
                                 });
                             });
                         }else if(typeof dom_data.ctxmatch == 'string'){
+                            console.log(dom_data.ctxmatch);
                             _target.find('.context-menu-option').each(function(idx,value) {
                                 var ctx_menuitem_data = $(this).data();
                                 //has context and context equals that of dom-item

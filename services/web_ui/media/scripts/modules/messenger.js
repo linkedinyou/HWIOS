@@ -114,20 +114,20 @@ define('modules/messenger',[
             var _user_dom;
             if(user.id == application.settings.user.id){
                 if(user.name.indexOf('visitor') != -1){
-                    _user_dom = '<div data-id="'+user.name+'" data-ctx-showid="'+user.id+'" class="messenger-participant"><div class="messenger-avatar"><img src="'+_avatar+'"/></div><div>'+user.name+' ('+gettext('You')+')</div></div>';
+                    _user_dom = '<div data-id="'+user.name+'" data-ctx-showid="'+user.id+'" data-ctxmatch=\'["whois-profile"]\' class="messenger-participant"><div class="messenger-avatar"><img src="'+_avatar+'"/></div><div>'+user.name+' ('+gettext('You')+')</div></div>';
                 }
                 else {
-                    _user_dom = '<div data-id="'+user.name+'" data-ctx-showid="'+user.id+'" data-ctxmatch="view-profile" class="messenger-participant"><div class="messenger-avatar"><img src="'+_avatar+'"/></div><div>'+user.name+' ('+gettext('You')+')</div></div>';
+                    _user_dom = '<div data-id="'+user.name+'" data-ctx-showid="'+user.id+'" data-ctxmatch=\'["view-profile","whois-profile"]\' class="messenger-participant"><div class="messenger-avatar"><img src="'+_avatar+'"/></div><div>'+user.name+' ('+gettext('You')+')</div></div>';
                 }
                 $('#online-box').prepend(_user_dom);
             }
             else {
                 if(user.name.indexOf('visitor') != -1){
                 //hide for own user when visitor
-                _user_dom = '<div data-id="'+user.name+'" data-ctx-showid="'+user.id+'" class="messenger-participant"><div class="messenger-avatar"><img src="'+_avatar+'"/></div><div>'+user.name+'</div></div>';
+                _user_dom = '<div data-id="'+user.name+'" data-ctx-showid="'+user.id+'" data-ctxmatch=\'["whois-profile"]\' class="messenger-participant"><div class="messenger-avatar"><img src="'+_avatar+'"/></div><div>'+user.name+'</div></div>';
                 }
                 else {
-                _user_dom = '<div data-id="'+user.name+'" data-ctx-showid="'+user.id+'" data-ctxmatch="view-profile" class="messenger-participant"><div class="messenger-avatar"><img src="'+_avatar+'"/></div><div>'+user.name+'</div></div>';
+                _user_dom = '<div data-id="'+user.name+'" data-ctx-showid="'+user.id+'" data-ctxmatch=\'["view-profile","whois-profile"]\' class="messenger-participant"><div class="messenger-avatar"><img src="'+_avatar+'"/></div><div>'+user.name+'</div></div>';
                 }
             $('#online-box').append(_user_dom);
             }
