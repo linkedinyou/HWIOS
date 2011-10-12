@@ -63,15 +63,20 @@ class Client(object):
             lan_ip = self.transport.getPeer().host
             wan_ip = settings.HWIOS_WANIP
         else:
-            wan_ip = self.transport.getPeer().host
-        if not force_wanip:
+            wan_ip = self.transport.getPeer().host       
+        #we need a clean wan-ip here
+        if force_wanip:
             if '192.168' or '10.0.' in _ip:
-                return '%s - %s' % (lan_ip, wan_ip)
+                return settings.HWIOS_WANIP
             else:
                 return self.transport.getPeer().host
         else:
-            return wan_ip
+            if '192.168' or '10.0.' in _ip:                
+                return '%s - %s' % (lan_ip, wan_ip)
+            else:
+                return wan_ip
 
+            
     def _gotReverseLookupResult(self, (answers, authority, additional)):
         return answers[0].payload.name
         
