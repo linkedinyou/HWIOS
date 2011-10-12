@@ -108,7 +108,7 @@ django-elfinder includes parts of elFinder, which is covered by the 3-clauses BS
 '''
 def elconnector(request):
     finder = connector({'URL':'/media/files/',
-    'root':'/home/hwios/hwios/services/web_ui/media/files/',
+    'root':os.path.join(web_ui.settings.HWIOS_ROOT,'services','web_ui','media','files'),
     'tmbDir':'.tmb',
     'imgLib':'PIL'})
 

@@ -438,7 +438,7 @@ button::-moz-focus-inner { border: 0; }
     font-weight:bold;
     display:block;
     border-bottom:1px dotted #ddd;
-    height:28px;
+    height:25px;
 }
 
 /* all hwios widgets have a top-left icon, a text and optionally a right-floated info-text */
