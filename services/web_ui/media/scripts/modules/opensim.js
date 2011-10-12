@@ -95,7 +95,7 @@ function bind_functions() {
                     tabs = $('#settings_tabs').tabs({show:
                         function(event, ui) {
                             if(ui.index == 1) {
-                                maps.connect();
+                                application.maps.connect();
                             }
                         }
                     });
@@ -106,7 +106,7 @@ function bind_functions() {
                     tabs = $('#settings_tabs').tabs({show:
                         function(event, ui) {
                             if(ui.index == 1) {
-                                maps.connect();
+                                application.maps.connect();
                             }
                         }
                     });
@@ -116,7 +116,7 @@ function bind_functions() {
         view_maps: function(){
             application.ws.remote('/maps/',{},function(response){
                 application.functions.ui.transition(response.data.dom.main, $('.main'));
-                maps.connect();
+                application.maps.connect();
             });          
         },
 
@@ -484,7 +484,7 @@ function bind_functions() {
                 application.functions.ui.transition(response.data.dom.main, $('.main'));
                 tabs = $('#settings_tabs').tabs({show:
                     function(event, ui) {
-                        if(ui.index == 1) {maps.connect();}
+                        if(ui.index == 1) {application.maps.connect();}
                     }
                 });   
                 tabs.tabs('option', 'selected',selected);
