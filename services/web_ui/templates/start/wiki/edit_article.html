@@ -1,13 +1,15 @@
 {% load i18n %}
-<div class='hwios-widget edit-wiki-page'>
+<div class='hwios-widget'>
     <div class='ui-widget-header'>
         <span>{{page.slug}}</span>
         <span id='wiki-fullscreen-button' class='header-option hwios-button ui-icon ui-icon-arrow-4-diag' data-function='wiki.edit_fullscreen'></span>
         <span>{%trans 'Edit document'%}</span>
     </div>
     <div class='ui-widget-content'>
-        <div id='wiki-markdown'></div>
-        <div id='wiki-editor' class='infinote-editor'></div>
+        <div class='edit-wiki-page'>
+            <div id='wiki-markdown'></div>
+            <div id='wiki-editor' class='infinote-editor'></div>            
+        </div>
         <form method='post' action='/wiki/{{page.slug}}/save/'>
             {{form.as_p}}
         </form>    
@@ -21,5 +23,6 @@
         </div>
     </div>
 </div>
+
 
 

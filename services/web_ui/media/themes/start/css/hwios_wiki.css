@@ -6,7 +6,6 @@
 
 #wiki-markdown {
     min-height:150px;
-    -webkit-user-select: auto;
     font-size:13px;
     line-height:1.4;
 }
@@ -86,11 +85,17 @@
 
 .edit-wiki-page #wiki-markdown {
     width:100%;
-    height:250px;
+    height:200px;
     overflow:auto;
     resize:vertical;
-    border-bottom:1px dotted #ddd;
-    margin-bottom:10px;
+    border-bottom:1px solid #ddd;
+}
+
+/*Editor container in non-fullscreen mode*/
+.edit-wiki-page #wiki-editor {
+    width:100%;
+    border-bottom:1px solid #ddd;
+    border-top:1px solid #999;
 }
 
 .wiki-fullscreen {
@@ -98,63 +103,54 @@
     width:100%;
     height:100%;
     background: #fff url('images/body_bg.png') repeat-x;
-    overflow:auto;
     left:0px;
     top:0px;
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
-    border:1px solid #f00;
     z-index:10000;
-}
-
-.wiki-fullscreen #wiki-markdown {
-    position:absolute;
-    right:0px;
-    top:0px;
-    width:48%;
-    height:100%;
-    z-index:10000;
-    overflow:auto;
-    margin-bottom:0px;
-    resize:none;
-    padding-left:10px;
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    overflow-y:scroll;
-}
-
-.wiki-fullscreen #wiki-editor .CodeMirror-scroll {
-    overflow-y:show;
-    overflow-x:hide;
-    height:100%;
-}
-
-.wiki-fullscreen .infinote-online {
-    width:15%;
-    height:100%;
-    left:0px;
-    top:0px;
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
+    margin:0px;
 }
 
 .wiki-fullscreen #wiki-editor {
-    position:absolute;
-    left:0px;
-    top:0px;
-    width:52%;
+    float:left;
     height:100%;
+    width:50% !important;
     z-index:10000;
-    overflow-y:scroll;
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
+    overflow:auto;
+    margin-right:-100%;
 }
 
-/*Editor container*/
-.edit-wiki-page #wiki-editor {
-    width:100%;
-    border-bottom:1px solid #ddd;
-    border-top:1px dotted #ddd;
+
+.wiki-fullscreen #wiki-markdown {
+    z-index:10000;
+    height:100%;
+    margin-left:810px;
+    float:right;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    width:50%;
+    padding-left:5px;
+}
+
+.wiki-fullscreen #wiki-editor .CodeMirror-scroll {
+    height:100%;
+    resize:none;
+}
+
+
+.wiki-fullscreen .infinote-online {
+    width:150px;
+    height:100%;
+}
+
+.fullscreen-button-fullscreen {
+    position:absolute !important;
+    right:15px;
+    top:0px;
+    z-index:10001;
+    border:1px dotted #ddd;
 }
 
 .wiki-fullscreen #wiki-fullscreen-button {

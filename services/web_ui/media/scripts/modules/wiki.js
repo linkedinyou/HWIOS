@@ -136,12 +136,15 @@ function bind_functions() {
         edit_fullscreen: function(kwargs) {
             var _parent = $('.edit-wiki-page');
             //already in fullscreen mode
+            console.log('blaa');
             if($(_parent).hasClass('wiki-fullscreen')){
                 $(_parent).removeClass('wiki-fullscreen');
+                $('#wiki-fullscreen-button').removeClass('fullscreen-button-fullscreen');
                 $('.sidebar').removeClass('sidebar-fullscreen');
             }
             else {
                 $(_parent).addClass('wiki-fullscreen');
+                $('#wiki-fullscreen-button').addClass('fullscreen-button-fullscreen');
                 //force the sidebar to be hidden, so it doesnt mess up the container height
                 $('.sidebar').addClass('sidebar-fullscreen');
             }
