@@ -162,7 +162,8 @@ function bind_functions() {
                 c_dialog[kwargs.uuid] = $('<div class="console-container"><div id="console-box'+kwargs.uuid+'" class="console-box"><div id="console-lines-'+
                 kwargs.uuid+'" class="console-lines"></div></div><input type="text" id="console-input-'+kwargs.uuid+'" class="console-input"></input></div>').dialog({
                     dialogClass: 'console-dialog-container', autoOpen: false, resizable: false,
-                    title: '<span class="ui-icon ui-icon-image"></span><span>Console '+kwargs.name+'</span>',height:446,width:802,position:[offset,offset],zIndex:10000,
+                    title: '<span class="ui-icon ui-icon-image"></span><span>'+gettext('Terminal')+' '+kwargs.name+'</span>',
+                    height:446,width:802,position:[offset,offset],zIndex:10000,
                     open:function(event, ui) {
                         c_dialog[kwargs.uuid].c_hist = new Array();
                         $('#console-input-'+kwargs.uuid).removeAttr("disabled");

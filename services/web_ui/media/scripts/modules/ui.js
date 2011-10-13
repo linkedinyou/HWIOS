@@ -27,8 +27,8 @@ function(){
         /**
         * Standard button effects on hover
         */
-        $('button:not(.ui-state-disabled)').live("mouseover mouseout",function(){$(this).toggleClass("ui-state-hover");});
-        $('button:not(.ui-state-disabled)').live('mousedown',function(){
+        $('.fg-button:not(.ui-state-disabled)').live('mouseover mouseout',function(){$(this).toggleClass("ui-state-hover");});
+        $('.fg-button:not(.ui-state-disabled)').live('mousedown',function(){
             $(this).parents('.fg-buttonset-single:first').find(".fg-button.ui-state-active").removeClass("ui-state-active");
             if( $(this).is('.ui-state-active.fg-button-toggleable, .fg-buttonset-multi .ui-state-active') ){ $(this).removeClass("ui-state-active"); }
             else { $(this).addClass("ui-state-active"); }   

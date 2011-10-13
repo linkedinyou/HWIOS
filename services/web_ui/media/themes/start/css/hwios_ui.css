@@ -467,7 +467,7 @@
     background: #efefef;
     color:#000;
     border-bottom:1px dotted #ddd;
-    
+    border-radius:0px !important;
 }
 
 .ui-dialog-content {

@@ -12,7 +12,7 @@
 define('modules/opensim',[
 'lib/jquery/jquery.xhr_upload',
 ],
-function(xhr,maps){
+function(xhr){
     var urls;
     var selected_tab;
     var tabs;
@@ -259,7 +259,7 @@ function bind_functions() {
                 i18nButtons[gettext('Delete')] = function(){
                     var form_data = $(":checkbox:checked:visible").serializeObject();
                     application.ws.remote('/data/opensim/regions/delete/',{params:form_data},function(response){
-                        maps.reset_cache();
+                        application.maps.reset_cache();
                         application.cb_selected = 0;
                         application.functions.ui.transition(response.data.dom.main, $('.main'));                        
                         tabs = $('#region-tabs').tabs();
@@ -284,7 +284,7 @@ function bind_functions() {
                 }
             application.ws.remote('/opensim/regions/create/',{},function(response){
             application.functions.ui.transition(response.data.dom.main, $('.main'));
-            maps.connect(application);
+            application.maps.connect(application);
             });
         },
         
@@ -299,14 +299,14 @@ function bind_functions() {
                 switch(response.status.code) {
                     case 'FORM_INVALID':  
                         $('.main').html(response.data.dom.main);
-                        maps.connect(application);
+                        application.maps.connect(application);
                         
                         $.each($('form .errorlist'), function () {
                         $(this).next().prepend('<span class="ui-icon ui-icon-info"></span>');   
                         });     
                     break;
                     case 'REGION_CREATED':
-                        maps.reset_cache();
+                        application.maps.reset_cache();
                         application.functions.opensim.view_regions();
                     break;
                 }
@@ -316,8 +316,8 @@ function bind_functions() {
         edit_region: function(kwargs) {
             application.ws.remote('/opensim/regions/'+kwargs.uuid+'/edit/',{},function(response){
                 application.functions.ui.transition(response.data.dom.main, $('.main'));
-                maps.reset_cache();
-                maps.connect(application);                
+                application.maps.reset_cache();
+                application.maps.connect(application);                
                 init_helpers();
             });
         },
@@ -330,7 +330,7 @@ function bind_functions() {
             var form_data = $('form:visible').serializeObject();
             application.ws.remote('/opensim/regions/'+kwargs.uuid+'/edit/',{params:form_data},function(response){
                 if (response.status.code == 'REGION_UPDATED') {
-                    maps.reset_cache();
+                    application.maps.reset_cache();
                     application.functions.opensim.view_regions();
                 }
                 else {
@@ -459,7 +459,7 @@ function bind_functions() {
             var selected = tabs.tabs('option', 'selected');
             application.ws.remote('/data/settings/maps/update/',{params:form_data},function(response){
                 application.functions.ui.transition(response.data.dom.main, $('.main'));
-                maps.connect(application);
+                application.maps.connect(application);
                 tabs = $('#settings_tabs').tabs();
                 tabs.tabs('option', 'selected',selected);
                 //$('#id_mail_body').markItUp(mySettings,{multiUser:false});
@@ -505,7 +505,6 @@ function bind_functions() {
 
 function bind_ws(){
     application.ws.method('^/opensim/settings/modified/$', function(kwargs){
-        console.log(kwargs);
         application.functions.opensim.view_settings(kwargs, true);
     });
     application.ws.method('^/opensim/avatars/modified/$', function(kwargs){

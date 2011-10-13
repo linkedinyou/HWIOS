@@ -1,0 +1,122 @@
+.console-container {
+    width:100%;
+    height:100%;
+}
+
+.console-box {
+    width:100%;
+    height:391px;
+    overflow-y:scroll;
+    overflow-x:hidden;
+    resize:none;
+    -webkit-box-sizing:border-box;
+    -moz-box-sizing: border-box;
+    color:#ddd;
+    font-size:11px;
+    position:absolute;
+    background:#000;
+    top:26px;
+}
+
+.console-box-disabled {
+    background-color:#111 !important;
+}
+
+.console-box-disabled > .console-lines {
+    color:#999 !important;
+}
+
+.console-dialog-container {
+
+}
+
+.console-dialog-container > .ui-dialog-content {
+    padding:0px !important;
+    margin:0px !important;
+
+}
+
+
+.console-lines {
+    padding:5px;
+}
+
+.console-notification {
+    font-weight:bold;
+    padding-bottom:5px;
+    color:#00aeef;
+}
+
+.console-input {
+    width:100%;
+    -webkit-box-sizing:border-box;
+    -moz-box-sizing:border-box;
+    -webkit-animation-name: none;
+    border:0px !important;
+    border-top:1px dotted #ddd !important;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    outline:none;
+    position:absolute;
+    margin-top:390px;
+    left:0px;
+    bottom:0px;
+    background:#000;
+    color:#fff;
+}
+
+.service-on {background: url('images/icons/service_on.png') no-repeat;}
+.service-off {background: url('images/icons/service_off.png') no-repeat;}
+.watchdog-on {background: url('images/icons/watchdog_on.png') no-repeat;}
+.watchdog-off {background: url('images/icons/watchdog_off.png') no-repeat;}
+.watchdog-disabled {background: url('images/icons/watchdog_disabled.png') no-repeat;}
+.console-on {background: url('images/icons/terminal.png') no-repeat;}
+.edit-sim-slave-ini {background: url('images/icons/edit.png') no-repeat;}
+.backup-region-on {background: url('images/icons/saveas.png') no-repeat;}
+.scene-backup-load {background: url('images/icons/load.png') no-repeat;}
+.scene-backup-download {background: url('images/icons/download.png') no-repeat;}
+
+.region-editor-container {
+    width:100%;
+    height:100%;
+}
+
+.region-editor-form {
+    width:460px;
+    float:left;
+    margin-right:-100%;
+}
+
+/* openlayers map for creating/editing region view */
+.region-editor-container > #map {
+    height:350px;
+    margin-left:462px;
+    margin-bottom:10px;
+    margin-right:10px;
+    border:1px dotted #ddd;
+    margin-top:10px;
+}
+
+#map > div {
+    z-index:9 !important;
+}
+
+/*frontend map*/
+.worldmap {
+    width:100%;
+    height:600px;
+}
+
+.worldmap * {
+    border:0px !important;
+    margin:0 !important;
+    padding:0 !important;
+}
+
+.settingsmap {
+    width:100%;
+    background:#cfd9ff !important;
+    height:320px;
+    border:1px solid #5891b5;
+    border-radius:5px;
+}
