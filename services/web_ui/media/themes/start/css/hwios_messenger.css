@@ -13,10 +13,12 @@
     -webkit-user-select: auto;
     -moz-user-select: auto;
     border-bottom:1px dotted #ddd;
+    border-top:1px solid #ddd;
     font-size:13px;
     background: url('images/chat_bg.png') no-repeat;
     background-position:center;
     background-size:70%;
+    
 }
 
 #message_input_field {
@@ -42,7 +44,7 @@
     -moz-user-select: none;
     -webkit-box-sizing:border-box;
     -moz-box-sizing:border-box;
-    border-bottom:1px dotted #00aeef;
+    border-bottom:1px solid #999;
     font-size:12px;
     font-weight:bold;
     font-style:oblique;
