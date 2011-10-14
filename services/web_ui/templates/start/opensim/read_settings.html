@@ -1,6 +1,6 @@
 {% load i18n %}
 <div class='hwios-widget'>
-    <div class='ui-widget-header ui-corner-top services'>
+    <div class='ui-widget-header'>
         <span>{%trans 'OpenSim Preferences'%}</span>
         <span>{%trans 'Edit'%}</span>
     </div>
@@ -10,31 +10,30 @@
             <li><a href='#settings-map'>{%trans 'Map'%}</a></li>
         </ul>
         <div id='settings-simulation'>
-            <div class='ui-widget-content ui-corner-bottom contenttext'>
-            <form method='post' action=''>
-            {{ simulator_form.as_p }}
-            </form>
+            <div class='ui-widget-content'>
+                <form method='post' action=''>{{ simulator_form.as_p }}</form>
             </div>
-            <div class='hwios-toolbar'>
-                <div class='ui-helper-clearfix'>
-                    <div class='fg-buttonset fg-buttonset-single ui-helper-clearfix' style='float:left;'>
-                        <button data-function='opensim.update_settings' class='btn-select0 fg-button ui-state-default fg-button-icon-left ui-corner-all'><span class='ui-icon ui-icon-gear'></span><span>{%trans 'Update'%}</span></button>
-                    </div>
+            <div class='btn-bar'>
+                <div class='btn-set btn-set-single'>
+                    <button data-function='opensim.update_settings' class='btn btn-select0 ui-state-default ui-corner-all'>
+                        <span class='ui-icon ui-icon-gear'></span><span class='btn-txt'>{%trans 'Update'%}</span>
+                    </button>
                 </div>
             </div>
         </div>
         <div id='settings-map'>
-            <div class='ui-widget-content ui-corner-bottom contenttext'>
+            <div class='ui-widget-content'>
                 <div id='map' class='settingsmap'></div>
-                <form method='post' action=''>
-                {{ map_form.as_p }}
-                </form>
+                <form method='post' action=''>{{ map_form.as_p }}</form>
             </div>
-            <div class='hwios-toolbar'>
-                <div class='ui-helper-clearfix'>
-                <div class='fg-buttonset fg-buttonset-single ui-helper-clearfix' style='float:left;'>
-                    <button data-function='opensim.update_settings' class='fg-button ui-state-default fg-button-icon-left ui-corner-left'><span class='ui-icon ui-icon-document'></span><span>{%trans 'Update'%}</span></button>
-                    <button data-function='opensim.render_maps' class='fg-button ui-state-default fg-button-icon-left ui-corner-right''><span class='ui-icon ui-icon-pencil'></span><span>{%trans 'Render'%}</span></button>
+            <div class='btn-bar'>
+                <div class='btn-set btn-set-single'>
+                    <button data-function='opensim.update_settings' class='btn ui-state-default ui-corner-left'>
+                        <span class='ui-icon ui-icon-document'></span><span class='btn-txt'>{%trans 'Update'%}</span>
+                    </button>
+                    <button data-function='opensim.render_maps' class='btn ui-state-default ui-corner-right''>
+                        <span class='ui-icon ui-icon-pencil'></span><span class='btn-txt'>{%trans 'Render'%}</span>
+                    </button>
                 </div>
             </div>
         </div>

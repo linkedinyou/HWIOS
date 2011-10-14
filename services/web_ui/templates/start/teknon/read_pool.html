@@ -1,6 +1,6 @@
 {% load i18n %}
 <div class='hwios-widget'>
-    <div class='ui-widget-header ui-corner-top services' id='teknon_clients'>
+    <div class='ui-widget-header'>
         <span>{%trans 'Services'%}</span>
         <span>{%trans 'Overview'%}</span>
     </div>
@@ -9,11 +9,11 @@
             <li><a href='#teknon-services'>{%trans 'Services'%}</a></li>
             <li><a href='#teknon-machines'>{%trans 'Machines'%}</a></li>
         </ul>
-        <div class='ui-widget-content ui-corner-bottom contenttext' id='teknon-services'>
-            <table class='datatable' id='table-services'>
+        <div class='ui-widget-content' id='teknon-services'>
+            <table class='datatable'>
                 <thead>
                     <tr>
-                    <th class='datatable-cb'><input type='checkbox' id='cb-all' /></th>
+                    <th><input type='checkbox' id='cb-all' /></th>
                     <th>{%trans 'Description'%}</th>
                     <th>{%trans 'Client'%}</th>
                     <th>{%trans 'Port'%}</th>
@@ -51,21 +51,25 @@
                         {%endfor%}
                     {%endfor%}
             </table>
-            <div class='hwios-toolbar'>
-                <div class='ui-helper-clearfix'>
-                    <div class='fg-buttonset fg-buttonset-single ui-helper-clearfix' style='float:left;'>
-                        <button data-function='teknon.start_services' class='btn-active-many fg-button ui-state-default fg-button-icon-left ui-corner-left ui-state-disabled'><span class='ui-icon ui-icon-gear'></span><span>{%trans 'Start'%}</span></button>
-                        <button data-function='teknon.stop_services' class='btn-active-many fg-button ui-state-default fg-button-icon-left ui-state-disabled'><span class='ui-icon ui-icon-closethick'></span><span>{%trans 'Stop'%}</span></button>
-                        <button data-function='teknon.kill_services' class='btn-active-many fg-button ui-state-default fg-button-icon-left ui-state-disabled ui-corner-right'><span class='ui-icon ui-icon-alert'></span><span>{%trans 'Kill'%}</span></button>
-                    </div>
+            <div class='btn-bar'>
+                <div class='btn-set btn-set-single'>
+                    <button data-function='teknon.start_services' class='btn btn-active-many ui-state-default ui-corner-left ui-state-disabled'>
+                        <span class='ui-icon ui-icon-gear'></span><span class='btn-txt'>{%trans 'Start'%}</span>
+                    </button>
+                    <button data-function='teknon.stop_services' class='btn btn-active-many ui-state-default ui-state-disabled'>
+                        <span class='ui-icon ui-icon-closethick'></span><span class='btn-txt'>{%trans 'Stop'%}</span>
+                    </button>
+                    <button data-function='teknon.kill_services' class='btn btn-active-many ui-state-default ui-state-disabled ui-corner-right'>
+                        <span class='ui-icon ui-icon-alert'></span><span class='btn-txt'>{%trans 'Kill'%}</span>
+                    </button>
                 </div>
             </div>        
         </div>
-        <div class='ui-widget-content ui-corner-bottom contenttext' id='teknon-machines'>
-            <table class='datatable' id='table-machines'>
+        <div class='ui-widget-content' id='teknon-machines'>
+            <table class='datatable'>
             <thead>
                 <tr>
-                <th class='datatable-cb'><input type='checkbox' id='cb-all' /></th>
+                <th><input type='checkbox' id='cb-all' /></th>
                 <th>{%trans 'UUID'%}</th>
                 <th>{%trans 'Daemon User'%}</th>
                 <th>{%trans 'Connected from'%}</th>
@@ -84,11 +88,9 @@
             {%endfor%}
             </tbody>
             </table>
-            <div class='hwios-toolbar'>
-                <div class='ui-helper-clearfix'>
-                    <div class='fg-buttonset fg-buttonset-single ui-helper-clearfix' style='float:left;'>
-                    <button class='btn-active-many fg-button ui-state-default fg-button-icon-left ui-corner-all ui-state-disabled'><span class='ui-icon ui-icon-gear'></span><span>{%trans 'FIXME'%}</span></button>
-                    </div>
+            <div class='btn-bar'>
+                <div class='btn-set btn-set-single'>
+                    <button class='btn btn-active-many ui-state-default ui-state-disabled ui-corner-all'><span class='ui-icon ui-icon-gear'></span><span class='btn-txt'>{%trans 'FIXME'%}</span></button>
                 </div>
             </div>
         </div>

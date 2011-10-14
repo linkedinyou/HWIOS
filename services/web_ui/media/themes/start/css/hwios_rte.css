@@ -34,6 +34,7 @@
     -moz-box-sizing:border-box;
     padding:3px;
     padding-top:1px;
+    margin-top:30px;
 }
 
 .rte-icon {

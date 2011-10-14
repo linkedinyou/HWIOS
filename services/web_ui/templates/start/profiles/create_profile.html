@@ -1,20 +1,22 @@
 {% load i18n %}
 <div class='hwios-widget'>
-    <div class="ui-widget-header ui-corner-top">
-        <span>{%trans "New Profile"%}</span>
-        <span>{%trans "Create"%}</span>
+    <div class='ui-widget-header'>
+        <span>{%trans 'New Profile'%}</span>
+        <span>{%trans 'Create'%}</span>
     </div>
-    <div class="ui-widget-content ui-corner-bottom contenttext">
-    <form method="post" action="">
+    <div class='ui-widget-content ui-corner-bottom'>
+    <form method='post' action=''>
         {{ form.as_p }}
     </form>
     </div>
-<div class='hwios-toolbar'>
-    <div class="fg-toolbar ui-helper-clearfix">
-        <div class="fg-buttonset fg-buttonset-single ui-helper-clearfix">
-        <button data-uri='/profiles/manage/' class='fg-button ui-state-default fg-button-icon-left ui-corner-left'><span class='ui-icon ui-icon-document'></span><span>{%trans "Cancel"%}</span></button>
-        <button data-function='profiles.save_create_profile' class='fg-button ui-state-default fg-button-icon-left ui-corner-right'><span class='ui-icon ui-icon-pencil'></span><span>{%trans "Save"%}</span></button>
+    <div class='btn-bar'>
+        <div class='btn-set btn-set-single'>
+            <button data-uri='/profiles/manage/' class='btn ui-state-default ui-corner-left'>
+                <span class='ui-icon ui-icon-document'></span><span class='btn-txt'>{%trans 'Cancel'%}</span>
+            </button>
+            <button data-function='profiles.save_create_profile' class='btn ui-state-default ui-corner-right'>
+                <span class='ui-icon ui-icon-pencil'></span><span class='btn-txt'>{%trans 'Save'%}</span>
+            </button>
         </div>
     </div>
-</div>
 </div>

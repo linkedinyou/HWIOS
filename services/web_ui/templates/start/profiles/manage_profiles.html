@@ -1,59 +1,63 @@
 {%load i18n%}
 <div class='hwios-widget'>
-    <div class="ui-widget-header ui-corner-top">
-        <span>{%trans "Profiles"%}</span>
-        <span>{%trans "Overview"%}</span>
+    <div class='ui-widget-header'>
+        <span>{%trans 'Profiles'%}</span>
+        <span>{%trans 'Overview'%}</span>
     </div>
-    <div class='ui-widget-content ui-corner-bottom'>
-        <table class="datatable" >
-        <thead>
+    <div class='ui-widget-content'>
+        <table class='datatable' >
+            <thead>
+                <tr>
+                <th><input type='checkbox' id='cb-all' /></th>
+                <th>{%trans 'Username'%}</th>
+                <th>{%trans 'Email'%}</th>
+                <th>{%trans 'Active'%}</th>
+                <th>{%trans 'Staff'%}</th>
+                <th>{%trans 'Super'%}</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for profile in profiles %}
             <tr>
-            <th class='datatable-cb'><input type='checkbox' id='cb-all' /></th>
-            <th>{%trans "Username"%}</th>
-            <th>{%trans "Email"%}</th>
-            <th>{%trans "Active"%}</th>
-            <th>{%trans "Staff"%}</th>
-            <th>{%trans "Super"%}</th>
+            <td><input type='checkbox' data-uuid='{{profile.uuid}}' data-username='{{profile.username}}' id='{{profile.username}}'/></td>
+            <td>{{profile.username}}</td>
+            <td>{{profile.email}}</td>
+            <td>
+            {%ifequal profile.is_active 1 %}
+            <button id='btn-profiles-set-is-active' class='action-icon yes-button'></button>
+            {%else%}
+            <button id='btn-profiles-set-is-active' class='action-icon no-button'></button>
+            {%endifequal%}
+            </td>
+            <td>
+            {%ifequal profile.is_staff 1 %}
+            <button id='btn-profiles-set-is-staff' class='action-icon yes-button'></button>
+            {%else%}
+            <button id='btn-profiles-set-is-staff' class='action-icon no-button'></button>
+            {%endifequal%}
+            </td>
+            <td>
+            {%ifequal profile.is_superuser 1 %}
+            <button id='btn-profiles-set-superuser' class='action-icon yes-button'></button>
+            {%else%}
+            <button id='btn-profiles-set-superuser' class='action-icon no-button'></button>
+            {%endifequal%}
+            </td>
             </tr>
-        </thead>
-        <tbody>
-        {% for profile in profiles %}
-        <tr>
-        <td><input type='checkbox' data-uuid='{{profile.uuid}}' data-username='{{profile.username}}' id='{{profile.username}}' name='{{profile.first_name}}_{{profile.last_name}}'/></td>
-        <td>{{profile.username}}</td>
-        <td>{{profile.email}}</td>
-        <td>
-        {%ifequal profile.is_active 1 %}
-        <button id='btn-profiles-set-is-active' class='action-icon yes-button is-active-{{profile.uuid}}' value='{{profile.uuid}}'></button>
-        {%else%}
-        <button id='btn-profiles-set-is-active' class='action-icon no-button is-active-{{profile.uuid}}' value='{{profile.uuid}}'></button>
-        {%endifequal%}
-        </td>
-        <td>
-        {%ifequal profile.is_staff 1 %}
-        <button id='btn-profiles-set-is-staff' class='action-icon yes-button is-staff-{{profile.uuid}}' value='{{profile.uuid}}'></button>
-        {%else%}
-        <button id='btn-profiles-set-is-staff' class='action-icon no-button is-staff-{{profile.uuid}}' value='{{profile.uuid}}'></button>
-        {%endifequal%}
-        </td>
-        <td>
-        {%ifequal profile.is_superuser 1 %}
-        <button id='btn-profiles-set-superuser' class='action-icon yes-button is-superuser-{{profile.uuid}}' value='{{profile.uuid}}'></button>
-        {%else%}
-        <button id='btn-profiles-set-superuser' class='action-icon no-button is-superuser-{{profile.uuid}}' value='{{profile.uuid}}'></button>
-        {%endifequal%}
-        </td>
-        </tr>
-        {%endfor%}
-        </tbody>
+            {%endfor%}
+            </tbody>
         </table>
-        <div class='hwios-toolbar'>
-            <div class="action-bar ui-corner-all ui-helper-clearfix">
-                <div class="fg-buttonset fg-buttonset-single ui-helper-clearfix">
-                    <button data-uri='/profiles/create/' class='fg-button ui-state-default fg-button-icon-left ui-corner-left'><span class='ui-icon ui-icon-document'></span><span>{%trans "New"%}</span></button>
-                    <button data-uripart='/profiles/{id}/edit/' data-uriflag='cb-cid' class='btn-active-one fg-button ui-state-default fg-button-icon-left ui-state-disabled'><span class='ui-icon ui-icon-pencil'></span><span>{%trans "Edit"%}</span></button>
-                    <button data-function='profiles.delete_profiles' class='btn-active-many fg-button ui-state-default fg-button-icon-left ui-state-disabled ui-corner-right'><span class='ui-icon ui-icon-scissors'></span><span>{%trans "Delete"%}</span></button>                                
-                </div>
+        <div class='btn-bar'>
+            <div class='btn-set btn-set-single'>
+                <button data-uri='/profiles/create/' class='btn ui-state-default ui-corner-left'>
+                    <span class='ui-icon ui-icon-document'></span><span class='btn-txt'>{%trans 'New'%}</span>
+                </button>
+                <button data-uripart='/profiles/{id}/edit/' data-uriflag='cb-cid' class='btn btn-active-one ui-state-default ui-state-disabled'>
+                    <span class='ui-icon ui-icon-pencil'></span><span class='btn-txt'>{%trans 'Edit'%}</span>
+                </button>
+                <button data-function='profiles.delete_profiles' class='btn btn-active-many ui-state-default ui-state-disabled ui-corner-right'>
+                    <span class='ui-icon ui-icon-scissors'></span><span class='btn-txt'>{%trans 'Delete'%}</span>
+                </button>
             </div>
         </div>
     </div>        

@@ -1,23 +1,18 @@
-/* Generic styling */
-html, body {
-    margin:0px;
-    padding:0px;
-    font-size:13px;
-    font-family:"FreeSans","Bitstream Vera Sans","Arial";
-    -webkit-box-sizing:border-box;
-    -moz-box-sizing:border-box;    
-}
-
 html {
-    border-top:5px solid #000;
     width:100%;
     height:100%;
-    background: #fff url('images/body_bg.png') repeat-x;
+    font-size:13px;
     overflow:auto;
+    box-sizing:border-box;
+    -moz-box-sizing:border-box;
+    font-family:"FreeSans","Bitstream Vera Sans","Arial";
+    background: #fff url('images/body_bg.png') repeat-x;
+    border-top:5px solid #000;
 }
 
 body {
     max-width:1200px;
+    min-width:700px;
     margin:0 auto;
 }
 
@@ -27,104 +22,69 @@ a, a:visited {
     color:#333;
     font-weight:bold;
     text-decoration:none;
-    outline: none;
+    outline:none;
 }
-
-a:hover {
-    color:#00aeef;
-}
-
-hr {
-    background-color: #4082ae;
-}
+a:hover {color:#00aeef;}
+hr {background-color: #00aeef;}
 
 
 #header {
-    z-index:5000;
     height:90px;
+    z-index:5000;
     font-size:14px;
     border-bottom:1px dotted #ddd;
-    min-width:600px;
 }
 
+/*OS-Networks copyright text*/
 #copyright {
-    font-size:9px;
     float:right;
     margin-top:69px;
     margin-right:-23px;
+    font-size:9px;
 }
-
 #copyright:first-letter {
     color:#00aeef !important;
 }
 
 /*right vertical hwios text*/
 #hwios {
-    font-size:20px;
-    font-weight:bold;
     float:right;
     margin-top:30px;
-    overflow:auto;
     margin-right:-28px;
-
+    font-size:20px;
+    font-weight:bold;
 }
-
-#hwios-highlight {
-    color:#00aeef !important;
-}
+#hwios-highlight {color:#00aeef !important;}
 
 
 /*the left fixed column*/
 .sidebar {
-    float:left;
-    width:300px;
     min-width:150px;
-    -webkit-box-sizing:border-box;
-    -moz-box-sizing:border-box;
+    width:300px;
+    float:left;
     margin-right:-100%;
     margin-top:0px;
     padding-right:30px;
+    box-sizing:border-box;
+    -moz-box-sizing:border-box;
 }
 
 /*hide the sidebar when in fullscreen mode*/
 .sidebar-fullscreen {
-    display:none;
     height:0px !important;
+    display:none;
 }
 
 /*the right fluid main-column*/
-.main {
-    margin-left:300px;
-}
+.main {margin-left:300px;}
 
 /*hwios logo at the left*/
 #logo {
-    left:3px;
-    margin-top:20px;
-    float:left;
     width:74px;
     height:52px;
+    float:left;
+    margin-top:20px;
     background: url('images/logo.png') no-repeat;
-}
-
-
-.loginDialog {
-    overflow:visible !important;
-}
-
-.registerDialog {
-    overflow:visible !important;
-}
-
-#container {
-    width:100%;
-    min-height:100%;
-    position:relative;
-}
-
-.ui-widget-content {
-    -webkit-box-sizing:border-box;
-    -moz-box-sizing:border-box;
 }
 
 .ui-tabs-nav {
@@ -247,61 +207,58 @@ input[type='file'] {
 .textarea-large {height:250px; width:60%;}
 .textarea-huge {height:600px; width:100%;}
 
-/*help text for formfields*/
-form input[type='checkbox'] {
-    margin-top:10px;
-}
-
-/* form element description */
-form p {
-    padding:2px;
-}
+form input[type='checkbox'] {margin-top:7px;}
 
 /*basic label for formfields*/
 form label {
     width:200px;
-    height:20px;
     float:left;
     margin-left:20px;
     margin-top:6px;
-    display:block;
-    -webkit-box-sizing:border-box;
-    -moz-box-sizing:border-box;
 }
 
 form .ui-icon-info {
     margin-top:6px;
-    margin-left:2px;
     position:absolute;
-    height:16px;
-    width:16px;
-    display:block;
-    float:left;
+}
+
+
+@-webkit-keyframes fade-in {
+    0% { opacity:0;}
+    100% {
+        opacity:100;
+        box-shadow: 2px 2px 8px rgba(0,0,0,0.6);
+    }
 }
 
 .errorlist {
     list-style:none;
     position:absolute;
-    padding:3px;
-    border:1px dotted #ddd;
+    padding:5px;
     background: #fff;
-    margin-top:-30px;
-    margin-left:-20px;
+    border:1px solid #ddd;
+    margin-top:-32px;
+    margin-left:-24px;
     opacity:0;
-    border-radius:5px;
+    border-radius:3px;
     font-weight:bold;
-    z-index:999999999;
+    z-index:9999999;
+    display:none;
 }
 
-.errorlist li {
-    padding:0px;
-    margin:0px;
+.errorlist-show {
+    -webkit-animation-name: fade-in;
+    -webkit-animation-duration: 0.7s;
+    -webkit-animation-iteration-count: 1;
+    -webkit-animation-timing-function: ease-out;
+    box-shadow: 2px 2px 8px rgba(0,0,0,0.6);
+    opacity:100;
+    display:block;
 }
 
 /* creates triangle */
 .errorlist:after {
     content:"";
-    display:block; /* reduce the damage in FF3.0 */
     position:absolute;
     bottom:-26px; /* value = - border-top-width - border-bottom-width */
     left:17px; /* value = (:before left) + (:before border-left) - (:after border-left) */
@@ -311,117 +268,52 @@ form .ui-icon-info {
     border-top-color:#fff;
 }
 
-.errorlist-show {
-    box-shadow: 2px 2px 8px rgba(0,0,0,0.6);
-    -webkit-transition: opacity 1s ease;
-    -moz-transition: opacity 1s ease;
-    opacity:100;
-}
-
-.errorlist-hide {
-    display:none;
-}
-
-
-.ui-state-hidden { display:none; }
-
-/* basic button styling */
 button {
-    cursor:pointer;
-    position: relative;
     padding:5px;
-    font-size:13px;
-    margin:0px !important;
-    outline:None;
-    text-shadow: 0 1px 1px rgba(255,255,255,0.75);
+    outline:none;
 }
 
-/* icon in the button */
-button span {
-    margin-left:2px !important;
+/* basic toolbar-button styling */
+.btn {
+
+}
+
+.btn-txt {
+    margin-right:10px;
 }
 
 button .ui-icon {
-    margin-left:0px !important;
-    display:block;
     float:left;
-    top: 50%;
     margin-right:4px;
-    display:block;
+    margin-top:-1px;
 }
-
 /* Text inside a button */
-button span:last-child {
-    display:block;
-    float:left;
-    padding-right:5px;
+
+
+.btn-icon {
+    width:28px;
+    height:28px;
 }
 
-
-
-button::-moz-focus-inner { border: 0; }
-
-.fg-button-icon-right { padding-right: 2.1em; }
-.fg-button-icon-left .ui-icon { right: auto; left: .2em; margin-left: 0; }
-.fg-button-icon-right .ui-icon { left: auto; right: .2em; margin-left: 0; }
-.fg-button-icon-solo { display:block; width:8px; text-indent: -9999px; }     /* solo icon buttons must have block properties for the text-indent to work */
-
-.fg-buttonset { float:left; }
-.fg-buttonset .fg-button {
-    float: left;
+.btn-icon span {
+    position:relative !important;
+    display:block !important;
+    margin-top:1px !important;
+    margin-left:0px !important;
 }
-.fg-buttonset .fg-button > .ui-icon {
-    margin-top:0px !important;
-}
-
-.fg-buttonset-single .fg-button,
-.fg-buttonset-multi .fg-button { margin-right: -1px;}
-
-.hwios-toolbar {
-    margin-top:0px;
-    padding:4px;
-    padding-left:5px;
+.btn-set, .btn-set .btn { float:left;}
+.btn-set-single .btn, .btn-set-multi .btn { margin-right: -1px;}
+.fg-toolbar .btn-set { margin-right:1.5em; padding-left: 1px; }
+.btn-bar {
     background:#efefef;
     border:1px dotted #ddd;
-    float:left;
     width:100%;
+    height:34px;
     margin-top:10px;
     border-radius:5px;
-    -webkit-box-sizing:border-box;
+    box-sizing:border-box;
     -moz-box-sizing:border-box;
-}
-.fg-toolbar .fg-buttonset { margin-right:1.5em; padding-left: 1px; }
-
-
-#upload-selected {
-    padding:5px;
-    padding-top:0px;
-    border:1px inset #666;
-    border-radius:6px;
-    outline: none;
-    width:250px;
-    height:100px;
-    position:relative;
-    margin-left:207px;
-}
-
-#upload-status {
-    margin-left:207px;
-    width:400px;
-}
-
-#upload-progressbar {
-    width:400px;
-}
-
-
-.ui-widget-footer {
-    color:#3b5d6b;
-    font-weight:bold;
-}
-
-.no-overflow {
-    overflow:hidden;
+    float:left;
 }
 
 .hwios-widget {
@@ -431,29 +323,18 @@ button::-moz-focus-inner { border: 0; }
 }
 
  .hwios-widget .ui-widget-header {
-    color:#000;
+    height:25px;
     font-size:16px;
     font-weight:bold;
-    display:block;
     border-bottom:1px dotted #ddd;
-    height:25px;
 }
-
-/* all hwios widgets have a top-left icon, a text and optionally a right-floated info-text */
-
-/* hwios-widget header icon */
-.hwios-widget > .ui-widget-header > .ui-icon {
-    margin-top:5px;
-}
-
 
 /* hwios widget left header text */
 .hwios-widget > .ui-widget-header span:first-child {
     float:left;
-    padding-right:8px;
+    padding-right:6px;
     padding-top:3px;
 }
-
 /* hwios widget left header text */
 .hwios-widget > .ui-widget-header span:first-child:first-letter {
     text-transform:uppercase;
@@ -462,7 +343,6 @@ button::-moz-focus-inner { border: 0; }
 
 /* hwios widget right header text */
 .hwios-widget > .ui-widget-header span:last-child {
-    display:block;
     float:right;
     color:#000 !important;
     margin-right:3px;
@@ -478,7 +358,7 @@ button::-moz-focus-inner { border: 0; }
 
  .header-option {
     margin-right:1px;
-    margin-top:2px;
+    margin-top:5px;
     float:left;
  }
 

@@ -120,3 +120,24 @@
     border:1px solid #5891b5;
     border-radius:5px;
 }
+
+#upload-selected {
+    padding:5px;
+    padding-top:0px;
+    border:1px inset #666;
+    border-radius:6px;
+    outline: none;
+    width:250px;
+    height:100px;
+    position:relative;
+    margin-left:207px;
+}
+
+#upload-status {
+    margin-left:207px;
+    width:400px;
+}
+
+#upload-progressbar {
+    width:400px;
+}

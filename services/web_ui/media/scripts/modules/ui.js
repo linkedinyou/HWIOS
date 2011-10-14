@@ -27,14 +27,14 @@ function(){
         /**
         * Standard button effects on hover
         */
-        $('.fg-button:not(.ui-state-disabled)').live('mouseover mouseout',function(){$(this).toggleClass("ui-state-hover");});
-        $('.fg-button:not(.ui-state-disabled)').live('mousedown',function(){
-            $(this).parents('.fg-buttonset-single:first').find(".fg-button.ui-state-active").removeClass("ui-state-active");
-            if( $(this).is('.ui-state-active.fg-button-toggleable, .fg-buttonset-multi .ui-state-active') ){ $(this).removeClass("ui-state-active"); }
+        $('.btn:not(.ui-state-disabled)').live('mouseover mouseout',function(){$(this).toggleClass("ui-state-hover");});
+        $('.btn:not(.ui-state-disabled)').live('mousedown',function(){
+            $(this).parents('.btn-set-single:first').find(".fg-button.ui-state-active").removeClass("ui-state-active");
+            if( $(this).is('.ui-state-active.btn-toggleable, .btn-set-multi .ui-state-active') ){ $(this).removeClass("ui-state-active"); }
             else { $(this).addClass("ui-state-active"); }   
         });
         $('button:not(.ui-state-disabled)').live('mouseup',function(){
-            if(! $(this).is('.fg-button-toggleable, .fg-buttonset-single .fg-button,  .fg-buttonset-multi .fg-button') ){
+            if(! $(this).is('.btn-toggleable, .btn-set-single .btn,  .fg-buttonset-multi .btn') ){
                 $(this).removeClass("ui-state-active");
             }
         });
@@ -181,14 +181,9 @@ function bind_events() {
     /**
     * Hides and shows django form validation indicators on hover
     */
-    $('p:has(.ui-icon-info)').live('mouseover', function () {
-        $(this).prev('.errorlist').addClass('errorlist-show');
-        $(this).prev('.errorlist').removeClass('errorlist-hide');
+    $('p:has(.ui-icon-info)').live('mouseover mouseout', function () {
+        $(this).prev('.errorlist').toggleClass('errorlist-show');        
     });
-    $('p:has(.ui-icon-info)').live('mouseout', function () {
-        $(this).prev('.errorlist').removeClass('errorlist-show');
-        $(this).prev('.errorlist').addClass('errorlist-hide');
-    })  
         
     /**
     * Handle the function-call events when clicking on the menu items

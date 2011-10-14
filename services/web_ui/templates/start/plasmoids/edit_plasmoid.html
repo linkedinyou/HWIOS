@@ -16,13 +16,14 @@
         </div>
         <div id='plasmoid-editor' class='infinote-editor'></div>
     </div>
-    <br/>
-    <div class='hwios-toolbar'>
-        <div class='ui-helper-clearfix'>
-            <div class='fg-buttonset fg-buttonset-single ui-helper-clearfix'>
-                <button data-uri='/plasmoids/' data-uuid='{{plasmoid.uuid}}' class='fg-button ui-state-default ui-corner-left'><span class='ui-icon ui-icon-cancel'></span><span>{%trans 'Cancel'%}</span></button>
-                <button data-function='plasmoids.save_plasmoid' data-uuid='{{plasmoid.uuid}}' class='fg-button ui-state-default ui-corner-right'><span class='ui-icon ui-icon-transfer-e-w'></span><span>{%trans 'Submit'%}</span></button>
-            </div>
+    <div class='btn-bar'>
+        <div class='btn-set btn-set-single'>
+            <button data-uri='/plasmoids/' data-uuid='{{plasmoid.uuid}}' class='btn ui-state-default ui-corner-left'>
+                <span class='ui-icon ui-icon-cancel'></span><span class='btn-txt'>{%trans 'Cancel'%}</span>
+            </button>
+            <button data-function='plasmoids.save_plasmoid' data-uuid='{{plasmoid.uuid}}' class='btn ui-state-default ui-corner-right'>
+                <span class='ui-icon ui-icon-transfer-e-w'></span><span class='btn-txt'>{%trans 'Submit'%}</span>
+            </button>
         </div>
     </div>
 </div>

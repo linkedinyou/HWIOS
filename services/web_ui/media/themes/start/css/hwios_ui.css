@@ -85,6 +85,8 @@
 
 /* Interaction states, modified to match HWIOS theme
 ----------------------------------*/
+.ui-state-hidden { display:none;}
+
 .ui-state-default {
     border: 1px solid #ccc;
     background: #ccc url('images/button_bg.png') repeat-x;
@@ -563,7 +565,6 @@
  */
 .ui-tabs {
     position: relative;
-    margin:15px !important;
 }
 
 
@@ -593,7 +594,6 @@
     border:1px solid #ddd;
     border-top-left-radius:5px;
     border-top-right-radius:5px;
-    cursor: pointer;
     font-size:13px;
 }
 

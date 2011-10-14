@@ -1,6 +1,8 @@
 /* upper screen-wide menu-bar */
 .menu-item-selected {
     border-bottom:1px solid #ddd;
+    -webkit-box-sizing:border-box;
+    -moz-box-sizing:border-box;
 }
 
 .menu-item-selected:first-letter {
@@ -103,7 +105,7 @@ ul.sf-menu li li li:hover ul {
     text-decoration:none;
 }
 .sf-menu div  {
-    cursor:pointer;
+    cursor:default;
 }
 
 /* Root level */

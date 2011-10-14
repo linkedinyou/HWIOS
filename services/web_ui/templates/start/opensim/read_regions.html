@@ -1,25 +1,25 @@
 {% load i18n %}
 <div class='hwios-widget'>
-    <div class='ui-widget-header ui-corner-top services'>
-        <span>{%trans "Regions"%}</span>
-        <span>{%trans "Overview"%}</span>
+    <div class='ui-widget-header'>
+        <span>{%trans 'Regions'%}</span>
+        <span>{%trans 'Overview'%}</span>
     </div>
     <div id='region-tabs'>
         <ul>
-            <li><a href="#opensim-regions">{%trans "Regions"%}</a></li>
-            <li><a href="#opensim-scenes">{%trans "Scenes"%}</a></li>
+            <li><a href='#opensim-regions'>{%trans 'Regions'%}</a></li>
+            <li><a href='#opensim-scenes'>{%trans 'Scenes'%}</a></li>
         </ul>
         <div class='ui-widget-content' id='opensim-regions'>
-            <table class="datatable">
+            <table class='datatable'>
             <thead>
                 <tr>
-                <th class='datatable-cb'><input type='checkbox' id='cb-all' /></th>
-                <th>{%trans "Description"%}</th>
-                <th>{%trans "Service"%}</th>
-                <th>{%trans "Port"%}</th>
-                <th>{%trans "Position"%}</th>
-                <th>{%trans "Status"%}</th>
-                <th>{%trans "Options"%}</th>                
+                <th><input type='checkbox' id='cb-all' /></th>
+                <th>{%trans 'Description'%}</th>
+                <th>{%trans 'Service'%}</th>
+                <th>{%trans 'Port'%}</th>
+                <th>{%trans 'Position'%}</th>
+                <th>{%trans 'Status'%}</th>
+                <th>{%trans 'Options'%}</th>
                 </tr>
             </thead>
             <tbody>
@@ -42,26 +42,30 @@
             {%endfor%}
             </tbody>
             </table>
-            <div class='hwios-toolbar'>
-                <div class='ui-helper-clearfix'>
-                    <div class="fg-buttonset fg-buttonset-single ui-helper-clearfix" style="float:left;">
-                        <button data-uri='/opensim/regions/create/' class='fg-button ui-state-default fg-button-icon-left ui-corner-left'><span class='ui-icon ui-icon-document'></span><span>{%trans "New"%}</span></button>
-                        <button data-uripart='/opensim/regions/{id}/edit/' data-uriflag='cb-cid' class='btn-active-one fg-button ui-state-default fg-button-icon-left ui-state-disabled'><span class='ui-icon ui-icon-pencil'></span><span>{%trans "Edit"%}</span></button>
-                        <button data-function='opensim.delete_regions' class='btn-active-many fg-button ui-state-default fg-button-icon-left ui-corner-right ui-state-disabled'><span class='ui-icon ui-icon-scissors'></span><span>{%trans "Delete"%}</span></button>
-                    </div>
+            <div class='btn-bar'>
+                <div class='btn-set btn-set-single ui-helper-clearfix'>
+                    <button data-uri='/opensim/regions/create/' class='btn ui-state-default ui-corner-left'>
+                        <span class='ui-icon ui-icon-document'></span><span class='btn-txt'>{%trans 'New'%}</span>
+                    </button>
+                    <button data-uripart='/opensim/regions/{id}/edit/' data-uriflag='cb-cid' class='btn btn-active-one ui-state-default ui-state-disabled'>
+                        <span class='ui-icon ui-icon-pencil'></span><span class='btn-txt'>{%trans 'Edit'%}</span>
+                    </button>
+                    <button data-function='opensim.delete_regions' class='btn btn-active-many ui-state-default ui-corner-right ui-state-disabled'>
+                        <span class='ui-icon ui-icon-scissors'></span><span class='btn-txt'>{%trans 'Delete'%}</span>
+                    </button>
                 </div>
             </div>
         </div>
         <div class='ui-widget-content' id='opensim-scenes'>
             <div>
-                <table class="datatable">
+                <table class='datatable'>
                 <thead>
                     <tr>
-                    <th class='datatable-cb'><input type='checkbox' id='cb-all'/></th>
-                    <th>{%trans "Description"%}</th>
-                    <th>{%trans "Modified"%}</th>
-                    <th>{%trans "Size"%}</th>
-                    <th>{%trans "Options"%}</th>
+                    <th><input type='checkbox' id='cb-all'/></th>
+                    <th>{%trans 'Description'%}</th>
+                    <th>{%trans 'Modified'%}</th>
+                    <th>{%trans 'Size'%}</th>
+                    <th>{%trans 'Options'%}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -84,12 +88,14 @@
                 </tbody>
                 </table>
             </div>
-                <div class='hwios-toolbar'>
-                    <div class='ui-helper-clearfix'>
-                        <div class="fg-buttonset fg-buttonset-single ui-helper-clearfix" style="float:left;">
-                            <button data-function='opensim.delete_scenes' class='btn-active-many fg-button ui-state-default fg-button-icon-left ui-corner-left ui-state-disabled'><span class='ui-icon ui-icon-scissors'></span><span>{%trans "Delete"%}</span></button>
-                            <button data-uri='/opensim/regions/scenes/upload/' class='fg-button ui-state-default fg-button-icon-left ui-corner-right'><span class='ui-icon ui-icon-transfer-e-w'></span><span>{%trans "Upload"%}</span></button>
-                        </div>
+                <div class='btn-bar'>
+                    <div class='btn-set btn-set-single'>
+                        <button data-function='opensim.delete_scenes' class='btn btn-active-many ui-state-default ui-corner-left ui-state-disabled'>
+                            <span class='ui-icon ui-icon-scissors'></span><span class='btn-txt'>{%trans 'Delete'%}</span>
+                        </button>
+                        <button data-uri='/opensim/regions/scenes/upload/' class='btn ui-state-default ui-corner-right'>
+                            <span class='ui-icon ui-icon-transfer-e-w'></span><span class='btn-txt'>{%trans 'Upload'%}</span>
+                        </button>
                     </div>
                 </div>
         </div>

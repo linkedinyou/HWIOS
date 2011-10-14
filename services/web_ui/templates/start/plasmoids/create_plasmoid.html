@@ -1,10 +1,10 @@
 {% load i18n %}
 <div class='hwios-widget'>
-    <div class='ui-widget-header ui-corner-top'>
+    <div class='ui-widget-header'>
         <span>{%trans 'New Plasmoid'%}</span>
     <span>{%trans 'Create'%}</p>
     </div>
-    <div class='ui-widget-content ui-corner-bottom contenttext'>
+    <div class='ui-widget-content'>
         <div id='plasmoid-form-container'>
             <div id='plasmoid-form'>            
             <form>
@@ -16,12 +16,14 @@
         </div>
         <div id='plasmoid-editor' class='infinote-editor'></div>
     </div>
-    <div class='hwios-toolbar'>
-        <div class='ui-helper-clearfix'>
-            <div class='fg-buttonset fg-buttonset-single ui-helper-clearfix'>
-                <button data-uri='/plasmoids/' data-uuid='{{plasmoid.uuid}}' class='fg-button ui-state-default fg-button-icon-left ui-corner-left'><span class='ui-icon ui-icon-document'></span><span>{%trans 'Cancel'%}</span></button>
-                <button data-function='plasmoids.save_plasmoid' data-uuid='{{plasmoid.uuid}}' class='fg-button ui-state-default fg-button-icon-left ui-corner-right'><span class='ui-icon ui-icon-pencil'></span><span>{%trans 'Save'%}</span></button>
-            </div>
+    <div class='btn-bar'>
+        <div class='btn-set btn-set-single'>
+            <button data-uri='/plasmoids/' data-uuid='{{plasmoid.uuid}}' class='btn ui-state-default ui-corner-left'>
+                <span class='ui-icon ui-icon-document'></span><span class='btn-txt'>{%trans 'Cancel'%}</span>
+            </button>
+            <button data-function='plasmoids.save_plasmoid' data-uuid='{{plasmoid.uuid}}' class='btn ui-state-default ui-corner-right'>
+                <span class='ui-icon ui-icon-pencil'></span><span class='btn-txt'>{%trans 'Save'%}</span>
+            </button>
         </div>
     </div>
 </div>

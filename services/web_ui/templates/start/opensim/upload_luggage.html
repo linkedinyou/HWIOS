@@ -1,25 +1,27 @@
 {%load i18n%}
 <div class='hwios-widget'>
-    <div class="ui-widget-header ui-corner-top">
-        <span>{%trans "Luggage"%}</span>
-        <span>{%trans "Upload"%}</span>
+    <div class='ui-widget-header'>
+        <span>{%trans 'Luggage'%}</span>
+        <span>{%trans 'Upload'%}</span>
     </div>
-    <div class="ui-widget-content ui-corner-bottom contenttext">
-        <form method="post" action="" enctype="multipart/form-data">
-            <p><div><label>{%trans "Selected files"%}</label></div><div id="upload-selected"></div></p>
-            <p><label for="id_scene"></label><input type="file" name="Select" id="id_scene"/></p>
+    <div class='ui-widget-content'>
+        <form method='post' action='' enctype='multipart/form-data'>
+            <p><div><label>{%trans 'Selected files'%}</label></div><div id='upload-selected'></div></p>
+            <p><label for='id_scene'></label><input type='file' name='Select' id='id_scene'/></p>
             <p>
-            <label for="upload-status">{%trans "Progress"%}</label>
+            <label for='upload-status'>{%trans 'Progress'%}</label>
             <div id='upload-status'></div>
             </p>
         </form>
     </div>
-    <div class='hwios-toolbar'>
-        <div class="ui-helper-clearfix">
-            <div class="fg-buttonset fg-buttonset-single ui-helper-clearfix">
-                <button id='upload-cancel-button' data-uri='/opensim/avatars/' class='fg-button ui-state-default fg-button-icon-left ui-corner-left'><span class='ui-icon ui-icon-document'></span><span>{%trans "Cancel"%}</span></button>
-                <button id='upload-start-button' data-function='opensim.start_upload_luggage' class='fg-button ui-state-default fg-button-icon-left ui-corner-right ui-state-disabled'><span class='ui-icon ui-icon-pencil'></span><span>{%trans "Start"%}</span></button>
-            </div>
+    <div class='btn-bar'>
+        <div class='btn-set btn-set-single'>
+            <button id='upload-cancel-button' data-uri='/opensim/avatars/' class='btn ui-state-default ui-corner-left'>
+                <span class='ui-icon ui-icon-document'></span><span class='btn-txt'>{%trans 'Cancel'%}</span>
+            </button>
+            <button id='upload-start-button' data-function='opensim.start_upload_luggage' class='btn ui-state-default ui-corner-right ui-state-disabled'>
+                <span class='ui-icon ui-icon-pencil'></span><span class='btn-txt'>{%trans 'Start'%}</span>
+            </button>
         </div>
     </div>
 </div>

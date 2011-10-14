@@ -1,22 +1,22 @@
 {%load i18n%}
 <div class='hwios-widget'>
-    <div class="ui-widget-header ui-corner-top">
-        <span>{%trans "Avatars"%}</span>
-        <span>{%trans "Overview"%}</span>
+    <div class='ui-widget-header'>
+        <span>{%trans 'Avatars'%}</span>
+        <span>{%trans 'Overview'%}</span>
     </div>
     <div id='avatar-tabs'>
         <ul>
-            <li><a href="#opensim-avatars">{%trans "Avatars"%}</a></li>
-            <li><a href="#opensim-avatars-luggage">{%trans "Luggage"%}</a></li>
+            <li><a href='#opensim-avatars'>{%trans 'Avatars'%}</a></li>
+            <li><a href='#opensim-avatars-luggage'>{%trans 'Luggage'%}</a></li>
         </ul>
-        <div class='ui-widget-content ui-corner-bottom contenttext' id='opensim-avatars'>
-            <table class="datatable" id='table-avatars'>
+        <div class='ui-widget-content' id='opensim-avatars'>
+            <table class='datatable'>
             <thead>
                 <tr>
-                <th class='datatable-cb'><input type='checkbox' id='cb-all' /></th>
-                <th>{%trans "Name"%}</th>
-                <th>{%trans "E-Mail"%}</th>
-                <th>{%trans "Options"%}</th>
+                <th><input type='checkbox' id='cb-all' /></th>
+                <th>{%trans 'Name'%}</th>
+                <th>{%trans 'E-Mail'%}</th>
+                <th>{%trans 'Options'%}</th>
                 </tr>
             </thead>
             <tbody>
@@ -36,23 +36,23 @@
             {%endfor%}
             </tbody>
             </table>
-            <div class='hwios-toolbar'>
-                <div class='ui-helper-clearfix'>
-                    <div class="fg-buttonset fg-buttonset-single ui-helper-clearfix">
-                        <button data-function='opensim.sync_avatars' class='fg-button ui-state-default fg-button-icon-left ui-corner-all'><span class='ui-icon ui-icon-transfer-e-w'></span><span>{%trans "Sync"%}</span></button>
-                    </div>
+            <div class='btn-bar'>
+                <div class='btn-set btn-set-single'>
+                    <button data-function='opensim.sync_avatars' class='btn ui-state-default ui-corner-all'>
+                        <span class='ui-icon ui-icon-transfer-e-w'></span><span class='btn-txt'>{%trans 'Sync'%}</span>
+                    </button>
                 </div>
             </div>   
         </div>        
-        <div class='ui-widget-content ui-corner-bottom' id='opensim-avatars-luggage'>
-            <table class="datatable" id='table-luggage'>
+        <div class='ui-widget-content' id='opensim-avatars-luggage'>
+            <table class='datatable'>
             <thead>
                 <tr>
-                <th class='datatable-cb'><input type='checkbox' id='cb-all' /></th>
-                <th>{%trans "Description"%}</th>
-                <th>{%trans "Modified"%}</th>
-                <th>{%trans "Size"%}</th>
-                <th>{%trans "Options"%}</th>
+                <th><input type='checkbox' id='cb-all' /></th>
+                <th>{%trans 'Description'%}</th>
+                <th>{%trans 'Modified'%}</th>
+                <th>{%trans 'Size'%}</th>
+                <th>{%trans 'Options'%}</th>
                 </tr>
             </thead>
             <tbody>
@@ -74,12 +74,14 @@
             {%endfor%}
             </tbody>
             </table>
-            <div class='hwios-toolbar'>
-                <div class='ui-helper-clearfix'>
-                    <div class="fg-buttonset fg-buttonset-single ui-helper-clearfix">
-                        <button data-function='opensim.delete_luggage' class='btn-active-many fg-button ui-state-default fg-button-icon-left ui-corner-left ui-state-disabled'><span class='ui-icon ui-icon-scissors'></span><span>{%trans "Delete"%}</span></button>
-                        <button data-uri='/opensim/avatars/luggage/upload/' class='fg-button ui-state-default fg-button-icon-left ui-corner-right'><span class='ui-icon ui-icon-transfer-e-w'></span><span>{%trans "Upload"%}</span></button>
-                    </div>
+            <div class='btn-bar'>
+                <div class='btn-set btn-set-single'>
+                    <button data-function='opensim.delete_luggage' class='btn btn-active-many ui-state-default ui-state-disabled ui-corner-left'>
+                        <span class='ui-icon ui-icon-scissors'></span><span class='btn-txt'>{%trans 'Delete'%}</span>
+                    </button>
+                    <button data-uri='/opensim/avatars/luggage/upload/' class='btn ui-state-default ui-corner-right'>
+                        <span class='ui-icon ui-icon-transfer-e-w'></span><span class='btn-txt'>{%trans 'Upload'%}</span>
+                    </button>
                 </div>
             </div>   
         </div>

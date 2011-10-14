@@ -1,6 +1,5 @@
 .pp-toolbox {
     overflow:auto;
-    margin-top:10px;
     margin-bottom:10px;
 }
 
@@ -49,6 +48,7 @@ canvas {
 }
 
 #slide-overview {
+    margin-top:10px;
     border-bottom:1px dotted #ddd;
 }
 
@@ -64,15 +64,7 @@ canvas {
     background:#efefef;
 }
 
-#slide-overview-slide > button {
-    padding:0px !important;
-    width:22px;
-    height:22px;
-    display:block;
-    position:absolute;
-    top:4px;
 
-}
 
 .slide-overview-slide > span {
     margin-top:5px;
@@ -121,23 +113,8 @@ canvas {
     border-bottom:1px dotted #ddd;
 }
 
-.slide-overview-buttonset button {
-    width:30px;
-    height:30px;
-    margin:0px;
-    margin-left:4px !important;
-    margin-right:4px !important;
-    margin-top:3px !important;
-    display:block !important;
-    float:left;
-}
 
-.slide-overview-buttonset button span {
-    position:absolute;
-    margin-top:-8px !important;
-    padding:0px !important;
-    left:6px !important;
-}
+
 
 /* option buttons */
 #pp-toolbox-buttons {
@@ -146,21 +123,6 @@ canvas {
     margin-top:5px;
 }
 
-
-#pp-toolbox-buttons button {
-    width:30px;
-    height:30px;
-    margin-left:4px !important;
-    margin-right:4px !important;
-    float:left;    
-}
-
-#pp-toolbox-buttons button span {
-    position:absolute;
-    padding:0px !important;
-    margin-top:-8px;
-    left:5px !important;
-}
 
 #pp-toolbox-buttons-helper {
     margin-left:335px;

@@ -10,16 +10,16 @@
             <div id='wiki-markdown'></div>
             <div id='wiki-editor' class='infinote-editor'></div>            
         </div>
-        <form method='post' action='/wiki/{{page.slug}}/save/'>
-            {{form.as_p}}
-        </form>    
+        <form method='post' action='/wiki/{{page.slug}}/save/'>{{form.as_p}}</form>
     </div>
-    <div class='hwios-toolbar'>
-        <div class='ui-helper-clearfix'>
-            <div class='fg-buttonset fg-buttonset-single ui-helper-clearfix'>
-                <button data-uri='/wiki/{{page.slug}}/' data-id='{{page.slug}}' class='fg-button ui-state-default fg-button-icon-left ui-corner-left'><span class='ui-icon ui-icon-cancel'></span><span>{%trans 'Cancel'%}</span></button>
-                <button data-function='wiki.save_edit_article' data-id='{{page.slug}}' class='fg-button ui-state-default fg-button-icon-left ui-corner-right'><span class='ui-icon ui-icon-transfer-e-w'></span><span>{%trans 'Submit'%}</span></button>
-            </div>
+    <div class='btn-bar'>
+        <div class='btn-set btn-set-single'>
+            <button data-uri='/wiki/{{page.slug}}/' data-id='{{page.slug}}' class='btn ui-state-default ui-corner-left'>
+                <span class='ui-icon ui-icon-cancel'></span><span class='btn-txt'>{%trans 'Cancel'%}</span>
+            </button>
+            <button data-function='wiki.save_edit_article' data-id='{{page.slug}}' class='btn ui-state-default ui-corner-right'>
+                <span class='ui-icon ui-icon-transfer-e-w'></span><span class='btn-txt'>{%trans 'Submit'%}</span>
+            </button>
         </div>
     </div>
 </div>

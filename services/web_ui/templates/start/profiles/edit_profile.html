@@ -1,38 +1,42 @@
 {% load i18n %}
 <div class='hwios-widget'>
-    <div class="ui-widget-header ui-corner-top">
+    <div class='ui-widget-header'>
         {%if profile.uuid == target_profile.uuid%}
-        <span>{%trans "My Profile"%}</span>
-        <span>{%trans "Edit"%}</span>
+        <span>{%trans 'My Profile'%}</span>
+        <span>{%trans 'Edit'%}</span>
         {%else%}
         <span>{{target_profile.username}}</span>
-        <span>{%trans "Edit Profile"%}</span>
+        <span>{%trans 'Edit Profile'%}</span>
         {%endif%}
     </div>
-    <div class="ui-widget-content ui-corner-bottom">
+    <div class='ui-widget-content'>
     <form>
         <p>
-            <label>{%trans "Avatar"%}</label>
+            <label>{%trans 'Avatar'%}</label>
             {%if target_profile.photo%}
             <div id='profile-drag-avatar-current'><span></span><img src='/media/files/avatars/{{target_profile.photo}}'/></div>
             {%else%}
             <div id='profile-drag-avatar-current'><span></span><div class='profile-unknown-avatar'></div></div>
             {%endif%}
-            <div id='profile-drag-avatar'><span>{%trans "Drag Image"%}</span></div>
+            <div id='profile-drag-avatar'><span>{%trans 'Drag Image'%}</span></div>
         </p>
         {{ form.as_p }}
     </form>
     </div>
-<div class='hwios-toolbar'>
-    <div class="fg-toolbar ui-helper-clearfix">
-        <div class="fg-buttonset fg-buttonset-single ui-helper-clearfix">
-            {%if profile.uuid == target_profile.uuid%}
-            <button data-uri='/profiles/{{target_profile.username}}/' class='fg-button ui-state-default fg-button-icon-left ui-corner-left'><span class='ui-icon ui-icon-document'></span><span>{%trans "Back"%}</span></button>
-            {%else%}
-            <button data-uri='/profiles/manage/' class='fg-button ui-state-default fg-button-icon-left ui-corner-left'><span class='ui-icon ui-icon-document'></span><span>{%trans "Cancel"%}</span></button>
-            {%endif%}
-            <button data-function='profiles.save_edit_profile' data-profile_name='{{target_profile.username}}' class='fg-button ui-state-default fg-button-icon-left ui-corner-right'><span class='ui-icon ui-icon-pencil'></span><span>{%trans "Submit"%}</span></button>
-        </div>
+<div class='btn-bar'>
+    <div class='btn-set btn-set-single'>
+        {%if profile.uuid == target_profile.uuid%}
+        <button data-uri='/profiles/{{target_profile.username}}/' class='btn ui-state-default ui-corner-left'>
+            <span class='ui-icon ui-icon-document'></span><span class='btn-txt'>{%trans 'Back'%}</span>
+        </button>
+        {%else%}
+        <button data-uri='/profiles/manage/' class='btn ui-state-default ui-corner-left'>
+            <span class='ui-icon ui-icon-document'></span><span class='btn-txt'>{%trans 'Cancel'%}</span>
+        </button>
+        {%endif%}
+        <button data-function='profiles.save_edit_profile' data-profile_name='{{target_profile.username}}' class='btn ui-state-default ui-corner-right'>
+            <span class='ui-icon ui-icon-pencil'></span><span class='btn-txt'>{%trans 'Submit'%}</span>
+        </button>
     </div>
 </div>
 </div>

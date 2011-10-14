@@ -1,21 +1,23 @@
 {% load i18n %}
 <div class='hwios-widget'>
-    <div class='ui-widget-header ui-corner-top'>
+    <div class='ui-widget-header'>
         <span>{{page.slug}}</span>
         <span>{%trans 'Revise History'%}</span>
     </div>
-    <div class='ui-widget-content ui-corner-bottom contenttext edit-wiki-page'>
+    <div class='ui-widget-content edit-wiki-page'>
         <div id='wiki-markdown'></div>
         <form method='post' action='/wiki/{{page.slug}}/save/'>
             {{form.as_p}}
         </form>        
     </div>
-    <div class='hwios-toolbar'>
-        <div class='ui-helper-clearfix'>
-            <div class='fg-buttonset fg-buttonset-single ui-helper-clearfix'>
-                <button data-uri='/wiki/{{page.slug}}/' data-id='{{page.slug}}' class='fg-button ui-state-default fg-button-icon-left ui-corner-left'><span class='ui-icon ui-icon-document'></span><span>{%trans 'Cancel'%}</span></button>
-                <button id='wiki-restore-button' data-function='wiki.restore_article_history' data-id='{{page.slug}}' class='fg-button ui-state-default fg-button-icon-left ui-corner-right'><span class='ui-icon ui-icon-pencil'></span><span>{%trans 'Restore'%}</span></button>
-            </div>
+    <div class='btn-bar'>
+        <div class='btn-set btn-set-single'>
+            <button data-uri='/wiki/{{page.slug}}/' data-id='{{page.slug}}' class='btn ui-state-default ui-corner-left'>
+                <span class='ui-icon ui-icon-document'></span><span class='btn-txt'>{%trans 'Cancel'%}</span>
+            </button>
+            <button id='wiki-restore-button' data-function='wiki.restore_article_history' data-id='{{page.slug}}' class='btn ui-state-default ui-corner-right'>
+                <span class='ui-icon ui-icon-pencil'></span><span>{%trans 'Restore'%}</span>
+            </button>
         </div>
     </div>
 </div>
