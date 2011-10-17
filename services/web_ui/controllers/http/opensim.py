@@ -27,6 +27,7 @@ from web_ui.models.opensim import Regions, Scenes
 from web_ui.controllers.ws.opensim import OSUserAccounts
 from web_ui.models.opensim import Simulators, Luggage
 
+
 @user_passes_test(lambda u: u.is_staff)
 def upload_scenes(request):
     if request.method == "POST":

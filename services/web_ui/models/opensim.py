@@ -199,19 +199,21 @@ class Scenes:
         :return: list or Exception - Info about all available files or an IOError exception
         """
         oar_path = os.path.join(HWIOS.services['web_ui'].config.location,'dav_store','oar')
-        file_list = os.listdir(oar_path)
+        file_list = os.listdir(oar_path)        
         scenes= []
         for count,value in enumerate(file_list):  
             oar_location = os.path.join(oar_path,value)
-            scenes.append({'name': value})
-            try:
-                st = os.stat(oar_location)
-            except IOError:
-                print "failed to get information about", open(oar_location)
-            else:
-                scenes[count]['size'] = '%s MB' % round(float(st[ST_SIZE]) / 1024 / 1024,3)
-                scenes[count]['modified'] = time.asctime(time.localtime(st[ST_MTIME]))
+            name, ext = os.path.splitext(oar_location)
+            if ext == '.oar':
+                scenes.append({'name': value})
+                try:
+                    st = os.stat(oar_location)
+                    scenes[count]['size'] = '%s MB' % round(float(st[ST_SIZE]) / 1024 / 1024,3)
+                    scenes[count]['modified'] = time.asctime(time.localtime(st[ST_MTIME]))
+                except IOError:
+                    print "failed to get information about", open(oar_location)
         return scenes
+
     
     @classmethod
     def delete_scenes(self,scene_list):
@@ -254,14 +256,15 @@ class Luggage:
         luggage= []
         for count,value in enumerate(file_list):  
             iar_location = os.path.join(iar_path,value)
-            luggage.append({'name': value})
-            try:
-                st = os.stat(iar_location)
-            except IOError:
-                print "failed to get information about", open(iar_location)
-            else:
-                luggage[count]['size'] = '%s MB' % round(float(st[ST_SIZE]) / 1024 / 1024,3)
-                luggage[count]['modified'] = time.asctime(time.localtime(st[ST_MTIME]))
+            name, ext = os.path.splitext(iar_location)
+            if ext == '.iar':
+                luggage.append({'name': value})
+                try:
+                    st = os.stat(iar_location)
+                    luggage[count]['size'] = '%s MB' % round(float(st[ST_SIZE]) / 1024 / 1024,3)
+                    luggage[count]['modified'] = time.asctime(time.localtime(st[ST_MTIME]))
+                except IOError:
+                    print "failed to get information about", open(iar_location)
         return luggage
     
     @classmethod
