@@ -84,12 +84,13 @@ class InfinotePool(object):
                 if _client.profile.uuid == client.profile.uuid:
                     HWIOS.ws_realm.pool.subscription[app_pool][_item_id]['clients'].remove(_client)
                     #notify left-over editors that this client has left the building
-                    for _client in HWIOS.ws_realm.pool.subscription[app_pool][_item_id]['clients']:
-                        if _client.role == 'edit':
-                            online.append({'id':_client.profile.pk,'name':_client.profile.username}) 
-                    for _client in HWIOS.ws_realm.pool.subscription[app_pool][_item_id]['clients']:
-                        if _client.role == 'edit':
-                            remote_callback(_client, online, app_pool, _item_id) 
+                elif _client.role == 'edit':
+                    online.append({'id':_client.profile.pk,'name':_client.profile.username}) 
+                    
+        for _item_id in HWIOS.ws_realm.pool.subscription[app_pool]:
+            for _client in HWIOS.ws_realm.pool.subscription[app_pool][_item_id]['clients']:
+                if _client.role == 'edit':
+                    remote_callback(_client, online, app_pool, _item_id)
                         
                         
     def request_insert(self, client, app_pool, item_id, params, remote_callback):

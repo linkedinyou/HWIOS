@@ -114,6 +114,8 @@ ul.sf-menu li li li:hover ul {
     font-weight:bold;
     margin-left:20px;
     margin-right:20px;
+    -moz-user-select: none;
+    -webkit-user-select: none;
 }
 
 .sf-menu > li ul {

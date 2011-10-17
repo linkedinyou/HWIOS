@@ -1,3 +1,71 @@
+#activity-widget {
+    width:100%;
+    height:97px;
+    overflow: auto;
+    overflow-x: hidden;
+    position:relative;
+    resize: vertical;
+    border-top:1px solid #ddd;
+    border-bottom:1px solid #999;
+}
+
+
+.activity-avatar {
+    width:16px;
+    height:16px;
+    float:left;
+}
+
+.activity-avatar img {
+    width:16px;
+    height:16px;
+}
+
+#activity-text {
+    float:left;
+}
+
+#activity-loading {
+    padding:5px;
+}
+
+.activity-entry {
+    width:100%;
+    float:left;
+    border-top: 1px solid #fff;
+    border-bottom: 1px solid #ddd;
+    background:rgb(249,249,249);
+}
+
+.activity-entry-source {
+    font-size:11px;
+    font-style:italic;
+    padding:1px;
+    padding-left:20px;
+    height:16px;
+}
+
+.activity-entry-message {
+    width:100%;
+    height:15px;
+}
+
+/*WTF, use proper naming*/
+.activity-entry-message-text {
+    padding-left:4px;
+}
+
+.activity-entry-message a {
+    font-size:11px;
+    font-weight:bold;
+}
+
+.activity-type {
+    float:left;
+    margin-top:7px;
+    resize: none;
+}
+
 .messenger {
     -webkit-box-sizing:border-box;
     -moz-box-sizing:border-box;
@@ -39,9 +107,6 @@
     width:100%;
     height:100px;
     overflow-y:scroll;
-    overflow-x:hidden;
-    -webkit-user-select: none;
-    -moz-user-select: none;
     -webkit-box-sizing:border-box;
     -moz-box-sizing:border-box;
     border-bottom:1px solid #999;

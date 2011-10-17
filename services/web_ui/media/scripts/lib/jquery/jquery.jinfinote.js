@@ -114,16 +114,36 @@
         $('.infinote-online').empty();
         $.each(online, function(index, user) {
             ce.editor_colors[user.id] = user.color;
+            ce._set_cursor_color(user.id, user.color);
             var participant_line;
             if(user.id == application.settings.user.id) {
-                participant_line = '<div id="infinote-participant-'+user.id+'" class="infinote-participant"><div class="infinote-participant-color"></div><div class="infinote-participant-name">'+user.name+' ('+gettext('You')+')</div></div>';
+                participant_line = '<div id="infinote-participant-'+user.id+'" data-id="'+user.id+'" class="infinote-participant"><div class="infinote-participant-color"></div><div class="infinote-participant-name">'+user.name+' ('+gettext('You')+')</div></div>';
             }
             else {
-                participant_line = '<div id="infinote-participant-'+user.id+'" class="infinote-participant"><div class="infinote-participant-color"></div><div class="infinote-participant-name">'+user.name+'</div></div>';
+                participant_line = '<div id="infinote-participant-'+user.id+'" data-id="'+user.id+'" class="infinote-participant"><div class="infinote-participant-color"></div><div class="infinote-participant-name">'+user.name+'</div></div>';
             }
             $('.infinote-online').append(participant_line);
             $('#infinote-participant-'+user.id+' > .infinote-participant-color').css('background-color',user.color);
-        });   
+        });
+        //clean out left-over cursors and selections
+        var match = false;
+        $.each(ce.remote_cursors, function(idx, value){
+            //match each remote cursor against online list.
+            $.each(online, function(index, user) {
+                //online user is in remote cursor list
+                if(user.id == idx) {
+                    console.log('match');
+                    match = true;
+
+                }
+            });
+            //user in remote_cursor has no match in online list. delete this user
+            if(!match){
+                console.log('DELETE '+idx);
+            ce.delete_remote_cursor(idx);
+            }
+        });
+        ce.update_cursors();
     }    
     
     //UNBIND HANDLERS
@@ -249,13 +269,17 @@
         }
     }
 
+    CollabEditor.prototype._set_cursor_color = function(user_id, color){
+        $('#rc_'+user_id).css('background-color',color);
+    }
+
     //Takes cursor as parameter
     CollabEditor.prototype._set_remote_cursor = function(user_id, cursor, force_caret){
 
         if (!(user_id in ce.remote_cursors)) {
             ce.remote_cursors[user_id] = cursor;
             $('body').append("<span id='rc_"+user_id+"' class='remote-cursor'></span>");
-            $('#rc_'+user_id).css('background-color',ce.editor_colors[user_id]);
+            ce._set_cursor_color(user_id, ce.editor_colors[user_id]);
             ce.remote_cursors[user_id].node = $('#rc_'+user_id).get(0);
         }
         else {
@@ -276,6 +300,15 @@
         ce.update_cursors();
     }
 
+    CollabEditor.prototype.delete_remote_cursor = function(user_id){
+        $(ce.remote_cursors[user_id].node).remove();
+        if('rsc' in ce.remote_cursors[user_id]){
+            ce.remote_cursors[user_id].rsc();
+        }
+        delete ce.remote_cursors[user_id];
+        ce.update_cursors();
+    }
+
 
     CollabEditor.prototype.update_cursors = function(){
         $.each(ce.remote_cursors, function(user_id, cursor){
@@ -292,8 +325,7 @@
             //selection
             else {
                 ce.remote_cursors[user_id].rsc = ce.editor.markText(cursor.from, cursor.to, 'remote-selection-'+user_id);
-                $('.remote-selection-'+user_id).css('background-color',ce.editor_colors[user_id]);
-                $('.remote-selection-'+user_id).addClass('remote-selection');
+                $('.remote-selection-'+user_id).css('background-color',ce.editor_colors[user_id]).addClass('remote-selection');
             }
         });
     }

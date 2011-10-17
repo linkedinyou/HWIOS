@@ -70,7 +70,8 @@
                                 if(i != (opts['formats'].length-1)) {str_formats +=opts['formats'][i]+",";}
                                 else {str_formats +=opts['formats'][i];}
                             }
-                            //$.jGrowl('Only files with the following extensions are allowed: '+str_formats);
+                            var _wrong_ft = gettext('Only files with the following extensions are allowed')+': '+str_formats;
+                            $("#notify-container").notify("create",'notify-info', {i18n: _wrong_ft});
                         }
                     }
                     else {
@@ -175,7 +176,7 @@ sendFile = (function(toString, maxSize){
             xhr.open("POST", handler.url);
             xhr.setRequestHeader("If-Modified-Since", "Mon, 26 Jul 1997 05:00:00 GMT");
             xhr.setRequestHeader("Cache-Control", "no-cache");
-            xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");		
+            xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
             xhr.setRequestHeader("X-File-Name", handler.file.fileName);
             xhr.setRequestHeader("X-File-Size", handler.file.fileSize);
             xhr.setRequestHeader("Content-Type", "application/octet-stream");

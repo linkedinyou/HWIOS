@@ -142,6 +142,8 @@ class WS_Wiki(object):
         
         :param Client client: The requesting client
         """
+        print "LEAVE!!!!!!!!!!!!!!!"
+        print client.profile
         self.infinote_pool.unsubscribe(client, 'wiki', self._signal_presence)
                 
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-10-07 14:36+0200\n"
+"POT-Creation-Date: 2011-10-17 14:40+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Jeroen van Veen <info@os-networks.net>\n"
 "Language-Team: HWIOS Translators <info@os-networks.net>\n"
@@ -17,11 +17,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: settings.py:79
+#: settings.py:81
 msgid "Dutch"
 msgstr "Nederlands"
 
-#: settings.py:80
+#: settings.py:82
 msgid "English"
 msgstr "Engels"
 
@@ -290,8 +290,8 @@ msgstr "Plasmoid %(slug)s opgeslagen..."
 msgid "Plasmoid saved"
 msgstr "Plasmoid opgeslagen"
 
-#: controllers/ws/plasmoids.py:144 controllers/ws/profiles.py:203
-#: controllers/ws/wiki.py:324
+#: controllers/ws/plasmoids.py:144 controllers/ws/profiles.py:231
+#: controllers/ws/wiki.py:326
 msgid "Invalid Form!"
 msgstr "Fout formulier"
 
@@ -304,71 +304,75 @@ msgstr "%s plasmoid(s) verwijderd..."
 msgid "Plasmoid(s) deleted"
 msgstr "Plasmoid(s) verwijderd"
 
-#: controllers/ws/profiles.py:86
+#: controllers/ws/profiles.py:91
 msgid "New user created!"
 msgstr "Nieuwe gebruiker aangemaakt!"
 
-#: controllers/ws/profiles.py:92
+#: controllers/ws/profiles.py:97
 msgid "Profile created"
 msgstr "Profiel aangemaakt"
 
-#: controllers/ws/profiles.py:99
+#: controllers/ws/profiles.py:104
 msgid "Please pay attention to the profile details..."
 msgstr "Controleer aub uw profiel gegevens..."
 
-#: controllers/ws/profiles.py:137
+#: controllers/ws/profiles.py:122
+msgid "Unknown"
+msgstr ""
+
+#: controllers/ws/profiles.py:164
 msgid "Avatar succesfully updated"
 msgstr "Avatar succesvol bijgewerkt"
 
-#: controllers/ws/profiles.py:162
+#: controllers/ws/profiles.py:188
 msgid "Profile succesfully updated"
 msgstr "Profiel succesvol bijgewerkt"
 
-#: controllers/ws/profiles.py:194
+#: controllers/ws/profiles.py:222
 msgid "Profile own user change"
 msgstr ""
 
-#: controllers/ws/profiles.py:196
+#: controllers/ws/profiles.py:224
 msgid "Profile moderator change"
 msgstr ""
 
-#: controllers/ws/profiles.py:245
+#: controllers/ws/profiles.py:273
 #, python-format
 msgid "Succesfully removed %(profiles)s profile(s)!"
 msgstr "Succesvolle verwijdering van %(profiles)s profiel(en)!"
 
-#: controllers/ws/profiles.py:254
+#: controllers/ws/profiles.py:282
 #, python-format
 msgid ""
 "%(profiles)s profile(s) removed succesfully; you can't remove your own "
 "profile!"
 msgstr ""
 
-#: controllers/ws/profiles.py:261
+#: controllers/ws/profiles.py:289
 msgid "Profile deleted"
 msgstr "Profiel verwijderd"
 
-#: controllers/ws/profiles.py:308
+#: controllers/ws/profiles.py:336
 msgid "New account registered"
 msgstr ""
 
-#: controllers/ws/profiles.py:313
+#: controllers/ws/profiles.py:341
 msgid "Profile registered"
 msgstr "Profiel geregistreerd"
 
-#: controllers/ws/profiles.py:321
+#: controllers/ws/profiles.py:349
 msgid "Invalid form. Please check your credentials..."
 msgstr "Ongeldig formulier."
 
-#: controllers/ws/profiles.py:345
+#: controllers/ws/profiles.py:373
 msgid "Your account has been activated..."
 msgstr "Uw account is geactiveerd..."
 
-#: controllers/ws/profiles.py:350
+#: controllers/ws/profiles.py:378
 msgid "Profile activated"
 msgstr "Profiel geactiveerd"
 
-#: controllers/ws/profiles.py:355
+#: controllers/ws/profiles.py:383
 msgid "This account is already active..."
 msgstr ""
 
@@ -376,11 +380,11 @@ msgstr ""
 msgid "Settings succesfully updated"
 msgstr "Voorkeuren succesvol bijgewerkt"
 
-#: controllers/ws/settings.py:68
+#: controllers/ws/settings.py:67
 msgid "Settings updated"
 msgstr "Instellingen bijgewerkt"
 
-#: controllers/ws/settings.py:72
+#: controllers/ws/settings.py:71
 msgid "invalid form"
 msgstr "Fout formulier"
 
@@ -460,31 +464,31 @@ msgstr ""
 msgid "Wiki article editing"
 msgstr ""
 
-#: controllers/ws/wiki.py:246
+#: controllers/ws/wiki.py:248
 msgid "Wiki article created"
 msgstr ""
 
-#: controllers/ws/wiki.py:253
+#: controllers/ws/wiki.py:255
 #, python-format
 msgid "%(first_name)s %(last_name)s just created article %(slug)s!"
 msgstr ""
 "%(first_name)s %(last_name)s heeft zojuist artikel %(slug)s aangemaakt!"
 
-#: controllers/ws/wiki.py:279
+#: controllers/ws/wiki.py:281
 msgid "Wiki article saved"
 msgstr ""
 
-#: controllers/ws/wiki.py:283
+#: controllers/ws/wiki.py:285
 #, python-format
 msgid "Wiki article %(slug)s stored..."
 msgstr "Wiki artikel %(slug)s opgeslagen..."
 
-#: controllers/ws/wiki.py:295
+#: controllers/ws/wiki.py:297
 msgid "No changes found in wiki article. Page was not stored..."
 msgstr ""
 "Geen veranderingen gevonden in wiki artikel. Pagina is niet opgeslagen..."
 
-#: controllers/ws/wiki.py:310
+#: controllers/ws/wiki.py:312
 #, python-format
 msgid ""
 "Wiki article was stored by %(first_name)s %(last_name)s as revision "
@@ -493,24 +497,24 @@ msgstr ""
 "Wiki artikel is opgelagen door %(first_name)s %(last_name)s als revisie "
 "%(revision)s: %(comments)s"
 
-#: controllers/ws/wiki.py:357
+#: controllers/ws/wiki.py:359
 msgid "Invalid article"
 msgstr "Ongeldig artikel"
 
-#: controllers/ws/wiki.py:367
+#: controllers/ws/wiki.py:369
 #, python-format
 msgid "%(first_name)s %(last_name)s removed the current article..."
 msgstr "%(first_name)s %(last_name)s heeft het huidige artikel verwijderd..."
 
-#: controllers/ws/wiki.py:377
+#: controllers/ws/wiki.py:379
 msgid "Wiki article deleted"
 msgstr "Wiki artikel succesvol verwijderd..."
 
-#: controllers/ws/wiki.py:382
+#: controllers/ws/wiki.py:384
 msgid "Wiki article deleted successfully..."
 msgstr "Wiki artikel succesvol verwijderd..."
 
-#: controllers/ws/wiki.py:408
+#: controllers/ws/wiki.py:410
 #, python-format
 msgid ""
 "Client %(first_name)s %(last_name)s restored article text to revision "
@@ -519,7 +523,7 @@ msgstr ""
 "Gebruiker %(first_name)s %(last_name)s heeft artikel text hersteld naar "
 "revisie %(revision)s: '%(comments)s'"
 
-#: controllers/ws/wiki.py:411
+#: controllers/ws/wiki.py:413
 msgid "Wiki revision restored"
 msgstr "Wiki Revisie herstelt"
 
@@ -628,16 +632,16 @@ msgstr "URL Doel"
 msgid "Auto Preview"
 msgstr "Auto Voorvertoning"
 
-#: forms/profiles.py:23 forms/profiles.py:55
+#: forms/profiles.py:23 forms/profiles.py:56
 msgid "First name"
 msgstr "Voornaam"
 
-#: forms/profiles.py:24 forms/profiles.py:56
+#: forms/profiles.py:24 forms/profiles.py:57
 msgid "Last name"
 msgstr "Achternaam"
 
-#: forms/profiles.py:25 forms/profiles.py:57 forms/profiles.py:65
-#: forms/profiles.py:72 templates/start/profiles/manage_profiles.html:13
+#: forms/profiles.py:25 forms/profiles.py:58 forms/profiles.py:66
+#: forms/profiles.py:73 templates/start/profiles/manage_profiles.html:13
 msgid "Email"
 msgstr "Email"
 
@@ -645,35 +649,36 @@ msgstr "Email"
 msgid "Organisation"
 msgstr "Organisatie"
 
-#: forms/profiles.py:27 forms/profiles.py:58 forms/profiles.py:73
-#: forms/profiles.py:98 forms/profiles.py:102
+#: forms/profiles.py:27 forms/profiles.py:59 forms/profiles.py:74
+#: forms/profiles.py:99 forms/profiles.py:103
 msgid "Password"
 msgstr "Wachtwoord"
 
-#: forms/profiles.py:28 forms/profiles.py:59
+#: forms/profiles.py:28 forms/profiles.py:60
 msgid "Is active"
 msgstr "Is actief"
 
-#: forms/profiles.py:29 forms/profiles.py:60
+#: forms/profiles.py:29 forms/profiles.py:61
 msgid "Is staff"
 msgstr "Is personeel"
 
-#: forms/profiles.py:30 forms/profiles.py:61
+#: forms/profiles.py:30 forms/profiles.py:62
 msgid "Is superuser"
 msgstr "Is supergebruiker"
 
-#: forms/profiles.py:66
+#: forms/profiles.py:55 forms/profiles.py:72 forms/profiles.py:98
+#: templates/start/profiles/manage_profiles.html:12
+#: templates/start/profiles/whois_profile.html:10
+msgid "Username"
+msgstr "Gebruikersnaam"
+
+#: forms/profiles.py:67
 msgid "Change Password"
 msgstr "Verander Wachtwoord"
 
-#: forms/profiles.py:67
+#: forms/profiles.py:68
 msgid "About me"
 msgstr ""
-
-#: forms/profiles.py:71 forms/profiles.py:97
-#: templates/start/profiles/manage_profiles.html:12
-msgid "Username"
-msgstr "Gebruikersnaam"
 
 #: forms/wiki.py:17 forms/wiki.py:21
 msgid "Comments"
@@ -719,11 +724,11 @@ msgstr "Mail Kop"
 msgid "Mail Body"
 msgstr "Mail Tekst"
 
-#: models/statics.py:20 templates/start/messenger/context_menu.html:20
+#: models/statics.py:20 templates/start/messenger/context_menu.html:23
 msgid "Register"
 msgstr "Registreer"
 
-#: models/statics.py:21 templates/start/messenger/context_menu.html:13
+#: models/statics.py:21 templates/start/messenger/context_menu.html:16
 #: templates/start/profiles/context_menu.html:10
 msgid "Logout"
 msgstr "Loguit"
@@ -787,27 +792,28 @@ msgstr "Nieuw Artikel"
 #: templates/start/opensim/create_region.html:20
 #: templates/start/opensim/edit_region.html:25
 #: templates/start/opensim/upload_luggage.html:20
-#: templates/start/opensim/upload_scene.html:21
+#: templates/start/opensim/upload_scene.html:20
 #: templates/start/plasmoids/create_plasmoid.html:22
 #: templates/start/plasmoids/edit_plasmoid.html:22
 #: templates/start/profiles/create_profile.html:15
-#: templates/start/profiles/edit_profile.html:37
+#: templates/start/profiles/edit_profile.html:34
 #: templates/start/teknon/slave_ini.html:12
-#: templates/start/wiki/edit_article.html:17
+#: templates/start/wiki/edit_article.html:18
 #: templates/start/wiki/edit_history.html:16
 msgid "Cancel"
 msgstr "Annuleer"
 
-#: templates/start/blog/create_article.html:14
-#: templates/start/blog/edit_article.html:14
-#: templates/start/blog/read_article.html:57
-#: templates/start/profiles/edit_profile.html:39
-#: templates/start/wiki/edit_article.html:18
+#: templates/start/blog/create_article.html:16
+#: templates/start/blog/edit_article.html:16
+#: templates/start/blog/read_article.html:59
+#: templates/start/plasmoids/edit_plasmoid.html:25
+#: templates/start/profiles/edit_profile.html:38
+#: templates/start/wiki/edit_article.html:21
 msgid "Submit"
 msgstr "Verstuur"
 
 #: templates/start/blog/read_article.html:56
-#: templates/start/profiles/edit_profile.html:35
+#: templates/start/profiles/edit_profile.html:30
 msgid "Back"
 msgstr "Terug"
 
@@ -829,18 +835,22 @@ msgid "Browse"
 msgstr "Doorzoek"
 
 #: templates/start/messenger/context_menu.html:3
+msgid "Whois"
+msgstr ""
+
+#: templates/start/messenger/context_menu.html:6
 msgid "View profile"
 msgstr "Toon profiel"
 
-#: templates/start/messenger/context_menu.html:7
+#: templates/start/messenger/context_menu.html:10
 msgid "Send message"
 msgstr "Stuur bericht"
 
-#: templates/start/messenger/context_menu.html:10
+#: templates/start/messenger/context_menu.html:13
 msgid "Edit my profile"
 msgstr "Bewerk mijn profiel"
 
-#: templates/start/messenger/context_menu.html:17
+#: templates/start/messenger/context_menu.html:20
 #: templates/start/profiles/context_menu.html:14
 msgid "Login"
 msgstr "Login"
@@ -858,15 +868,15 @@ msgstr ""
 msgid "Loading..."
 msgstr "Laden..."
 
-#: templates/start/misc/base.html:59
+#: templates/start/misc/base.html:57
 msgid "Notification"
 msgstr "Notificatie"
 
-#: templates/start/misc/base.html:67
+#: templates/start/misc/base.html:65
 msgid "Warning"
 msgstr "Waarschuwing"
 
-#: templates/start/misc/base.html:75
+#: templates/start/misc/base.html:73
 msgid "Error"
 msgstr "Fout"
 
@@ -892,16 +902,15 @@ msgstr "Regio's"
 
 #: templates/start/opensim/create_region.html:5
 #: templates/start/opensim/read_regions.html:48
-#: templates/start/plasmoids/read_plasmoids.html:47
+#: templates/start/plasmoids/read_plasmoids.html:48
 #: templates/start/profiles/manage_profiles.html:53
 msgid "New"
 msgstr "Nieuw"
 
-#: templates/start/opensim/create_region.html:21
-#: templates/start/opensim/edit_region.html:26
-#: templates/start/plasmoids/create_plasmoid.html:23
-#: templates/start/plasmoids/edit_plasmoid.html:23
-#: templates/start/profiles/create_profile.html:16
+#: templates/start/opensim/create_region.html:23
+#: templates/start/opensim/edit_region.html:28
+#: templates/start/plasmoids/create_plasmoid.html:25
+#: templates/start/profiles/create_profile.html:18
 #: templates/start/teknon/slave_ini.html:13
 msgid "Save"
 msgstr "Opslaan"
@@ -919,11 +928,11 @@ msgid "Are you sure that you want to delete the following scenes?"
 msgstr "Weet u zeker dat u de volgende scenes wilt verwijderen?"
 
 #: templates/start/opensim/edit_region.html:5
-#: templates/start/opensim/read_regions.html:49
+#: templates/start/opensim/read_regions.html:51
 #: templates/start/opensim/read_settings.html:5
-#: templates/start/plasmoids/read_plasmoids.html:48
+#: templates/start/plasmoids/read_plasmoids.html:51
 #: templates/start/profiles/edit_profile.html:6
-#: templates/start/profiles/manage_profiles.html:54
+#: templates/start/profiles/manage_profiles.html:56
 msgid "Edit"
 msgstr "Bewerk"
 
@@ -960,10 +969,10 @@ msgstr "Email"
 #: templates/start/opensim/read_avatars.html:19
 #: templates/start/opensim/read_avatars.html:55
 #: templates/start/opensim/read_regions.html:22
-#: templates/start/opensim/read_regions.html:64
+#: templates/start/opensim/read_regions.html:68
 #: templates/start/plasmoids/read_plasmoids.html:17
 #: templates/start/teknon/read_pool.html:20
-#: templates/start/teknon/read_pool.html:72
+#: templates/start/teknon/read_pool.html:76
 msgid "Options"
 msgstr "Opties"
 
@@ -973,40 +982,40 @@ msgstr "Sync"
 
 #: templates/start/opensim/read_avatars.html:52
 #: templates/start/opensim/read_regions.html:17
-#: templates/start/opensim/read_regions.html:61
+#: templates/start/opensim/read_regions.html:65
 #: templates/start/teknon/read_pool.html:17
 msgid "Description"
 msgstr "Beschrijving"
 
 #: templates/start/opensim/read_avatars.html:53
-#: templates/start/opensim/read_regions.html:62
+#: templates/start/opensim/read_regions.html:66
 msgid "Modified"
 msgstr "Veranderd"
 
 #: templates/start/opensim/read_avatars.html:54
-#: templates/start/opensim/read_regions.html:63
+#: templates/start/opensim/read_regions.html:67
 #: templates/start/pad/toolbox.html:45 templates/start/pad/toolbox.html:81
 #: templates/start/plasmoids/read_plasmoids.html:13
 msgid "Size"
 msgstr "Grootte"
 
 #: templates/start/opensim/read_avatars.html:80
-#: templates/start/opensim/read_regions.html:50
-#: templates/start/opensim/read_regions.html:90
-#: templates/start/plasmoids/read_plasmoids.html:49
-#: templates/start/profiles/manage_profiles.html:55
+#: templates/start/opensim/read_regions.html:54
+#: templates/start/opensim/read_regions.html:94
+#: templates/start/plasmoids/read_plasmoids.html:54
+#: templates/start/profiles/manage_profiles.html:59
 msgid "Delete"
 msgstr "Verwijder"
 
-#: templates/start/opensim/read_avatars.html:81
-#: templates/start/opensim/read_regions.html:91
+#: templates/start/opensim/read_avatars.html:83
+#: templates/start/opensim/read_regions.html:97
 #: templates/start/opensim/upload_luggage.html:5
-#: templates/start/opensim/upload_scene.html:6
+#: templates/start/opensim/upload_scene.html:5
 msgid "Upload"
 msgstr "Upload"
 
 #: templates/start/opensim/read_regions.html:10
-#: templates/start/opensim/upload_scene.html:5
+#: templates/start/opensim/upload_scene.html:4
 msgid "Scenes"
 msgstr "Scenes"
 
@@ -1039,28 +1048,28 @@ msgstr "Simulatie"
 msgid "Map"
 msgstr "Kaart"
 
-#: templates/start/opensim/read_settings.html:21
-#: templates/start/opensim/read_settings.html:36
-#: templates/start/settings/read_settings.html:18
+#: templates/start/opensim/read_settings.html:19
+#: templates/start/opensim/read_settings.html:32
+#: templates/start/settings/read_settings.html:16
 msgid "Update"
 msgstr "Bijwerken"
 
-#: templates/start/opensim/read_settings.html:37
+#: templates/start/opensim/read_settings.html:35
 msgid "Render"
 msgstr "Verwerk"
 
 #: templates/start/opensim/upload_luggage.html:9
-#: templates/start/opensim/upload_scene.html:10
+#: templates/start/opensim/upload_scene.html:9
 msgid "Selected files"
 msgstr "Geselecteerde bestanden"
 
 #: templates/start/opensim/upload_luggage.html:12
-#: templates/start/opensim/upload_scene.html:13
+#: templates/start/opensim/upload_scene.html:12
 msgid "Progress"
 msgstr "Progressie"
 
-#: templates/start/opensim/upload_luggage.html:21
-#: templates/start/opensim/upload_scene.html:22
+#: templates/start/opensim/upload_luggage.html:23
+#: templates/start/opensim/upload_scene.html:23
 #: templates/start/teknon/read_pool.html:57
 msgid "Start"
 msgstr "Start"
@@ -1125,7 +1134,7 @@ msgstr "Maak"
 
 #: templates/start/plasmoids/create_plasmoid.html:11
 #: templates/start/plasmoids/edit_plasmoid.html:11
-#: templates/start/teknon/read_pool.html:69
+#: templates/start/teknon/read_pool.html:73
 msgid "UUID"
 msgstr "UGID"
 
@@ -1181,11 +1190,11 @@ msgstr "Mijn Profiel"
 msgid "Edit Profile"
 msgstr "Bewerk Profiel"
 
-#: templates/start/profiles/edit_profile.html:16
+#: templates/start/profiles/edit_profile.html:15
 msgid "Avatar"
 msgstr "Avatar"
 
-#: templates/start/profiles/edit_profile.html:22
+#: templates/start/profiles/edit_profile.html:21
 msgid "Drag Image"
 msgstr "Sleep hier"
 
@@ -1357,6 +1366,27 @@ msgstr "Tijd Zone"
 msgid "Karma"
 msgstr "Karma"
 
+#: templates/start/profiles/whois_profile.html:5
+msgid "Whois "
+msgstr ""
+
+#: templates/start/profiles/whois_profile.html:11
+msgid "IP"
+msgstr ""
+
+#: templates/start/profiles/whois_profile.html:12
+#, fuzzy
+msgid "Hostname"
+msgstr "Achternaam"
+
+#: templates/start/profiles/whois_profile.html:13
+msgid "Country"
+msgstr ""
+
+#: templates/start/profiles/whois_profile.html:14
+msgid "City"
+msgstr ""
+
 #: templates/start/settings/read_settings.html:5
 msgid "Modify"
 msgstr "Aanpassen"
@@ -1382,23 +1412,23 @@ msgstr "Machines"
 msgid "Client"
 msgstr "Cliënt"
 
-#: templates/start/teknon/read_pool.html:58
+#: templates/start/teknon/read_pool.html:60
 msgid "Stop"
 msgstr "Stop"
 
-#: templates/start/teknon/read_pool.html:59
+#: templates/start/teknon/read_pool.html:63
 msgid "Kill"
 msgstr "Beëindig"
 
-#: templates/start/teknon/read_pool.html:70
+#: templates/start/teknon/read_pool.html:74
 msgid "Daemon User"
 msgstr "Daemon Gebruiker"
 
-#: templates/start/teknon/read_pool.html:71
+#: templates/start/teknon/read_pool.html:75
 msgid "Connected from"
 msgstr "Verbonden vanaf"
 
-#: templates/start/teknon/read_pool.html:90
+#: templates/start/teknon/read_pool.html:93
 msgid "FIXME"
 msgstr ""
 
@@ -1419,7 +1449,7 @@ msgid "Revise history"
 msgstr "Reviseer historie"
 
 #: templates/start/wiki/context_menu.html:7
-#: templates/start/wiki/edit_article.html:5
+#: templates/start/wiki/edit_article.html:6
 msgid "Edit document"
 msgstr "Bewerk dokument"
 
@@ -1455,6 +1485,6 @@ msgstr "Bevestig aub dat u het volgende artikel wilt verwijderen"
 msgid "Revise History"
 msgstr "Revisie Historie"
 
-#: templates/start/wiki/edit_history.html:17
+#: templates/start/wiki/edit_history.html:19
 msgid "Restore"
 msgstr "Herstel"

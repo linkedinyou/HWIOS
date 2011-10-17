@@ -24,7 +24,7 @@ from core.tools import JSONResponse
 import web_ui.settings as settings
 from web_ui.models.profiles import Profile
 from web_ui.models.opensim import Regions, Scenes
-
+from web_ui.controllers.ws.opensim import OSUserAccounts
 from web_ui.models.opensim import Simulators, Luggage
 
 @user_passes_test(lambda u: u.is_staff)
@@ -37,7 +37,8 @@ def upload_scenes(request):
         f = open(os.path.join(location,'dav_store','oar',file_name), 'w')
         f.write(content)
         scenes = Scenes.get_scenes()
-        main = render_to_string("opensim/read_regions.html", {'region_services': Regions().get_region_services(),'scenes':scenes}, context_instance=RequestContext(request))
+        regions = Regions.get_regions()
+        main = render_to_string("opensim/read_regions.html", {'regions': regions,'scenes':scenes}, context_instance=RequestContext(request))
         return JSONResponse({
             'status':{
                 'code':'FILE_UPLOADED',
@@ -68,7 +69,7 @@ def upload_luggage(request):
         }
         luggage = Luggage.get_luggage()
         online_simulators = Simulators.get_simulators(online=True)
-        profiles = Profile.objects.all()
+        profiles = OSUserAccounts.objects.using('grid').all()
         main = render_to_string("opensim/read_avatars.html", {'profiles':profiles,'luggage':luggage,'online_simulators':len(online_simulators)})
         response.update({'data':{'dom':{'main':main}}})
         return JSONResponse(response)    
