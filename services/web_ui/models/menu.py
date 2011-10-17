@@ -48,12 +48,7 @@ class Menu(object):
                     if '/' in node.view:
                         self.menu_structure +='<li><div class="menu-item" data-uri="%s">%s</div>' % (node.view, _(node.title))
                     else:
-                        self.menu_structure +='<li><div class="menu-item" data-function="%s">%s</div>' % (node.view, _(node.title))
-                else:
-                    if '/' in node.view:
-                        self.menu_structure +='<li><span class="ui-icon %s menu-icon ui-icon-empty"></span><div class="menu-item" data-uri="%s">%s</div><span class="sf-sub-indicator"></span>' % (node.icon_class, node.view, _(node.title))
-                    else:
-                        self.menu_structure +='<li><span class="ui-icon menu-icon ui-icon-empty"></span><div class="menu-item" data-function="%s">%s</div><span class="sf-sub-indicator"></span>' % (node.view, _(node.title))
+                        self.menu_structure +='<li><div class="menu-item">%s</div>' % (_(node.title))
                 self.recursive_render(nodes, node.pk)
             else:
                 if self.authenticate_node(node):
@@ -68,11 +63,7 @@ class Menu(object):
                         for match in iterator:
                             replace_attr = str(match.group()[1:-1])
                             node.view = node.view.replace(match.group(), getattr(self.user, replace_attr))
-                        print _(node.title)
                         self.menu_structure +='<div class="menu-item" data-uri="%s">%s</div></li>' % (node.view, _(node.title))
-                    else:                        
-                        self.menu_structure +='<div class="menu-item" data-function="%s">%s</div></li>' % (node.view, _(node.title))
-                        print _(node.title)
         if parent != 0:
             self.menu_structure +='</ul></li>'   
         
@@ -108,7 +99,7 @@ class Menu(object):
             if menu_item.parent_id not in self.nodes:
                 self.nodes[menu_item.parent_id] = []
             self.nodes[menu_item.parent_id].append(menu_item)        
-        self.menu_structure ='<div id="main-menu"><ul class="sf-menu">'
+        self.menu_structure ='<div id="main-menu"><ul class="hwios-menu">'
         self.recursive_render(self.nodes)
         self.menu_structure +='</ul></div>'
         return self.menu_structure

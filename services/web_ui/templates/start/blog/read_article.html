@@ -16,9 +16,9 @@
                     <span><a href='/blog/'>{{article.title}}</a></span>
                     <div class='blog-article-by'>{{article.author}}, {{article.pub_date|date:"H:i" }}</div>
                     {%if profile.is_staff%}
-                    <span class='article-option hwios-button ui-icon ui-icon-trash' data-function='blog.delete_article' data-slug='{{article.slug}}'></span>
+                    <span class='header-option btn ui-icon ui-icon-trash' data-function='blog.delete_article' data-id='{{article.slug}}'></span>
                     {% if profile == article.author%}
-                    <span class='article-option hwios-button ui-icon ui-icon-pencil' data-uri='/blog/{{article.slug}}/edit/' data-slug='{{article.slug}}' ></span>
+                    <span class='header-option btn ui-icon ui-icon-pencil' data-uri='/blog/{{article.slug}}/edit/' data-id='{{article.slug}}' ></span>
                     {%endif%}
                     {%endif%}
                 </div>
@@ -39,7 +39,7 @@
                 <div class='blog-comment-header'>
                     <span>{{comment.author.first_name}} {{comment.author.last_name}}, {{comment.pub_date|date:"H:i" }}</span>
                     {%if profile.is_staff%}
-                    <span class='hwios-button ui-icon ui-icon-trash' data-function='blog.delete_comment' data-article='{{comment.article.slug}}'data-uuid='{{comment.uuid}}'></span>
+                    <span class='btn ui-icon ui-icon-trash' data-function='blog.delete_comment' data-article='{{comment.article.slug}}'data-uuid='{{comment.uuid}}'></span>
                     {%endif%}
                 </div>
                 <div class='blog-comment-text'>

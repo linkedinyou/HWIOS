@@ -45,9 +45,7 @@ def index(request):
     else:
         script_path = '/media/scripts/deploy/'
         css_target = 'hwios_deploy.css'
-    settings = Settings.objects.all()[0]     
     #user should be able to override this, based on it's session settings at some point
-    theme = settings.default_template
     if isinstance(request.user, AnonymousUser):
         #i know this is ugly ok?
         request.user.id = random.randint(1000,9999)
@@ -67,7 +65,7 @@ def index(request):
     menu = Menu(request.user).render()
     return render_to_response("misc/base.html",{
         'client_init':client_init,
-        'theme': theme,
+        'theme': web_ui.settings.HWIOS_THEME,
         'menu':menu,
         'script_path':script_path,
         'css_target': css_target},

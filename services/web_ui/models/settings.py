@@ -21,7 +21,6 @@ ACTIVATION_TYPES = (
 
 class Settings(models.Model):
     site_name = models.CharField(max_length=64, verbose_name=_("Site Name"))
-    default_template = models.CharField(max_length=64, verbose_name=_("Default Template"))
     activation_type = models.SmallIntegerField(choices=ACTIVATION_TYPES, verbose_name=_("Activation Type"))
     registration_moderator_notify = models.BooleanField(verbose_name=_("Moderator Notify"))
     mail_from = models.CharField(max_length=64, verbose_name=_("Mail From"))

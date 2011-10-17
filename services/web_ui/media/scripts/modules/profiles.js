@@ -182,6 +182,7 @@ function bind_functions() {
                             case 'CRED_OK':
                                 application.settings.user = response.data.user;
                                 $('#menu-container').html(response.data.dom.navbar);
+                                $(document).trigger('USER_LOGIN',[]);
                                 $login.dialog("close");
                                 application.ws.close();
                             break;
@@ -205,6 +206,7 @@ function bind_functions() {
                 $('#menu-container').html(response.data.dom.navbar);
                 //set anonymous user id
                 application.settings.user = response.data.user;
+                $(document).trigger('USER_LOGOUT',[]);
                 //application.redirect = '/blog/';
                 application.ws.close();
                 }
@@ -275,7 +277,6 @@ function bind_functions() {
             application.ws.remote('/profiles/'+kwargs.profile_name+'/whois/',{},function(response){
                 application.functions.ui.transition(response.data.dom.main, $('.main'));
                 var lonlat = $('.whois-map').data();
-                console.log(lonlat);
                 application.maps.connect();
                 application.maps.center_lonlat(lonlat.lon, lonlat.lat, 10);
             });

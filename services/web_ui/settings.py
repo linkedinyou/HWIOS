@@ -13,6 +13,7 @@ import os,sys
 from ConfigParser import ConfigParser
 ugettext = lambda s: s
 DEFAULT_CHARSET = 'utf-8'
+
 SERVICE_ROOT = os.path.dirname(os.path.realpath(__file__))
 #Fix for config options in hwios main executable, which call django specific stuff from service subdirs
 if 'HWIOS_ROOT' in os.environ:
@@ -31,6 +32,7 @@ hwios_config.read(os.path.join(HWIOS_ROOT,'hwios.ini'))
 HWIOS_URI = hwios_config.get('general','uri')
 HWIOS_PORT = service_config.get('service','port')
 HWIOS_WANIP = hwios_config.get('general','wanip')
+HWIOS_THEME = hwios_config.get('general','theme')
 GEOIP_PATH = os.path.join(HWIOS_ROOT,'lib','geoip')
 
 DEBUG = hwios_config.getboolean('general','debug')

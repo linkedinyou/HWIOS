@@ -15,11 +15,11 @@
     margin-left:10px;
 }
 
-.sf-menu {
+.hwios-menu {
     line-height:0.5;
 }
 
-.sf-menu, .sf-menu * {
+.hwios-menu, .hwios-menu * {
     margin: 0;
     padding: 0;
     list-style: none;
@@ -28,7 +28,7 @@
 }
 
 /* All menu containers */
-.sf-menu ul {
+.hwios-menu ul {
     position: absolute;
     width: 175px; /* left offset of submenus need to match (see below) */
     top:-999em;
@@ -39,77 +39,57 @@
     left:10px;
 }
 
-.sf-menu ul li:hover {
+.hwios-menu ul li:hover {
     background-color:#fff;
     cursor:default;
 }
 
-.sf-menu ul li:first-letter {
+.hwios-menu ul li:first-letter {
     font-weight:bold;
 }
 
 
-.sf-menu ul li {
+.hwios-menu ul li {
     width: 100%;
 
 }
 
-.sf-menu li {
+.hwios-menu li {
     float: left;
     position: relative;
 }
 
-.sf-menu > li {
+.hwios-menu > li {
 
 }
 
-.sf-menu ul li ul {
+.hwios-menu ul li ul {
     padding-left:5px;
 }
 /*first level hover*/
-.sf-menu li ul {
+.hwios-menu li ul {
     opacity:0;
 }
 
-.sf-menu li:hover ul {
+.hwios-menu li:hover ul {
     left: 30;
     top: 25px; /* match top ul list item height */
     opacity:1;
     line-height:1;
     -webkit-transition: opacity 0.3s ease-out;
 }
-/*second level menu hidden */
-ul.sf-menu li:hover li ul {
-    top: -999em;   
-    opacity:0;
-}
-
-/* second level menu shown */
-ul.sf-menu li li:hover ul {
-    left: 175px; /* match ul width */
-    top: -1px;
-    opacity:1;
-}
-ul.sf-menu li li:hover li ul {
-    top: -999em;
-}
-
-ul.sf-menu li li li:hover ul {
-    left:           175px; /* match ul width */
-    top:            0;
-}
 
 /* suckerfish container */
-.sf-menu div {
+.hwios-menu div {
     padding: 10px 10px;
     text-decoration:none;
 }
-.sf-menu div  {
+.hwios-menu div  {
     cursor:default;
 }
 
 /* Root level */
-.sf-menu > li {
+.hwios-menu > li {
     color:#000;
     font-weight:bold;
     margin-left:20px;
@@ -118,64 +98,17 @@ ul.sf-menu li li li:hover ul {
     -webkit-user-select: none;
 }
 
-.sf-menu > li ul {
+.hwios-menu > li ul {
     font-weight:normal;
     font-size:13px !important;
 }
 
 /*First level menu hover */
-.sf-menu li:hover {
+.hwios-menu li:hover {
     color:#666;
     -webkit-transition: opacity 0.4s ease-out;
 }
-/*Second level menu background */
-.sf-menu li li li {
 
-}
-
-/*** arrows **/
-.sf-menu div.sf-with-ul {
-    padding-right:  2.25em;
-    min-width:      1px;
-}
-/*** arrows for level 0 **/
-.sf-sub-indicator {
-    position:       absolute;
-    display:        block;
-    right:          10px;
-    top:            0.8em; /* IE6 only */
-    width:          10px;
-    height:         10px;
-    text-indent:    -999em;
-    overflow:       hidden;
-    background:     url('images/icons/arrows-ffffff.png') no-repeat -10px -100px;
-    z-index:10000;
-}
-
-div > .sf-sub-indicator {  /* give all except IE6 the correct values */
-    top:            .8em;
-    background-position: 0 -100px; /* use translucent arrow for modern browsers*/
-}
-/* apply hovers to modern browsers */
-div:focus > .sf-sub-indicator,
-div:hover > .sf-sub-indicator,
-div:active > .sf-sub-indicator,
-li:hover > div > .sf-sub-indicator,
-li.sfHover > div > .sf-sub-indicator {
-    background-position: -10px -100px; /* arrow hovers for modern browsers*/
-}
-
-/* point right for anchors in subs */
-.sf-menu ul .sf-sub-indicator { background-position:  -10px 0; }
-.sf-menu ul div > .sf-sub-indicator { background-position:  0 0; }
-/* apply hovers to modern browsers */
-.sf-menu ul div:focus > .sf-sub-indicator,
-.sf-menu ul div:hover > .sf-sub-indicator,
-.sf-menu ul div:active > .sf-sub-indicator,
-.sf-menu ul li:hover > div > .sf-sub-indicator,
-.sf-menu ul li.sfHover > div > .sf-sub-indicator {
-    background-position: -10px 0; /* arrow hovers for modern browsers*/
-}
 
 .menu-icon {
     float:left;

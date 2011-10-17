@@ -67,10 +67,7 @@ class DjangoDomainController(object):
     
     def authDomainUser(self, realmname, username, password, environ):
         try:
-            username = username.split(' ')
-            if len(username) == 2:
-                user = authenticate(username=username, password = password)
-            else: return False
+            user = authenticate(username=username, password = password)
             if user != None:
                 if realmname == '/config':
                     if user.is_active and user.is_staff: return True

@@ -80,7 +80,6 @@ canvas {
     -moz-box-sizing:border-box;
     padding:4px;
     font-style:oblique;
-    font-size:14px;
 }
 
 @-webkit-keyframes selected-pulse {
@@ -129,7 +128,6 @@ canvas {
     -webkit-box-sizing:border-box;
     -moz-box-sizing:border-box;
     min-height:140px;
-    font-size:16px;
 }
 
 #pp-toolbox-buttons-helper table tr td:first-child {

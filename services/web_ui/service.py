@@ -29,6 +29,7 @@ from web_ui.models.ws_router import WebSocketRouter
 from web_ui.models.ws_realm import WSRealm
 from web_ui.models.webdav import WebDAV
 from web_ui.models.settings import Settings
+import web_ui.settings as settings
 from web_ui.models.plasmoids import Plasmoids
 
 
@@ -84,7 +85,6 @@ class Web_uiService(object):
         if sys.argv[0] == 'core/autoreload-twistd.py':
             root = RootResource(self._single_threaded_wsgi_resource(wsgi_handler))
         else:
-            print "MULTI!"
             root = RootResource(self._multi_threaded_wsgi_resource(wsgi_handler))
         root.putChild("dav", WebDAV(self).get_resource())
         root.putChild("media", StaticFile(os.path.join(os.path.join(self.config.location, 'media'))))
@@ -106,9 +106,6 @@ class Web_uiService(object):
                 self.__service = SSLServer(self.config.getint('service', 'port'),site,ServerContextFactory())
             else:
                 self.__service = TCPServer(self.config.getint('service','port'),site,0,self.config.get('service','listen'))
-            
-        #if os.getuid() == 0:
-        #    reactor.addSystemEventTrigger('after', 'startup', self.drop_privileges)
 
             
     
@@ -135,7 +132,7 @@ class Web_uiService(object):
         """
         self.client_settings['uri'] = '%s:%s' % (self.hwios_config.get('general','uri'),self.config.get('service','port'))
         self.client_settings['ssl'] = self.config.getboolean('service','ssl')
-        self.client_settings['default_theme'] = Settings.objects.all()[0].default_template
+        self.client_settings['default_theme'] = settings.HWIOS_THEME
         return self.client_settings
         
         

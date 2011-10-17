@@ -27,9 +27,9 @@
             <td>{{profile.Email}}</td>
             <td>
             {%ifequal online_simulators 0 %}
-            <button data-function='opensim.backup_luggage' data-uuid='{{profile.uuid}}' class='action-icon action-icon-disabled backup-region-on backup-region-status-{{region.RegionUUID}}' value='{{profile.uuid}}'></button>
+            <span data-function='opensim.backup_luggage' data-uuid='{{profile.uuid}}' class='btn action-icon action-icon-disabled backup-region-on' value='{{profile.uuid}}'></span>
             {%else%}
-            <button data-function='opensim.backup_luggage' data-uuid='{{profile.uuid}}' class='action-icon backup-region-on backup-region-status-{{region.RegionUUID}}' value='{{profile.uuid}}'></button>
+            <span data-function='opensim.backup_luggage' data-uuid='{{profile.uuid}}' class='btn action-icon backup-region-on' value='{{profile.uuid}}'></span>
             {%endifequal%}
             </td>
             </tr>
@@ -64,11 +64,11 @@
             <td>{{lugg.size}}</td>
             <td>
             {%ifequal online_simulators 0 %}
-            <button data-function='opensim.load_luggage' data-name='{{lugg.name}}' class='action-icon action-icon-disabled scene-backup-load scene-backup-load-status-{{region.RegionUUID}}'  value='{{lugg.name}}'></button>
+            <span data-function='opensim.load_luggage' data-name='{{lugg.name}}' class='btn action-icon action-icon-disabled scene-backup-load'  value='{{lugg.name}}'></span>
             {%else%}
-            <button data-function='opensim.load_luggage' data-name='{{lugg.name}}' class='action-icon scene-backup-load scene-backup-load-status-{{region.RegionUUID}}' value='{{lugg.name}}'></button>
+            <span data-function='opensim.load_luggage' data-name='{{lugg.name}}' class='btn action-icon scene-backup-load' value='{{lugg.name}}'></span>
             {%endifequal%}
-            <button data-function='opensim.download_luggage' data-name='{{lugg.name}}' class='action-icon scene-backup-download scene-backup-load-status-{{region.RegionUUID}}' value='{{lugg.name}}'></button>
+            <span data-function='opensim.download_luggage' data-name='{{lugg.name}}' class='btn action-icon scene-backup-download' value='{{lugg.name}}'></span>
             </td>
             </tr>
             {%endfor%}

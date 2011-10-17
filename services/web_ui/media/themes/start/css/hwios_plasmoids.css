@@ -1,7 +1,7 @@
 #plasmoid-form-container {
     width:100%;
     height:300px;
-    position:relative;
+    overflow:hidden;
 }
 
 #plasmoid-form {
@@ -28,6 +28,7 @@
     display:block;
 }
 
+/*expand the container to the widget boundaries*/
 .plasmoid-container {
     width:100%;
     height:100%;
@@ -42,6 +43,10 @@
 #plasmoid-editor {
     width:100%;
     float:left;
+    border-bottom:1px dotted #ddd;
 }
 
 
+.plasmoid-container {
+    overflow:hidden;
+}

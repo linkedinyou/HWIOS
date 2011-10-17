@@ -1,16 +1,16 @@
 {% load i18n %}
 {%if profile.is_authenticated%}
-<div class="context-menu-option ui-state-hidden hwios-button" data-ctx-showid='{{profile.pk}}' data-uripart='/profiles/{id}/edit/' data-uriflag='id'>
+<div class="context-menu-option ui-state-hidden btn" data-ctx-showid='{{profile.pk}}' data-uripart='/profiles/{id}/edit/' data-uriflag='id'>
     <span class="ui-icon ui-icon-wrench"></span>{%trans "Edit My Profile"%}
 </div>
-<div class="context-menu-option ui-state-hidden hwios-button" data-ctx-hideid='{{profile.pk}}' data-uripart='/wiki/{id}/edit/history/' data-uriflag='id' data-ctx='view-document-history'>
+<div class="context-menu-option ui-state-hidden btn" data-ctx-hideid='{{profile.pk}}' data-uripart='/wiki/{id}/edit/history/' data-uriflag='id' data-ctx='view-document-history'>
     <span class="ui-icon ui-icon-wrench"></span>%trans "Send message"%}
 </div>
-<div class="context-menu-option ui-state-hidden hwios-button" data-ctx-showid='{{profile.pk}}' data-function='profiles.logout'>
+<div class="context-menu-option ui-state-hidden btn" data-ctx-showid='{{profile.pk}}' data-function='profiles.logout'>
     <span class="ui-icon ui-icon-power"></span>{%trans "Logout"%}
 </div>
 {%else%}
-<div class="context-menu-option hwios-button" data-ctx-showid='{{profile.pk}}' data-function='profiles.login'>
+<div class="context-menu-option btn" data-ctx-showid='{{profile.pk}}' data-function='profiles.login'>
     <span class="ui-icon ui-icon-power"></span>{%trans "Login"%}
 </div>
 {%endif%}

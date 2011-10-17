@@ -3,6 +3,7 @@ html {
     overflow-y:hidden;
     height:100%;
     width:100%;
+    cursor:default;
 }
 
 body {
@@ -87,6 +88,10 @@ form label {
 form .ui-icon-info {
     margin-top:6px;
     position:absolute;
+}
+/*make sure that the errorlist ui-event is triggered*/
+form p {
+    z-index:1000000;
 }
 
 code {
@@ -186,15 +191,12 @@ button .btn-icon {
 
 /*hwios logo at the left*/
 #logo {
-    width:74px;
-    height:52px;
     float:left;
     margin-top:20px;
+    width:74px;
+    height:52px;
     background: url('images/logo.png') no-repeat;
 }
-
-
-
 
 .textfield-ubersmall {width:20px;}
 .textfield-smallest {width:47px;}
@@ -210,8 +212,6 @@ button .btn-icon {
 .textarea-medium {width:250px;}
 .textarea-large {height:250px; width:60%;}
 .textarea-huge {height:600px; width:100%;}
-
-
 
 @-webkit-keyframes fade-in {
     0% { opacity:0;}
@@ -244,6 +244,7 @@ button .btn-icon {
     box-shadow: 2px 2px 8px rgba(0,0,0,0.6);
     opacity:100;
     display:block;
+    z-index:10000000000;
 }
 
 /* creates triangle */
@@ -257,7 +258,6 @@ button .btn-icon {
     border:13px solid transparent;
     border-top-color:#fff;
 }
-
 
 .hwios-widget {
     margin-top:10px;
@@ -273,19 +273,19 @@ button .btn-icon {
 }
 
 /* hwios widget left header text */
-.hwios-widget > .ui-widget-header span:first-child {
+.hwios-widget .ui-widget-header span:first-child {
     float:left;
     padding-right:6px;
     padding-top:3px;
 }
 /* hwios widget left header text */
-.hwios-widget > .ui-widget-header span:first-child:first-letter {
+.hwios-widget .ui-widget-header span:first-child:first-letter {
     text-transform:uppercase;
     color:#00aeef;
 }
 
 /* hwios widget right header text */
-.hwios-widget > .ui-widget-header span:last-child {
+.hwios-widget .ui-widget-header span:last-child {
     float:right;
     color:#000 !important;
     margin-right:3px;
@@ -294,39 +294,17 @@ button .btn-icon {
     margin-top:9px;
 }
 
- .hwios-widget > .ui-widget-content {
+ .hwios-widget .ui-widget-content {
     -webkit-box-sizing:border-box;
     -moz-box-sizing:border-box;
  }
 
+/* A shortcut icon to one of the page's options */
  .header-option {
     margin-right:1px;
     margin-top:5px;
     float:left;
  }
-
-/*action buttons in data-table*/
-.action-icon {
-    width:16px;
-    height:16px;
-    float:left;
-    border:0px;
-    margin-right:2px;
-    cursor:pointer;
-    -webkit-transition: all 0.1s ease-in-out;
-}
-
-.action-icon:not(.action-icon-disabled):hover {
-    -webkit-transform: translate(0,3px) scale(1.2,1.2); /* Safari and Chrome */
-}
-
-.action-icon-disabled {
-    opacity:0.5;
-    cursor:default;
-}
-
-.yes-button {background: url('images/icons/yes.png') no-repeat;}
-.no-button {background: url('images/icons/no.png') no-repeat;}
 
 .slider {
     width:200px;
@@ -334,39 +312,6 @@ button .btn-icon {
     float:left;
     background:rgba(0,0,0,0.3) !important;
     margin-top:10px;
-}
-
-
-.ws-disabled {
-    background-color:#000 !important;
-    color:#aaa !important;
-    cursor:wait !important;
-    -webkit-transition: all 1s ease-in-out;
-    -moz-transition: all 1s ease-in-out;
-}
-
-#notify-info {
-    background:#333 !important;
-}
-
-.hwios-button {
-    cursor:pointer;
-}
-
-.plasmoid-container {
-    overflow:hidden;
-}
-
-.crow:nth-child(odd)    {background-color: #fff;}
-.crow:nth-child(even)    {background-color: #eee;}
-
-.hide-element {
-    display:none;
-}
-
-.unknown-avatar {
-    background:url('images/unknown_avatar.png') no-repeat;
-    background-size:100%;
 }
 
 /*General popup helper*/
@@ -377,15 +322,12 @@ button .btn-icon {
     position:absolute;
     display:none;
     box-shadow: 7px 7px 10px #333;
-    overflow:auto;
-    color:#aaa;
     z-index:10000000;
-    font-size:13px;
-    -moz-user-select: none;
+    user-select: none;
     -webkit-user-select: none;
 }
 
-.context-menu .hwios-button {
+.context-menu .btn {
     color:#000;
 }
 
@@ -407,10 +349,12 @@ button .btn-icon {
 }
 
 .context-menu-option:hover {
-    background-color:#fff;
+    background:#fff;
+    border:0px;
     cursor:default;
 }
 
+/* list of affected items in the confirmation dialog*/
 .confirm-list {
     font-weight:bold;
 }
@@ -418,8 +362,8 @@ button .btn-icon {
 .confirm-list ul {
     text-decoration:none;
     list-style: none;
-padding: 0;
-margin: 0;
+    padding: 0;
+    margin: 0;
 }
 
 /*datatable css*/
@@ -460,6 +404,28 @@ margin: 0;
     padding:5px;
     font-style:oblique;
 }
+
+/*action buttons in data-table*/
+.action-icon {
+    width:16px;
+    height:16px;
+    float:left;
+    border:0px;
+    margin-right:2px;
+    -webkit-transition: all 0.1s ease-in-out;
+}
+
+.action-icon:not(.action-icon-disabled):hover {
+    -webkit-transform: translate(0,3px) scale(1.2,1.2); /* Safari and Chrome */
+}
+
+.action-icon-disabled {
+    opacity:0.5;
+}
+
+.yes-button {background: url('images/icons/yes.png') no-repeat;}
+.no-button {background: url('images/icons/no.png') no-repeat;}
+
 
 /*Infinote editor related css here*/
 .infinote-online {
@@ -523,28 +489,4 @@ margin: 0;
     -o-transform: rotate(-90deg);
     -moz-transform: rotate(-90deg);
     -webkit-transform: rotate(-90deg);
-}
-
-#whois-info {
-    margin-right:-100%;
-    width:500px;
-    height:300px;
-    float:left;
-    border-top:1px dotted #ddd;
-    border-left:1px dotted #ddd;    
-    margin-top:20px;
-}
-
-#whois-info table tr td:first-child {
-    font-style:oblique;
-    font-weight:bold;
-}
-
-.whois-map {
-    width:378px;
-    height:300px;
-    border:1px dotted #ddd;
-    margin-left:520px;
-    float:left;
-    margin-top:20px;
 }

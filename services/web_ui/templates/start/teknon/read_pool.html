@@ -29,21 +29,21 @@
                         <td>{{service.port}}</td>
                         <td>
                             {%ifequal service.status 'ON' %}
-                                <button data-function='teknon.stop_services' data-state='OFF' data-uuid='{{service.uuid}}' data-name='{{service.name}}' id='service-status-{{service.uuid}}' class='action-icon service-on'></button>
+                                <span data-function='teknon.stop_services' data-state='OFF' data-uuid='{{service.uuid}}' data-name='{{service.name}}' id='service-status-{{service.uuid}}' class='btn action-icon service-on'></span>
                                 {%ifequal service.watchdog 'ON' %}
-                                <button data-function='teknon.switch_watchdog' data-state='OFF' data-uuid='{{service.uuid}}' data-name='{{service.name}}' id='watchdog-status-{{service.uuid}}' class='action-icon watchdog-on'></button>
+                                <span data-function='teknon.switch_watchdog' data-state='OFF' data-uuid='{{service.uuid}}' data-name='{{service.name}}' id='watchdog-status-{{service.uuid}}' class='btn action-icon watchdog-on'></span>
                                 {%else%}
-                                <button data-function='teknon.switch_watchdog' data-state='ON' data-uuid='{{service.uuid}}' data-name='{{service.name}}' id='watchdog-status-{{service.uuid}}' class='action-icon watchdog-off'></button>
+                                <span data-function='teknon.switch_watchdog' data-state='ON' data-uuid='{{service.uuid}}' data-name='{{service.name}}' id='watchdog-status-{{service.uuid}}' class='btn action-icon watchdog-off'></span>
                                 {%endifequal%}
-                            <button data-function='teknon.open_console' data-uuid='{{service.uuid}}' data-name='{{service.name}}' id='console-status-{{service.uuid}}' class='action-icon console-on'></button>
+                            <span data-function='teknon.open_console' data-uuid='{{service.uuid}}' data-name='{{service.name}}' id='console-status-{{service.uuid}}' class='btn action-icon console-on'></span>
                             {%else %}
-                            <button data-function='teknon.start_services' data-uuid='{{service.uuid}}' data-name='{{service.name}}' id='service-status-{{service.uuid}}' class='action-icon service-off'></button>
-                            <button data-function='teknon.switch_watchdog' data-state='ON' data-uuid='{{service.uuid}}' data-name='{{service.name}}' id='watchdog-status-{{service.uuid}}' class='action-icon action-icon-disabled watchdog-off'></button>
-                            <button data-function='teknon.open_console' data-uuid='{{service.uuid}}' data-name='{{service.name}}' id='console-status-{{service.uuid}}' class='action-icon action-icon-disabled console-on'></button>
+                            <span data-function='teknon.start_services' data-uuid='{{service.uuid}}' data-name='{{service.name}}' id='service-status-{{service.uuid}}' class='btn action-icon service-off'></span>
+                            <span data-function='teknon.switch_watchdog' data-state='ON' data-uuid='{{service.uuid}}' data-name='{{service.name}}' id='watchdog-status-{{service.uuid}}' class='btn action-icon action-icon-disabled watchdog-off'></span>
+                            <span data-function='teknon.open_console' data-uuid='{{service.uuid}}' data-name='{{service.name}}' id='console-status-{{service.uuid}}' class='btnaction-icon action-icon-disabled console-on'></span>
                             {%endifequal%}
                             {% ifequal service.type 'SIM' %}
                             {%if service.user_ini%}
-                            <button id='btn-edit-sim-slave-ini' data-uuid='{{service.uuid}}' data-name='{{service.name}}' id='sim-slave-ini-status-{{service.uuid}}' class='action-icon edit-sim-slave-ini'></button>
+                            <span id='btn-edit-sim-slave-ini' data-uuid='{{service.uuid}}' data-name='{{service.name}}' id='sim-slave-ini-status-{{service.uuid}}' class='btn action-icon edit-sim-slave-ini'></span>
                             {%endif%}
                             {%endifequal%}
                         </td>
@@ -90,7 +90,9 @@
             </table>
             <div class='btn-bar'>
                 <div class='btn-set btn-set-single'>
-                    <button class='btn btn-active-many ui-state-default ui-state-disabled ui-corner-all'><span class='ui-icon ui-icon-gear'></span><span class='btn-txt'>{%trans 'FIXME'%}</span></button>
+                    <button class='btn btn-active-many ui-state-default ui-state-disabled ui-corner-all'>
+                        <span class='ui-icon ui-icon-gear'></span><span class='btn-txt'>{%trans 'FIXME'%}</span>
+                    </button>
                 </div>
             </div>
         </div>

@@ -89,7 +89,6 @@ function initEditor(plasmoid_uuid, override_layout) {
             }
             
             canvas_preview = $('#plasmoid_'+plasmoid_uuid).get(0);
-        $('.infinote-editor-textarea').text(data.page.state[1]);
         return {editor_element:'#plasmoid-editor'}
         }
     }); 

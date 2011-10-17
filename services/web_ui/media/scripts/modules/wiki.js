@@ -121,7 +121,6 @@ function bind_functions() {
         },
         
         view_article: function(kwargs) {
-            console.log(kwargs);
             $(document).trigger('WIKI_ARTICLE_LINK_FOLLOWED',{id: kwargs.id});
             initListener(kwargs.id);
         },

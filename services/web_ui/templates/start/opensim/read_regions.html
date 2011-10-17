@@ -33,9 +33,9 @@
                 <td>{{region.status}}</td>
                 <td>
                 {%ifequal region.status 'Offline'%}
-                <button data-function='opensim.backup_region' data-uuid='{{region.RegionUUID}}' class='action-icon action-icon-disabled backup-region-on' value='{{region.RegionUUID}}'></button>
+                <span data-function='opensim.backup_region' data-uuid='{{region.RegionUUID}}' class='btn action-icon action-icon-disabled backup-region-on' value='{{region.RegionUUID}}'></span>
                 {%else%}
-                <button data-function='opensim.backup_region' data-uuid='{{region.RegionUUID}}' class='action-icon backup-region-on' value='{{region.RegionUUID}}'></button>
+                <span data-function='opensim.backup_region' data-uuid='{{region.RegionUUID}}' class='btn action-icon backup-region-on' value='{{region.RegionUUID}}'></span>
                 {%endifequal%}
                 </td>
                 </tr>
@@ -77,27 +77,27 @@
                 <td>{{scene.size}}</td>
                 <td>
                 {%ifequal online_regions 0 %}
-                <button data-function='opensim.load_scene' data-name='{{scene.name}}' class='action-icon action-icon-disabled scene-backup-load scene-backup-load-status-{{region.RegionUUID}}' value='{{scene.name}}'></button>
+                <span data-function='opensim.load_scene' data-name='{{scene.name}}' class='btn action-icon action-icon-disabled scene-backup-load' value='{{scene.name}}'></span>
                 {%else%}
-                <button data-function='opensim.load_scene' data-name='{{scene.name}}' class='action-icon scene-backup-load scene-backup-load-status-{{region.RegionUUID}}' value='{{scene.name}}'></button>
+                <span data-function='opensim.load_scene' data-name='{{scene.name}}' class='btn action-icon scene-backup-load' value='{{scene.name}}'></span>
                 {%endifequal%}
-                <button data-function='opensim.download_scene' data-name='{{scene.name}}' class='action-icon scene-backup-download scene-backup-load-status-{{region.RegionUUID}}' value='{{scene.name}}'></button>
+                <span data-function='opensim.download_scene' data-name='{{scene.name}}' class='btn action-icon scene-backup-download' value='{{scene.name}}'></span>
                 </td>
                 </tr>
                 {%endfor%}
                 </tbody>
                 </table>
             </div>
-                <div class='btn-bar'>
-                    <div class='btn-set btn-set-single'>
-                        <button data-function='opensim.delete_scenes' class='btn btn-active-many ui-state-default ui-corner-left ui-state-disabled'>
-                            <span class='ui-icon ui-icon-scissors'></span><span class='btn-txt'>{%trans 'Delete'%}</span>
-                        </button>
-                        <button data-uri='/opensim/regions/scenes/upload/' class='btn ui-state-default ui-corner-right'>
-                            <span class='ui-icon ui-icon-transfer-e-w'></span><span class='btn-txt'>{%trans 'Upload'%}</span>
-                        </button>
-                    </div>
+            <div class='btn-bar'>
+                <div class='btn-set btn-set-single'>
+                    <button data-function='opensim.delete_scenes' class='btn btn-active-many ui-state-default ui-corner-left ui-state-disabled'>
+                        <span class='ui-icon ui-icon-scissors'></span><span class='btn-txt'>{%trans 'Delete'%}</span>
+                    </button>
+                    <button data-uri='/opensim/regions/scenes/upload/' class='btn ui-state-default ui-corner-right'>
+                        <span class='ui-icon ui-icon-transfer-e-w'></span><span class='btn-txt'>{%trans 'Upload'%}</span>
+                    </button>
                 </div>
+            </div>
         </div>
     </div>
 </div>
