@@ -47,7 +47,11 @@
         //Init request
         ce.opts['ws_handler'].remote(ce.opts['ws_connect'],{},function(response){
             ce._localUser = parseInt(response.data.uid);
-            ce._localColor = response.data.color;
+            $.each(response.data.online, function(idx, user){
+                if(user.id == ce._localUser){
+                ce._localColor = user.color;
+                }
+            });
             //in some cases, only a create page is shown and none created. Do not proceed in that case.
             if(!('log' in response.data.page)) {
                 ce.opts['init'](response.data, null);
@@ -132,15 +136,13 @@
             $.each(online, function(index, user) {
                 //online user is in remote cursor list
                 if(user.id == idx) {
-                    console.log('match');
                     match = true;
 
                 }
             });
             //user in remote_cursor has no match in online list. delete this user
             if(!match){
-                console.log('DELETE '+idx);
-            ce.delete_remote_cursor(idx);
+                ce.delete_remote_cursor(idx);
             }
         });
         ce.update_cursors();
@@ -170,12 +172,21 @@
                 //handle exclusive cursor movement
                 if(tc == false){
                     var params = {id:ce._localUser, cursor:cm.getCursorRange()};
-                    $('span.CodeMirror-selected').css('background-color',ce.editor_colors[ce._localUser]);
-                    
+                    $('span.CodeMirror-selected').css('background-color',ce.editor_colors[ce._localUser]);                    
                     ce.opts['ws_handler'].remote(ce.opts['ws_caret'], {params: params},function(response){});
                 }
             },
             onChange: this._handle_local_operation,
+            onFocus: function(cm){
+                var params = {id:ce._localUser, cursor:cm.getCursorRange()};
+                params.cursor.focus = true;
+                ce.opts['ws_handler'].remote(ce.opts['ws_caret'], {params: params},function(response){});
+            },
+            onBlur: function(cm){
+                var params = {id:ce._localUser, cursor:cm.getCursorRange()};
+                params.cursor.blur = true;
+                ce.opts['ws_handler'].remote(ce.opts['ws_caret'], {params: params},function(response){});
+            },
             onKeyEvent: function(cm, e) {
                 if(e.type == 'keydown'){
                     //capture ctrl-z
@@ -195,6 +206,7 @@
                 }
             }
         });
+        //set the local cursor color
         $('.CodeMirror-cursor').css('border-left','3px solid '+ce._localColor);
         //setting editor value triggers onchange. ignore this to prevent state flood
         ce.suppress_change = true;
@@ -269,8 +281,17 @@
         }
     }
 
+    CollabEditor.prototype._hide_remote_cursor = function(user_id){
+        $('#rc_'+user_id).removeClass('remote-cursor-focused');
+    }
+
+    CollabEditor.prototype._show_remote_cursor = function(user_id){
+        $('#rc_'+user_id).addClass('remote-cursor-focused');
+    }
+
+
     CollabEditor.prototype._set_cursor_color = function(user_id, color){
-        $('#rc_'+user_id).css('background-color',color);
+        $('#rc_'+user_id).css('border-left','3px solid '+color);
     }
 
     //Takes cursor as parameter
@@ -296,7 +317,6 @@
         else {
             delete ce.remote_cursors[user_id].fc;
         }
-        //console.log('line:'+pos.line+',ch:'+pos.ch);
         ce.update_cursors();
     }
 
@@ -316,7 +336,7 @@
                 ce.remote_cursors[user_id].rsc();
             }
             //actual cursor, not a selection
-            if((cursor.from.line == cursor.to.line) && (cursor.from.ch == cursor.to.ch)){                
+            if((cursor.from.line == cursor.to.line) && (cursor.from.ch == cursor.to.ch)){
                 ce.editor.addWidget(cursor.from, cursor.node,false);
             }
             else if('fc' in cursor){
@@ -452,6 +472,13 @@ $.extend({
         //{id:userid,cursor:{line,ch}}
         opts['ws_handler'].method(opts['cb_caret'],function(request){
             ce._set_remote_cursor(request['id'],request['cursor']);
+            if ('blur' in request.cursor){
+                ce._hide_remote_cursor(request['id']);
+            }
+            else if('focus' in request.cursor){
+                ce._show_remote_cursor(request['id']);
+            }
+            
         });
     return ce;
     }   

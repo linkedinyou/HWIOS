@@ -113,7 +113,6 @@ class WS_Wiki(object):
                     }, 
                     'online':subscriber['online'],
                     'uid':client.profile.pk,
-                    'color':subscriber['color'],
                 }
             }
         except ObjectDoesNotExist:

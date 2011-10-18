@@ -911,8 +911,11 @@ var CodeMirror = (function() {
         cursor.style.left = x + "px";
         cursor.style.display = "";
       }
-      else cursor.style.display = "none";
+      else {
+          cursor.style.display = "none";
+      }
     }
+    
 
     function setSelectionUser(from, to) {
       var sh = shiftSelecting && clipPos(shiftSelecting);

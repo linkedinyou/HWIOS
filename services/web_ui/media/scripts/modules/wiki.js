@@ -45,7 +45,7 @@ function(){
                     layout = data.dom.main;
                     page = data.page;
                     if (typeof(override_layout) == 'undefined') {
-                        application.functions.ui.transition(layout, $('.main'));
+                        application.functions.ui.transition(data.dom.main, $('.main'));
                     }
                     else {
                         application.functions.ui.transition(override_layout.data.dom.main, $('.main'), override_layout.status.code);
@@ -127,7 +127,7 @@ function bind_functions() {
         
         edit_article: function(kwargs) {
             if(kwargs.id == undefined){
-                kwargs.id = $('#btn-frontend-wiki-edit').attr('data-url');
+                kwargs.id = $('#btn-frontend-wiki-edit').data('url');
             }
             initEditor(kwargs.id);
         },

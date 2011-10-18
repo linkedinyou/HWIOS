@@ -49,9 +49,13 @@
   font-size: inherit !important;
 }
 
+.CodeMirror-cursor {
+    display:none;
+}
 
 .CodeMirror-focused .CodeMirror-cursor {
   visibility: visible;
+  display:block;
 }
 
 .CodeMirror-matchingbracket {color: #0f0 !important;}
