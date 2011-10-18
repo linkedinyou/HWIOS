@@ -39,7 +39,7 @@
                             {%else %}
                             <span data-function='teknon.start_services' data-uuid='{{service.uuid}}' data-name='{{service.name}}' id='service-status-{{service.uuid}}' class='btn action-icon service-off'></span>
                             <span data-function='teknon.switch_watchdog' data-state='ON' data-uuid='{{service.uuid}}' data-name='{{service.name}}' id='watchdog-status-{{service.uuid}}' class='btn action-icon action-icon-disabled watchdog-off'></span>
-                            <span data-function='teknon.open_console' data-uuid='{{service.uuid}}' data-name='{{service.name}}' id='console-status-{{service.uuid}}' class='btnaction-icon action-icon-disabled console-on'></span>
+                            <span data-function='teknon.open_console' data-uuid='{{service.uuid}}' data-name='{{service.name}}' id='console-status-{{service.uuid}}' class='btn action-icon action-icon-disabled console-on'></span>
                             {%endifequal%}
                             {% ifequal service.type 'SIM' %}
                             {%if service.user_ini%}

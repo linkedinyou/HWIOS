@@ -9,9 +9,11 @@
     :license: LGPL, See LICENSE for details.
 """
 
-
-import autoreload
-import twisted.scripts.twistd as t
 import sys
-autoreload.main(t.run)
-
+import autoreload
+try:
+    import twisted.scripts.twistd as t
+    autoreload.main(t.run)
+except ImportError:
+    print "Failed to import twisted. Did you set PYTHONPATH yet?"
+    print "Example: export PYTHONPATH=/usr/lib/python2.7/site-packages/"

@@ -117,6 +117,7 @@
     CollabEditor.prototype.update_online = function(online) {
         $('.infinote-online').empty();
         $.each(online, function(index, user) {
+            console.log(user);
             ce.editor_colors[user.id] = user.color;
             ce._set_cursor_color(user.id, user.color);
             var participant_line;
@@ -283,6 +284,11 @@
 
     CollabEditor.prototype._hide_remote_cursor = function(user_id){
         $('#rc_'+user_id).removeClass('remote-cursor-focused');
+        if(user_id in ce.remote_cursors) {
+            if('rsc' in ce.remote_cursors[user_id]){
+                ce.remote_cursors[user_id].rsc();
+            }
+        }
     }
 
     CollabEditor.prototype._show_remote_cursor = function(user_id){

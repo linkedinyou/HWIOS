@@ -1,7 +1,7 @@
 <div class='hwios-widget'>
-    <div class='ui-widget-header ui-corner-top'>
-        <span class="ui-icon menu-icon ui-icon-wrench"></span>
+    <div class='ui-widget-header'>
         <span>My_Mod</span>
+        <span>Debug</span>
     </div>
     <div class='ui-widget-content'>
     <p>You are profile {{profile.username}}</p>
@@ -12,7 +12,7 @@
     {%endfor%}
     </ul>
     <textarea id='textarea-my_mod'></textarea>
-    <button data-function='my_mod.notify' class='fg-button fg-button-icon-left ui-state-default ui-corner-all'><span class='ui-icon ui-icon-document-b' title='Start'></span><span>Send</span></button>
+    <button data-function='my_mod.notify' class='btn fg-button-icon-left ui-state-default ui-corner-all'><span class='ui-icon ui-icon-document-b' title='Start'></span><span>Send</span></button>
     </div>
     <p><b>Server said:</b></p>
     <div id='message-status'></div>
@@ -21,7 +21,7 @@
     <div id='trips'>
         <div id='trips-total'></div>
         <div id='trips-second'>-</div>
-        <button data-function='my_mod.trip' class='fg-button fg-button-icon-left ui-state-default ui-corner-all'><span class='ui-icon ui-icon-document-b' title='Start'></span><span>Trip</span></button>
+        <button data-function='my_mod.trip' class='btn fg-button-icon-left ui-state-default ui-corner-all'><span class='ui-icon ui-icon-document-b' title='Start'></span><span>Trip</span></button>
     </div>
     
 </div>

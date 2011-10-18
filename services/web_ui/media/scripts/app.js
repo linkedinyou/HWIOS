@@ -296,9 +296,7 @@ function(maps){
                         }
                     }
                     $('div[class*="hwios-plasmoid"]').remove();
-                    console.log('Websocket open...');                    
-
-                    
+                    console.log('Websocket open...');
                 },
                 close: function() {
                     application.cache.load.context = {};

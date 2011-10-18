@@ -27,9 +27,9 @@
             <td>{{profile.Email}}</td>
             <td>
             {%ifequal online_simulators 0 %}
-            <span data-function='opensim.backup_luggage' data-uuid='{{profile.uuid}}' class='btn action-icon action-icon-disabled backup-region-on' value='{{profile.uuid}}'></span>
+            <span data-function='opensim.backup_luggage' data-id='{{profile.pk}}' class='btn action-icon action-icon-disabled backup-region-on'></span>
             {%else%}
-            <span data-function='opensim.backup_luggage' data-uuid='{{profile.uuid}}' class='btn action-icon backup-region-on' value='{{profile.uuid}}'></span>
+            <span data-function='opensim.backup_luggage' data-id='{{profile.pk}}' class='btn action-icon backup-region-on'></span>
             {%endifequal%}
             </td>
             </tr>
@@ -64,11 +64,11 @@
             <td>{{lugg.size}}</td>
             <td>
             {%ifequal online_simulators 0 %}
-            <span data-function='opensim.load_luggage' data-name='{{lugg.name}}' class='btn action-icon action-icon-disabled scene-backup-load'  value='{{lugg.name}}'></span>
+            <span data-function='opensim.load_luggage' data-name='{{lugg.name}}' class='btn action-icon action-icon-disabled scene-backup-load'></span>
             {%else%}
-            <span data-function='opensim.load_luggage' data-name='{{lugg.name}}' class='btn action-icon scene-backup-load' value='{{lugg.name}}'></span>
+            <span data-function='opensim.load_luggage' data-name='{{lugg.name}}' class='btn action-icon scene-backup-load'></span>
             {%endifequal%}
-            <span data-function='opensim.download_luggage' data-name='{{lugg.name}}' class='btn action-icon scene-backup-download' value='{{lugg.name}}'></span>
+            <span data-function='opensim.download_luggage' data-name='{{lugg.name}}' class='btn action-icon scene-backup-download'></span>
             </td>
             </tr>
             {%endfor%}

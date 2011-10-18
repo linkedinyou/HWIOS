@@ -66,13 +66,16 @@ class WebSocketDispatcher(object):
         :param str url: the url to match the pattern-collection with
         :return: list or None - reference-list to a websocket controller or None
         '''
-        cls, method, params = self._match(url)
-        if cls in self.valid_routes:
-            instance = self.valid_routes[cls]['instance']
-            if hasattr(instance, method):
-                return [instance, method, params]
-            else:
-                return None
+        try:
+            cls, method, params = self._match(url)
+            if cls in self.valid_routes:
+                instance = self.valid_routes[cls]['instance']
+                if hasattr(instance, method):
+                    return [instance, method, params]
+                else:
+                    return None
+        except TypeError:
+            return None
         return None
 
     

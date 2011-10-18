@@ -30,8 +30,7 @@ import web_ui.settings as settings
 from web_ui.models.profiles import Profile
 from web_ui.models.http import WebSocketHandler, WebSocketSite,WebSocketTransport
 
-
-
+  
 class WebSocketRouter(WebSocketHandler):
     """
     This is the main websocket router
@@ -115,7 +114,10 @@ class WebSocketRouter(WebSocketHandler):
         if self.url == None:
             raise InvalidReq()            
         method = HWIOS.ws_realm.dispatcher.route(self.url)
-        if method is None: raise MethodNotFound()
+        if method is None:
+            _errormsg = 'Error 404 - Resource route not found!'
+            log.msg('%s WS/76/HRM' % _errormsg,system='%s,IN' % self.transport.getPeer().host)
+            return False
         t = type(params)
         if t is list:
             #mix client and list params in
@@ -135,7 +137,8 @@ class WebSocketRouter(WebSocketHandler):
         if plasmoids != None:
             result['data']['plasmoids'] = plasmoids
         self.respAny(result)
-        
+
+
 
     def respAny(self, result):
         if not isinstance(result, failure.Failure) and not isinstance(result, Exception):

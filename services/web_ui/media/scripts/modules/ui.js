@@ -120,7 +120,6 @@ function bind_events() {
         if(!$(this).hasClass('menu-item-selected')) {
             $(this).addClass('menu-item-selected');
             $(this).parents('li').addClass('menu-item-selected');
-            console.log('booh');
         }
         var params = $(this).data();
         if('uri' in params){
@@ -141,7 +140,6 @@ function bind_events() {
     * Hides and shows django form validation indicators on hover
     */
     $('p:has(.ui-icon-info)').live('hover', function () {
-        console.log('show');
         $(this).prev('.errorlist').toggleClass('errorlist-show');
     });
     
@@ -172,8 +170,11 @@ function bind_events() {
             });
         }
     application.functions.ui.update_buttons();
-    });     
-    
+    });
+
+    $('body').bind('tabsshow', function(event, ui) {
+        application.functions.ui.update_buttons();
+    });
     //Handle browser back-button
     window.addEventListener('popstate', function() {
         application.route_uri_to_mod(location.pathname, false);            

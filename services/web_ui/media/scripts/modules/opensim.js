@@ -158,7 +158,8 @@ function bind_functions() {
             selected_tab = tabs.tabs('option', 'selected');
             application.ws.remote('/data/opensim/avatars/luggage/delete/',{},function(response){
                 $deleteLuggage = $(response.data.dom.dialog).dialog({
-                resizable: false,width:300, modal: true,title: gettext("Please confirm")+"...",zIndex:1000000,
+                resizable: false,width:300, modal: true,
+                title: '<span class="ui-icon ui-icon-suitcase"></span><span>'+gettext('Warning')+'!</span>',
                     open: function(event, ui) {
                     $('.confirm-list').html(get_cb_names());     
                     },
@@ -204,8 +205,10 @@ function bind_functions() {
                     }); 
                 };                
                 $chooseLuggageDialog = $(response.data.dom.dialog).dialog({
-                    resizable: false,width:600,height:550,modal: true,title: gettext("Load luggage file")+" "+kwargs.name+"...",
-                    "dialogClass":'dialog-luggage-load',buttons: i18nButtons,zIndex:1000000
+                    resizable: false,width:600,modal: true,
+                    title: '<span class="ui-icon ui-icon-suitcase"></span><span>'+gettext('Load luggage from')+' '+kwargs.name+'...</span>',
+                    dialogClass:'dialog-luggage-load',
+                    buttons: i18nButtons
                 });
             });
         },
@@ -215,15 +218,15 @@ function bind_functions() {
         },
         
         backup_luggage: function(kwargs) {
-            application.ws.remote('/data/opensim/avatars/luggage/'+kwargs.uuid+'/backup/',{},function(response){
+            application.ws.remote('/data/opensim/avatars/luggage/'+kwargs.id+'/backup/',{},function(response){
                 i18nButtons = {}
                 i18nButtons[gettext('Cancel')] = function(){
                     $(this).dialog('close');
                 }
                 i18nButtons[gettext('Save')] = function(){
                     var form_data = $("form:visible").serializeObject();
-                    form_data['profile_uuid'] = kwargs.uuid;
-                    application.ws.remote('/data/opensim/luggage/'+kwargs.uuid+'/backup/',{params:form_data},function(response){
+                    form_data['profile_uuid'] = kwargs.id;
+                    application.ws.remote('/data/opensim/avatars/luggage/'+kwargs.id+'/backup/',{params:form_data},function(response){
                         if (response.status.code != 'FORM_INVALID') {
                             var selected_tab = tabs.tabs('option', 'selected');
                             $backupLuggageDialog.dialog('destroy');
@@ -238,9 +241,10 @@ function bind_functions() {
                     }); 
                 }
                 $backupLuggageDialog = $(response.data.dom.dialog).dialog({
-                    bgiframe: true,resizable: false,width:630,height:550,modal: true,
-                    title: gettext("Save luggage as")+"...",'dialogClass':'dialog-luggage-backup',
-                    buttons: i18nButtons, zIndex:1000000
+                    bgiframe: true,resizable: false,width:630,modal: true,
+                    title: '<span class="ui-icon ui-icon-suitcase"></span><span>'+gettext('Save luggage as')+'...</span>',
+                    dialogClass:'dialog-luggage-backup',
+                    buttons: i18nButtons
                 });
             });
         },
@@ -269,7 +273,7 @@ function bind_functions() {
                 
                 $deleteRegion = $(response.data.dom.dialog).dialog({
                 resizable: false,width:300, modal: true,
-                title: '<span class="ui-icon ui-icon-arrow-4-diag"></span><span>'+gettext('Please confirm')+'...</span>',
+                title: '<span class="ui-icon ui-icon-arrow-4-diag"></span><span>'+gettext('Warning')+'!</span>',
                     open: function(event, ui) {
                     $('.confirm-list').html(get_cb_names());     
                     },
@@ -353,7 +357,6 @@ function bind_functions() {
                     var form_data = $('form:visible').serializeObject();
                     application.ws.remote('/data/opensim/regions/'+kwargs.uuid+'/backup/',{params:form_data},function(response){
                         var selected_tab = tabs.tabs('option', 'selected');
-                        application.cb_selected = 0;
                         application.functions.ui.transition(response.data.dom.main, $('.main'));
                         tabs = $('#region-tabs').tabs();
                         tabs.tabs('option', 'selected',selected_tab);
@@ -361,8 +364,9 @@ function bind_functions() {
                 $(this).dialog('close');
                 }
                 $backupRegion = $(response.data.dom.dialog).dialog({
-                bgiframe: true,resizable: false,width:470,height:185,modal: true,title: gettext('Save scene as')+'...',
-                    buttons: i18nButtons,zIndex:1000000
+                bgiframe: true,resizable: false,width:530,modal: true,
+                title: '<span class="ui-icon ui-icon-arrow-4-diag"></span><span>'+gettext('Save scene as')+'...</span>',
+                buttons: i18nButtons
                 });
             });
         },
@@ -386,7 +390,7 @@ function bind_functions() {
                 }
                 $deleteScene = $(response.data.dom.dialog).dialog({
                 resizable: false,width:380, modal: true,
-                title: '<span class="ui-icon ui-icon-arrow-4-diag"></span><span>'+gettext('Please confirm')+'...</span>',
+                title: '<span class="ui-icon ui-icon-arrow-4-diag"></span><span>'+gettext('Warning')+'!</span>',
                     open: function(event, ui) {
                     $('.confirm-list').html(get_cb_names());     
                     },
@@ -413,7 +417,9 @@ function bind_functions() {
                 $(this).dialog('close'); 
                 }
                 $chooseRegionDialog = $(response.data.dom.dialog).dialog({bgiframe: true,resizable: false,width:470,
-                    modal: true,title: gettext('Load scene')+' '+kwargs.name+'...', buttons: i18nButtons, zIndex:1000000
+                    modal: true,
+                    title: '<span class="ui-icon ui-icon-arrow-4-diag"></span><span>'+gettext('Load scene from')+' '+kwargs.name+'...</span>',
+                    buttons: i18nButtons,
                 });
             });
         },

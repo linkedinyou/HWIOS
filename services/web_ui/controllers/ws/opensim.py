@@ -452,24 +452,23 @@ class WS_OpenSim(object):
             return {'data':{'dom':{'dialog':dialog}}}   
         else:
             deleted = Scenes.delete_scenes(params)
-            main = render_to_string("opensim/read_regions.html", {'region_services': Regions().get_region_services(),'scenes':Scenes.get_scenes()})
+            response = self.view_regions(client)            
             if deleted:
-                response = {
+                response.update({
                     'status':{
                         'code':'SCENES_DELETE_OK',
                         'i18n':_('Deleted: %(deleted)s scene(s)') % {'deleted':deleted},
                         'type': HWIOS.ws_realm._t['notify-info']
                     }
-                }
+                })
             else:
-                response = {
+                response.update({
                     'status':{
                         'code':'SCENES_DELETE_FAIL',
                         'i18n':_('Failed to delete scenes. Invalid characters!'),
                         'type': HWIOS.ws_realm._t['notify-error']
                     }
-                }
-            response.update({'data':{'dom':{'main':main}}})
+                })
             return response
         
 
