@@ -106,8 +106,52 @@ class WS_Profiles(object):
                     },
                     'data':{'dom':{'main':main}}
                 }
+                
 
-               
+    def follow_profile(self, client, username):
+        """
+        Requests a profile to follow to this client's current view
+        """
+        target_client = HWIOS.ws_realm.pool.get_client(username = username)
+        if target_client != None:
+            if target_client.transport.view_history[-1] == client.transport.view_history[-1]:
+                return {
+                    'status':{
+                        'code':'PROFILE_FOLLOW_SAME_PAGE',
+                        'i18n':_('Profile is already on the same page!'),
+                        'type': HWIOS.ws_realm._t['notify-info'],
+                    }
+                }
+            
+            dialog = render_to_string('profiles/request_follow.html', {
+                'target_profile': target_client.profile,
+                'view':client.transport.view_history[-1]
+            })
+            #send follow request to target client
+            target_client.remote('/data/messenger/profiles/%s/follow/' % target_client.profile.username,{
+                'data':{
+                    'dom':{'dialog':dialog},
+                    'inviter':client.profile.username,
+                    'view':client.transport.view_history[-1]
+                },
+            })
+            return {
+                'status':{
+                    'code':'PROFILE_FOLLOW_REQUESTED',
+                    'i18n':_('Follow request has been made...'),
+                    'type': HWIOS.ws_realm._t['notify-info'],
+                }
+            }
+        else:
+            return {
+                'status':{
+                    'code':'PROFILE_FOLLOW_INVALID_CLIENT',
+                    'i18n':_('Invalid client requested!'),
+                    'type': HWIOS.ws_realm._t['notify-warning'],
+                }
+            }
+
+
     @defer.inlineCallbacks
     def whois_profile(self, client, username):
         """

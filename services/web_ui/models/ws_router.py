@@ -18,6 +18,7 @@ from django.contrib.sessions.backends.db import SessionStore
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import translation
+from django.utils.translation import ugettext as _
 
 from twisted.python import failure, log
 from twisted.internet import defer
@@ -134,7 +135,7 @@ class WebSocketRouter(WebSocketHandler):
         if isinstance(result, defer.Deferred):
             result.addBoth(self.respAny)
             return
-        if plasmoids != None:
+        if plasmoids != None and result != None:
             result['data']['plasmoids'] = plasmoids
         self.respAny(result)
 
@@ -146,7 +147,10 @@ class WebSocketRouter(WebSocketHandler):
             if result != None and 'status' in result:
                 if 'state' in result['status']:
                     self.transport.view_history.append(result['status']['state'])
+            elif result == None:
+                result = False
             self.transport.write(HWIOS.tools.json_encode([result, self.url, self.uuid]))
+            
         elif isinstance(result, failure.Failure):
             log.err(result)
             result = result.value

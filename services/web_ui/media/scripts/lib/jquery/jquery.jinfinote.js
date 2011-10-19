@@ -46,6 +46,9 @@
         ce._state = new State();
         //Init request
         ce.opts['ws_handler'].remote(ce.opts['ws_connect'],{},function(response){
+            if(!('data' in response)){
+            return false;
+            }
             ce._localUser = parseInt(response.data.uid);
             $.each(response.data.online, function(idx, user){
                 if(user.id == ce._localUser){
@@ -117,7 +120,6 @@
     CollabEditor.prototype.update_online = function(online) {
         $('.infinote-online').empty();
         $.each(online, function(index, user) {
-            console.log(user);
             ce.editor_colors[user.id] = user.color;
             ce._set_cursor_color(user.id, user.color);
             var participant_line;

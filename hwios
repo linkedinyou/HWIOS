@@ -139,13 +139,15 @@ def deploy_assets(option, opt_str, value, parser):
         debug_output = debug_output.replace('@import url("', '')
         debug_output = debug_output.replace('");', '')
     css_files = debug_output.split('\n')
-    css_output = ''    
+    css_output = ''
+    print "Merging debug CSS files..."
     for _file in css_files:
         with open(os.path.join(css_dir,_file), 'r') as f:
             css_output += f.read()
     css = cssmin.cssmin(css_output)
     with open(os.path.join(css_dir,'hwios_deploy.css'), 'w') as f:
         f.write(css)
+    print "Running requirejs optimization/minification process..."
     p = subprocess.Popen('sh deploy.sh', shell=True, cwd=os.path.join(HWIOS_ROOT,'services','web_ui','media','scripts'))
     sts = os.waitpid(p.pid, 0)[1]
         

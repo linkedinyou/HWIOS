@@ -33,7 +33,7 @@ function bind_functions() {
         route: function(uri, push_history) {
             if(urls == undefined) {
                 urls = [
-                    [XRegExp('^/data/profiles/login/$'),this.login],
+                    [XRegExp('^/data/profiles/login/(?<redirect>[^/]+)?/?$'),this.login],
                     [XRegExp('^/data/profiles/logout/$'),this.logout],
                     [XRegExp('^/data/profiles/register/$'),this.register],
                     [XRegExp('^/profiles/activate/(?<profile_uuid>[^/]+)/$'),this.activate],
@@ -163,10 +163,16 @@ function bind_functions() {
             
         },
         
-        login: function(){
+        login: function(kwargs){
             application.ws.remote('/data/profiles/login/',{},function(response){
                 var i18nButtons = {};
                 i18nButtons[gettext('Cancel')] = function(){
+                    //this login was caused by an access_denied request. Make sure the user ends up on a valid view
+                    //a valid view is the previous view or the root view
+                    if(kwargs.redirect == 'access_denied'){
+
+                    }
+                    console.log(kwargs.redirect);
                     $(this).dialog("close"); 
                 };
                 i18nButtons[gettext('Login')] = function(){
@@ -207,7 +213,7 @@ function bind_functions() {
                 //set anonymous user id
                 application.settings.user = response.data.user;
                 $(document).trigger('USER_LOGOUT',[]);
-                //application.redirect = '/blog/';
+                application.redirect = '/blog/';
                 application.ws.close();
                 }
                 else {
@@ -349,8 +355,6 @@ function bind_ws() {
     application.ws.method('^/profiles/manage/modified/$', function(kwargs){
         application.functions.profiles.manage_profiles(kwargs, true);
     });
-
-
 }
 
 function bind_events() {
@@ -363,6 +367,7 @@ function unbind_events() {
     
 return {
     init: function(uri, push_history) {
+        console.log('wtf');
         profiles_context = $.context({anchor:'.main',delegate:'#profiles-context',uri:'/profiles/context/',id:'ctx-profiles'});
         bind_functions();
         bind_ws();

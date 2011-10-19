@@ -13,13 +13,13 @@ define('modules/messenger',[
 'lib/jquery/jquery.emoticon',
 ],function(emoticon){
     var messenger_context;
-    
+    var _followDialog;
     
     function bind_ws() {
-        application.ws.method('^/data/modules/messenger/online/update/$', function(params){
+        application.ws.method('^/data/messenger/online/update/$', function(params){
             get_online(params.online);    
         });
-        application.ws.method('^/data/modules/messenger/messages/receive/$',function(params){
+        application.ws.method('^/data/messenger/messages/receive/$',function(params){
             var chatline = $('<div/>').text(params.message).html();
             chatline = $().emoticon(application.settings.services.web_ui.default_theme, chatline);
             $('#messages').prepend('\
@@ -30,6 +30,34 @@ define('modules/messenger',[
             $('#messages > .message-container:first-child').hide().fadeIn(400);
             //$('#message_box').scrollTop($('#message_box > #messages').outerHeight());
         });
+        
+        application.ws.method('^/data/messenger/profiles/(?<profile_name>[^/]+)/follow/$', function(response){
+            if(_followDialog === undefined){
+                var i18nButtons = {};
+                i18nButtons[gettext('Ignore')] = function() {
+                    $(this).dialog("destroy");
+                    _followDialog = undefined;
+                };
+                i18nButtons[gettext('Follow')] = function() {
+                    application.route_uri_to_mod(response.data.view, true);
+                    $(this).dialog("destroy");
+                    _followDialog = undefined;
+                };
+                //keep old focus to return after dialog opens
+                var _focus = $("*:focus");
+                _followDialog = $(response.data.dom.dialog).dialog({
+                    dialogClass: 'followDialog',autoOpen: true,position:['left','bottom'],width:300,
+                    title: '<span class="ui-icon ui-icon-person"></span><span>'+gettext('Request')+'...</span>',
+                    resizable: false,
+                    draggable: true,
+                    buttons: i18nButtons,
+                    open: function(){
+                        $(_focus).focus();
+                    },                    
+                });
+            }
+        });
+        
     }
     
     function bind_events() {
@@ -52,7 +80,7 @@ define('modules/messenger',[
             }
         });
         $(document).bind('WS_ONLINE', function(event) {
-            application.ws.remote('/data/modules/messenger/init/',{},function(response){
+            application.ws.remote('/data/messenger/init/',{},function(response){
                 if(messenger_context === undefined){
                     //load context here
                     messenger_context = $.context({anchor:'.sidebar',delegate:'#messenger-context',data:response.data.dom.context,id:'ctx-messenger'});
@@ -80,7 +108,7 @@ define('modules/messenger',[
         var message = $('#message_input_field').val();
         $('#message_input_field').val('');
         if(message !='') {
-            application.ws.remote('/data/modules/messenger/message/send/',{'message':message},function(response){
+            application.ws.remote('/data/messenger/message/send/',{'message':message},function(response){
                 chatline = $().emoticon(application.settings.services.web_ui.default_theme, response.data.message);
                 $('#messages').prepend('<div class="message-container">\
                     <div class="message-header"><span>'+gettext("You")+'</span><span>'+response.data.time+'</span></div>\
@@ -114,10 +142,10 @@ define('modules/messenger',[
             var _user_dom;
             if(user.id == application.settings.user.id){
                 if(user.name.indexOf('visitor') != -1){
-                    _user_dom = '<div data-id="'+user.name+'" data-ctx-showid="'+user.id+'" data-ctxmatch=\'["whois-profile"]\' class="messenger-participant"><div class="messenger-avatar"><img src="'+_avatar+'"/></div><div>'+user.name+' ('+gettext('You')+')</div></div>';
+                    _user_dom = '<div data-id="'+user.name+'" data-ctx-showid="'+user.id+'" data-ctxmatch=\'["whois-profile"]\' class="messenger-participant participant-you"><div class="messenger-avatar"><img src="'+_avatar+'"/></div><div>'+user.name+' ('+gettext('You')+')</div></div>';
                 }
                 else {
-                    _user_dom = '<div data-id="'+user.name+'" data-ctx-showid="'+user.id+'" data-ctxmatch=\'["view-profile","whois-profile"]\' class="messenger-participant"><div class="messenger-avatar"><img src="'+_avatar+'"/></div><div>'+user.name+' ('+gettext('You')+')</div></div>';
+                    _user_dom = '<div data-id="'+user.name+'" data-ctx-showid="'+user.id+'" data-ctxmatch=\'["view-profile","whois-profile"]\' class="messenger-participant participant-you"><div class="messenger-avatar"><img src="'+_avatar+'"/></div><div>'+user.name+' ('+gettext('You')+')</div></div>';
                 }
                 $('#online-box').prepend(_user_dom);
             }
@@ -131,7 +159,35 @@ define('modules/messenger',[
                 }
             $('#online-box').append(_user_dom);
             }
-            
+            console.log('blaaa');
+            var _draggable = $('.messenger-participant:not(.participant-you)').draggable({
+                appendTo: 'body',
+                cursor: 'move',
+                helper: 'clone',
+                containment: $('#content-container'),
+                revert: true,
+                revertDuration: 100, 
+                start: function(event, ui){
+                    $(ui.helper).addClass('drag-participant');
+                    $(ui.helper).css('width',$(this).css('width'));
+                },
+                stop: function(event, ui) {
+                    $(ui.helper).removeClass('drag-participant');
+                    
+                },
+            });
+            $('.main').droppable({
+                accept: '.messenger-participant',
+                drop:function(event, ui) {
+                    var _data = $(ui.draggable).data();
+                    application.ws.remote('/data/profiles/'+_data.id+'/follow/',{},function(response){
+
+                    });
+                    
+                },
+                
+            });
+
         });
     }
     

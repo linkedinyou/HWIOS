@@ -47,13 +47,14 @@ function(maps){
         var mod_name;
         var _split = uri.split('/');
         //http://myhost without parameters should route to a default application
-        if(_split.length == 2) {
+
+        //data function like /data/mymod/foo/bar/ 
+        if(uri.indexOf('data') != -1) {
+            mod_name = _split[2];            
+        }
+        else if(_split.length == 2) {
             uri = '/blog/';
             mod_name = 'blog';
-        }
-        //data function like /data/mymod/foo/bar/ 
-        else if(uri.indexOf('data') != -1) {
-            mod_name = _split[2];            
         }
         //regular url-function /mymod/foo/bar/
         else {
@@ -100,6 +101,7 @@ function(maps){
                     if(location.pathname != uri) {
                         if('pushState' in history){
                         history.pushState(params, null, uri);
+                        application.functions.ui.mark_menu();
                         }
                     }
                 }

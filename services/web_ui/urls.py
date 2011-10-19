@@ -94,8 +94,8 @@ ws_patterns = [
     
     
     #messenger uri's
-    (r'^/data/modules/messenger/init/$', 'web_ui.controllers.ws.messenger', 'WS_Messenger', 'init_messenger'),
-    (r'^/data/modules/messenger/message/send/$', 'web_ui.controllers.ws.messenger', 'WS_Messenger', 'send_message'),
+    (r'^/data/messenger/init/$', 'web_ui.controllers.ws.messenger', 'WS_Messenger', 'init_messenger'),
+    (r'^/data/messenger/message/send/$', 'web_ui.controllers.ws.messenger', 'WS_Messenger', 'send_message'),
     
     #wiki uri's
     (r'^/wiki/context/$', 'web_ui.controllers.ws.wiki', 'WS_Wiki', 'get_context'),
@@ -163,7 +163,7 @@ ws_patterns = [
     (r'^/data/profiles/login/$', 'web_ui.controllers.ws.profiles', 'WS_Profiles', 'login_profile'),
     (r'^/data/profiles/register/$', 'web_ui.controllers.ws.profiles', 'WS_Profiles', 'register_profile'),
     (r'^/data/profiles/delete/$', 'web_ui.controllers.ws.profiles', 'WS_Profiles', 'delete_profiles'),     
-    
+    (r'^/data/profiles/(?P<username>[^/]+)/follow/$', 'web_ui.controllers.ws.profiles', 'WS_Profiles', 'follow_profile'),
     
     #teknon uri's   
     (r'^/teknon/$','web_ui.controllers.ws.teknon', 'WS_Teknon', 'view_pool'),

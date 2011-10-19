@@ -37,6 +37,7 @@ class WS_Plasmoids(object):
         dispatcher.signals.subscribe('view_changed', self.disconnect_plasmoid_editor, filters = [(r'/plasmoids/(?P<plasmoid_uuid>[^/]+)/edit/',True),(r'/plasmoids/(?P<plasmoid_uuid>[^/]+)/edit/',False)])
         
 
+    @WSAuth.is_staff
     def list_plasmoids(self, client):
         """Render the view that shows an overview of all plasmoids
 
@@ -48,6 +49,7 @@ class WS_Plasmoids(object):
         return {'data':{'dom':{'main':main}}}
 
 
+    @WSAuth.is_staff
     def create_plasmoid(self, client):
         """Render and returns the create plasmoid view
 
@@ -65,7 +67,8 @@ class WS_Plasmoids(object):
             }
         }
 
-        
+
+    @WSAuth.is_staff
     def edit_plasmoid(self, client, plasmoid_uuid):
         """
         Edit an existing or a new plasmoid. In both cases, the infinote subscription pool defines the plasmoid view, not the model. This makes it
@@ -93,7 +96,8 @@ class WS_Plasmoids(object):
             }
         }
         
-        
+
+    @WSAuth.is_staff
     def save_plasmoid(self, client, plasmoid_uuid, form):
         """
         Save an existing or a new plasmoid, render/show the general plasmoid overview and notify others.
@@ -149,7 +153,7 @@ class WS_Plasmoids(object):
             return response
             
 
-    
+    @WSAuth.is_staff
     def delete_plasmoids(self, client, params = None):
         """
         Delete an existing plasmoid from the database and subscription pool, render/show the general plasmoid overview and notify others.
@@ -189,6 +193,7 @@ class WS_Plasmoids(object):
             return client_response
             
 
+    @WSAuth.is_staff        
     def connect_plasmoid_editor(self, client, plasmoid_uuid):
         """
         Legacy code that's a bit redundant now. Problem was that we didn't want regular users to edit shared js-code. Will be revived

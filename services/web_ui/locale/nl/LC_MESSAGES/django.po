@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-10-17 14:40+0200\n"
+"POT-Creation-Date: 2011-10-19 20:14+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Jeroen van Veen <info@os-networks.net>\n"
 "Language-Team: HWIOS Translators <info@os-networks.net>\n"
@@ -17,47 +17,47 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: settings.py:81
+#: settings.py:83
 msgid "Dutch"
 msgstr "Nederlands"
 
-#: settings.py:82
+#: settings.py:84
 msgid "English"
 msgstr "Engels"
 
-#: controllers/http/misc.py:90
+#: controllers/http/misc.py:88
 msgid "Oops! You are using an incompatible browser..."
 msgstr "Oep! U gebruikt een niet-geschikte browser..."
 
-#: controllers/http/opensim.py:44
+#: controllers/http/opensim.py:46
 msgid "File(s) succesfully uploaded"
 msgstr "Bestand succesvol geupload"
 
-#: controllers/http/profiles.py:56
+#: controllers/http/profiles.py:57
 msgid "Succesfully logged in!"
 msgstr "Succesvol ingelogd!"
 
-#: controllers/http/profiles.py:60
+#: controllers/http/profiles.py:61
 msgid "Profile login"
 msgstr "Profiel login"
 
-#: controllers/http/profiles.py:66
+#: controllers/http/profiles.py:67
 msgid "Your account has not been activated yet..."
 msgstr "Uw account is nog niet geactiveerd..."
 
-#: controllers/http/profiles.py:77
+#: controllers/http/profiles.py:78
 msgid "Invalid user/password entered..."
 msgstr "Ongeldige gebruiker/wachtwoord gegevens..."
 
-#: controllers/http/profiles.py:88
+#: controllers/http/profiles.py:89
 msgid "Invalid form input!"
 msgstr "Fout formulier!"
 
-#: controllers/http/profiles.py:98
+#: controllers/http/profiles.py:99
 msgid "Profile logout"
 msgstr "Profiel loguit"
 
-#: controllers/http/profiles.py:107
+#: controllers/http/profiles.py:108
 msgid "You just logged out. Thank you for visiting..."
 msgstr "U bent net uitgelogd. Dank u voor het bezoek..."
 
@@ -70,7 +70,7 @@ msgid "Blog article created"
 msgstr ""
 
 #: controllers/ws/blog.py:102 controllers/ws/blog.py:155
-#: controllers/ws/blog.py:250 controllers/ws/opensim.py:874
+#: controllers/ws/blog.py:250 controllers/ws/opensim.py:873
 msgid "Invalid form!"
 msgstr "Fout formulier!"
 
@@ -176,18 +176,18 @@ msgstr "Verwijderd: %(deleted)s scene(s)"
 msgid "Failed to delete scenes. Invalid characters!"
 msgstr "Verwijderen van scenes is mislukt. Ongeldige tekens!"
 
-#: controllers/ws/opensim.py:504
+#: controllers/ws/opensim.py:503
 #, python-format
 msgid "Succesfully restored scene %(scene)s in region %(region)s..."
 msgstr "Succesvol herstel van scene %(scene)s in regio %(region)s..."
 
-#: controllers/ws/opensim.py:522
+#: controllers/ws/opensim.py:521
 msgid "Restore failed! Region must be online when loading a scene..."
 msgstr ""
 "Herstel-optie heeft gefaald. Regio moet online zijn tijdens het laden van "
 "een scene..."
 
-#: controllers/ws/opensim.py:530
+#: controllers/ws/opensim.py:529
 msgid ""
 "Loading this OAR may take a while. Check the console for the current "
 "progress..."
@@ -195,7 +195,7 @@ msgstr ""
 "Het laden van deze OAR neemt wat tijd in beslag. Controleer de console voor "
 "de progressie..."
 
-#: controllers/ws/opensim.py:593
+#: controllers/ws/opensim.py:592
 msgid ""
 "Trying to load luggage file. Check your avatar in-world for the "
 "notification, or open the remote console for further information..."
@@ -203,11 +203,11 @@ msgstr ""
 "Er wordt gepoogd om een koffer bestand te laden. Controleer uw avatar in de "
 "3d-omgeving, of open de bijbehorende console voor verdere informatie..."
 
-#: controllers/ws/opensim.py:600 controllers/ws/opensim.py:656
+#: controllers/ws/opensim.py:599 controllers/ws/opensim.py:655
 msgid "Invalid form..."
 msgstr "Fout formulier"
 
-#: controllers/ws/opensim.py:649
+#: controllers/ws/opensim.py:648
 msgid ""
 "Trying to backup luggage file. Check your avatar in-world for the "
 "notification, or open the remote console for further information..."
@@ -216,42 +216,42 @@ msgstr ""
 "uw avatar in de 3d-omgeving, of open de bijbehorende console voor verdere "
 "informatie..."
 
-#: controllers/ws/opensim.py:683
+#: controllers/ws/opensim.py:682
 #, python-format
 msgid "Deleted: %(deleted)s inventory archive file(s) "
 msgstr "Verwijderd: %(deleted)s inventaris archief bestand(en)"
 
-#: controllers/ws/opensim.py:691
+#: controllers/ws/opensim.py:690
 msgid "Failed to delete inventory archive file(s). Invalid characters!"
 msgstr ""
 "Verwijdering van inventaris archief bestand(IAR) mislukt. Ongeldige tekens!"
 
-#: controllers/ws/opensim.py:785
+#: controllers/ws/opensim.py:784
 #, fuzzy, python-format
 msgid "%(profiles)s/%(osprofiles)s profile(s)/avatar(s) were synced!"
 msgstr "%(profiles)s profiel(en) zijn gesynchroniseerd!"
 
-#: controllers/ws/opensim.py:790
+#: controllers/ws/opensim.py:789
 msgid "Avatar(s) synced"
 msgstr "Avatar(s) gesynchoniseerd"
 
-#: controllers/ws/opensim.py:841
+#: controllers/ws/opensim.py:840
 msgid "Simulator settings succesfully updated"
 msgstr "Simulator instellingen succesvol bijgewerkt"
 
-#: controllers/ws/opensim.py:848
+#: controllers/ws/opensim.py:847
 msgid "Invalid form"
 msgstr "Fout formulier!"
 
-#: controllers/ws/opensim.py:868
+#: controllers/ws/opensim.py:867
 msgid "Configuration updated..."
 msgstr "Configuratie bijgewerkt..."
 
-#: controllers/ws/opensim.py:882
+#: controllers/ws/opensim.py:881
 msgid "OpenSim Settings updated"
 msgstr "OpenSim instellingen bijgewerkt"
 
-#: controllers/ws/opensim.py:908
+#: controllers/ws/opensim.py:907
 #, python-format
 msgid "Map succesfully rendered from %(cells)s cells..."
 msgstr "Kaart succesvol berekend uit %(cells)s cellen..."
@@ -273,34 +273,34 @@ msgstr "%(first_name)s %(last_name)s heeft zojuist pad %(slug)s aangemaakt!"
 msgid "Pad drawing cleared"
 msgstr ""
 
-#: controllers/ws/plasmoids.py:86
+#: controllers/ws/plasmoids.py:89
 msgid "Plasmoid editing"
 msgstr "Plasmoid bewerking"
 
-#: controllers/ws/plasmoids.py:113
+#: controllers/ws/plasmoids.py:117
 msgid "Plasmoid created"
 msgstr "Plasmoid aangemaakt"
 
-#: controllers/ws/plasmoids.py:128
+#: controllers/ws/plasmoids.py:132
 #, python-format
 msgid "Plasmoid %(slug)s stored..."
 msgstr "Plasmoid %(slug)s opgeslagen..."
 
-#: controllers/ws/plasmoids.py:133
+#: controllers/ws/plasmoids.py:137
 msgid "Plasmoid saved"
 msgstr "Plasmoid opgeslagen"
 
-#: controllers/ws/plasmoids.py:144 controllers/ws/profiles.py:231
-#: controllers/ws/wiki.py:326
+#: controllers/ws/plasmoids.py:148 controllers/ws/profiles.py:275
+#: controllers/ws/wiki.py:323
 msgid "Invalid Form!"
 msgstr "Fout formulier"
 
-#: controllers/ws/plasmoids.py:181
+#: controllers/ws/plasmoids.py:185
 #, python-format
 msgid "%s plasmoid(s) deleted..."
 msgstr "%s plasmoid(s) verwijderd..."
 
-#: controllers/ws/plasmoids.py:188
+#: controllers/ws/plasmoids.py:192
 msgid "Plasmoid(s) deleted"
 msgstr "Plasmoid(s) verwijderd"
 
@@ -316,63 +316,75 @@ msgstr "Profiel aangemaakt"
 msgid "Please pay attention to the profile details..."
 msgstr "Controleer aub uw profiel gegevens..."
 
-#: controllers/ws/profiles.py:122
+#: controllers/ws/profiles.py:121
+msgid "Profile is already on the same page!"
+msgstr ""
+
+#: controllers/ws/profiles.py:141
+msgid "Follow request has been made..."
+msgstr ""
+
+#: controllers/ws/profiles.py:149
+msgid "Invalid client requested!"
+msgstr ""
+
+#: controllers/ws/profiles.py:166
 msgid "Unknown"
 msgstr ""
 
-#: controllers/ws/profiles.py:164
+#: controllers/ws/profiles.py:208
 msgid "Avatar succesfully updated"
 msgstr "Avatar succesvol bijgewerkt"
 
-#: controllers/ws/profiles.py:188
+#: controllers/ws/profiles.py:232
 msgid "Profile succesfully updated"
 msgstr "Profiel succesvol bijgewerkt"
 
-#: controllers/ws/profiles.py:222
+#: controllers/ws/profiles.py:266
 msgid "Profile own user change"
 msgstr ""
 
-#: controllers/ws/profiles.py:224
+#: controllers/ws/profiles.py:268
 msgid "Profile moderator change"
 msgstr ""
 
-#: controllers/ws/profiles.py:273
+#: controllers/ws/profiles.py:317
 #, python-format
 msgid "Succesfully removed %(profiles)s profile(s)!"
 msgstr "Succesvolle verwijdering van %(profiles)s profiel(en)!"
 
-#: controllers/ws/profiles.py:282
+#: controllers/ws/profiles.py:326
 #, python-format
 msgid ""
 "%(profiles)s profile(s) removed succesfully; you can't remove your own "
 "profile!"
 msgstr ""
 
-#: controllers/ws/profiles.py:289
+#: controllers/ws/profiles.py:333
 msgid "Profile deleted"
 msgstr "Profiel verwijderd"
 
-#: controllers/ws/profiles.py:336
+#: controllers/ws/profiles.py:380
 msgid "New account registered"
 msgstr ""
 
-#: controllers/ws/profiles.py:341
+#: controllers/ws/profiles.py:385
 msgid "Profile registered"
 msgstr "Profiel geregistreerd"
 
-#: controllers/ws/profiles.py:349
+#: controllers/ws/profiles.py:393
 msgid "Invalid form. Please check your credentials..."
 msgstr "Ongeldig formulier."
 
-#: controllers/ws/profiles.py:373
+#: controllers/ws/profiles.py:417
 msgid "Your account has been activated..."
 msgstr "Uw account is geactiveerd..."
 
-#: controllers/ws/profiles.py:378
+#: controllers/ws/profiles.py:422
 msgid "Profile activated"
 msgstr "Profiel geactiveerd"
 
-#: controllers/ws/profiles.py:383
+#: controllers/ws/profiles.py:427
 msgid "This account is already active..."
 msgstr ""
 
@@ -464,31 +476,31 @@ msgstr ""
 msgid "Wiki article editing"
 msgstr ""
 
-#: controllers/ws/wiki.py:248
+#: controllers/ws/wiki.py:245
 msgid "Wiki article created"
 msgstr ""
 
-#: controllers/ws/wiki.py:255
+#: controllers/ws/wiki.py:252
 #, python-format
 msgid "%(first_name)s %(last_name)s just created article %(slug)s!"
 msgstr ""
 "%(first_name)s %(last_name)s heeft zojuist artikel %(slug)s aangemaakt!"
 
-#: controllers/ws/wiki.py:281
+#: controllers/ws/wiki.py:278
 msgid "Wiki article saved"
 msgstr ""
 
-#: controllers/ws/wiki.py:285
+#: controllers/ws/wiki.py:282
 #, python-format
 msgid "Wiki article %(slug)s stored..."
 msgstr "Wiki artikel %(slug)s opgeslagen..."
 
-#: controllers/ws/wiki.py:297
+#: controllers/ws/wiki.py:294
 msgid "No changes found in wiki article. Page was not stored..."
 msgstr ""
 "Geen veranderingen gevonden in wiki artikel. Pagina is niet opgeslagen..."
 
-#: controllers/ws/wiki.py:312
+#: controllers/ws/wiki.py:309
 #, python-format
 msgid ""
 "Wiki article was stored by %(first_name)s %(last_name)s as revision "
@@ -497,24 +509,24 @@ msgstr ""
 "Wiki artikel is opgelagen door %(first_name)s %(last_name)s als revisie "
 "%(revision)s: %(comments)s"
 
-#: controllers/ws/wiki.py:359
+#: controllers/ws/wiki.py:356
 msgid "Invalid article"
 msgstr "Ongeldig artikel"
 
-#: controllers/ws/wiki.py:369
+#: controllers/ws/wiki.py:366
 #, python-format
 msgid "%(first_name)s %(last_name)s removed the current article..."
 msgstr "%(first_name)s %(last_name)s heeft het huidige artikel verwijderd..."
 
-#: controllers/ws/wiki.py:379
+#: controllers/ws/wiki.py:376
 msgid "Wiki article deleted"
 msgstr "Wiki artikel succesvol verwijderd..."
 
-#: controllers/ws/wiki.py:384
+#: controllers/ws/wiki.py:381
 msgid "Wiki article deleted successfully..."
 msgstr "Wiki artikel succesvol verwijderd..."
 
-#: controllers/ws/wiki.py:410
+#: controllers/ws/wiki.py:407
 #, python-format
 msgid ""
 "Client %(first_name)s %(last_name)s restored article text to revision "
@@ -523,7 +535,7 @@ msgstr ""
 "Gebruiker %(first_name)s %(last_name)s heeft artikel text hersteld naar "
 "revisie %(revision)s: '%(comments)s'"
 
-#: controllers/ws/wiki.py:413
+#: controllers/ws/wiki.py:410
 msgid "Wiki revision restored"
 msgstr "Wiki Revisie herstelt"
 
@@ -701,26 +713,22 @@ msgid "Site Name"
 msgstr "Site Naam"
 
 #: models/settings.py:24
-msgid "Default Template"
-msgstr "Standaard sjabloon"
-
-#: models/settings.py:25
 msgid "Activation Type"
 msgstr "Activatie type"
 
-#: models/settings.py:26
+#: models/settings.py:25
 msgid "Moderator Notify"
 msgstr "Moderator Notificatie"
 
-#: models/settings.py:27
+#: models/settings.py:26
 msgid "Mail From"
 msgstr "Mail Van"
 
-#: models/settings.py:28
+#: models/settings.py:27
 msgid "Mail Header"
 msgstr "Mail Kop"
 
-#: models/settings.py:29
+#: models/settings.py:28
 msgid "Mail Body"
 msgstr "Mail Tekst"
 
@@ -793,8 +801,8 @@ msgstr "Nieuw Artikel"
 #: templates/start/opensim/edit_region.html:25
 #: templates/start/opensim/upload_luggage.html:20
 #: templates/start/opensim/upload_scene.html:20
-#: templates/start/plasmoids/create_plasmoid.html:22
-#: templates/start/plasmoids/edit_plasmoid.html:22
+#: templates/start/plasmoids/create_plasmoid.html:23
+#: templates/start/plasmoids/edit_plasmoid.html:23
 #: templates/start/profiles/create_profile.html:15
 #: templates/start/profiles/edit_profile.html:34
 #: templates/start/teknon/slave_ini.html:12
@@ -806,7 +814,7 @@ msgstr "Annuleer"
 #: templates/start/blog/create_article.html:16
 #: templates/start/blog/edit_article.html:16
 #: templates/start/blog/read_article.html:59
-#: templates/start/plasmoids/edit_plasmoid.html:25
+#: templates/start/plasmoids/edit_plasmoid.html:26
 #: templates/start/profiles/edit_profile.html:38
 #: templates/start/wiki/edit_article.html:21
 msgid "Submit"
@@ -817,15 +825,15 @@ msgstr "Verstuur"
 msgid "Back"
 msgstr "Terug"
 
-#: templates/start/blog/read_blog.html:29
+#: templates/start/blog/read_blog.html:27
 msgid "No comments yet..."
 msgstr "Nog geen commentaar..."
 
-#: templates/start/blog/read_blog.html:31
+#: templates/start/blog/read_blog.html:29
 msgid "comments"
 msgstr "commentaar"
 
-#: templates/start/blog/read_blog.html:37
+#: templates/start/blog/read_blog.html:35
 msgid "No articles yet..."
 msgstr "Nog geen artikelen..."
 
@@ -904,12 +912,13 @@ msgstr "Regio's"
 #: templates/start/opensim/read_regions.html:48
 #: templates/start/plasmoids/read_plasmoids.html:48
 #: templates/start/profiles/manage_profiles.html:53
+#: templates/start/wiki/create_article.html:15
 msgid "New"
 msgstr "Nieuw"
 
 #: templates/start/opensim/create_region.html:23
 #: templates/start/opensim/edit_region.html:28
-#: templates/start/plasmoids/create_plasmoid.html:25
+#: templates/start/plasmoids/create_plasmoid.html:26
 #: templates/start/profiles/create_profile.html:18
 #: templates/start/teknon/slave_ini.html:13
 msgid "Save"
@@ -1128,12 +1137,11 @@ msgstr "Nieuwe Plasmoid"
 
 #: templates/start/plasmoids/create_plasmoid.html:5
 #: templates/start/profiles/create_profile.html:5
-#: templates/start/wiki/create_article.html:15
 msgid "Create"
 msgstr "Maak"
 
-#: templates/start/plasmoids/create_plasmoid.html:11
-#: templates/start/plasmoids/edit_plasmoid.html:11
+#: templates/start/plasmoids/create_plasmoid.html:12
+#: templates/start/plasmoids/edit_plasmoid.html:12
 #: templates/start/teknon/read_pool.html:73
 msgid "UUID"
 msgstr "UGID"
@@ -1337,6 +1345,10 @@ msgstr "Vriendelijke groeten"
 msgid "Team"
 msgstr "Team"
 
+#: templates/start/profiles/request_follow.html:3
+msgid "asks you to join view"
+msgstr "vraagt u om de volgende pagina te zien"
+
 #: templates/start/profiles/view_profile.html:5
 msgid "My profile"
 msgstr "Mijn Profiel"
@@ -1368,24 +1380,23 @@ msgstr "Karma"
 
 #: templates/start/profiles/whois_profile.html:5
 msgid "Whois "
-msgstr ""
+msgstr "Whois"
 
 #: templates/start/profiles/whois_profile.html:11
 msgid "IP"
-msgstr ""
+msgstr "IP"
 
 #: templates/start/profiles/whois_profile.html:12
-#, fuzzy
 msgid "Hostname"
 msgstr "Achternaam"
 
 #: templates/start/profiles/whois_profile.html:13
 msgid "Country"
-msgstr ""
+msgstr "Land"
 
 #: templates/start/profiles/whois_profile.html:14
 msgid "City"
-msgstr ""
+msgstr "Stad"
 
 #: templates/start/settings/read_settings.html:5
 msgid "Modify"
@@ -1428,9 +1439,9 @@ msgstr "Daemon Gebruiker"
 msgid "Connected from"
 msgstr "Verbonden vanaf"
 
-#: templates/start/teknon/read_pool.html:93
+#: templates/start/teknon/read_pool.html:94
 msgid "FIXME"
-msgstr ""
+msgstr "FIXME"
 
 #: templates/start/teknon/slave_ini.html:3
 msgid "Customize"
@@ -1466,16 +1477,9 @@ msgid "Document"
 msgstr "Dokument"
 
 #: templates/start/wiki/create_article.html:9
+#: templates/start/wiki/create_article.html:20
 msgid "doesn't exist yet. Create it below to proceed..."
 msgstr "bestaat nog niet. Onderin kunt u de volgende stap maken..."
-
-#: templates/start/wiki/create_article.html:20
-msgid ""
-"This page doesn't exist yet. Only logged in users may create/edit new "
-"pages..."
-msgstr ""
-"Deze pagina bestaat nog niet. Logt u alstublieft in, om de pagina aan te "
-"maken."
 
 #: templates/start/wiki/delete_article_confirm.html:3
 msgid "Please confirm that you want to delete the following wiki article"

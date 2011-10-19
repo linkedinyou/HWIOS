@@ -48,6 +48,7 @@ def login_profile(request):
                     _client_user = {
                         'id':profile.pk,
                         'name':profile.username,
+                        'is_authenticated': request.user.is_authenticated()
                     }
                     navbar = render_to_string('misc/navigation.html', {'menu': Menu(request.user).render()}, context_instance=RequestContext(request))
                     response = {
@@ -110,7 +111,10 @@ def logout_profile(request):
         },
         'data':{
             'dom':{'navbar':navbar},
-            'user':{'id':request.session['id']}
+            'user':{
+                'id':request.session['id'],
+                'is_authenticated': request.user.is_authenticated()
+            }
         }
     }
     return JSONResponse(response)

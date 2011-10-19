@@ -14,6 +14,7 @@ from twisted.internet import defer
 from django.template.loader import render_to_string
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
+from django.utils.translation import ugettext as _
 
 from core.application import HWIOS
 from web_ui.models.ws_auth import WSAuth
@@ -56,7 +57,7 @@ class WS_Messenger(object):
             })
         for _client in clients:
             if _client != client:
-                _client.remote('/data/modules/messenger/online/update/',{'online':user_list})
+                _client.remote('/data/messenger/online/update/',{'online':user_list})
         return {'data':{'online':user_list}}
 
 
@@ -69,7 +70,8 @@ class WS_Messenger(object):
         """
         _data = self.read_online(client)
         _data.update(self.init_messenger(client))
-        return _data 
+        return _data
+
             
     def send_message(self, client, message):
         """Core business of the messenger. Sending messages to other clients
@@ -81,7 +83,7 @@ class WS_Messenger(object):
         _time = time.strftime("%H:%M", time.localtime())
         for aclient in HWIOS.ws_realm.pool.get_clients():
             if aclient != client:             
-                aclient.remote('/data/modules/messenger/messages/receive/',{'message':message,'from':client.profile.username,'time':_time})
+                aclient.remote('/data/messenger/messages/receive/',{'message':message,'from':client.profile.username,'time':_time})
         return {'data':{'message':message,'from':client.profile.username,'time':_time}}
         
 

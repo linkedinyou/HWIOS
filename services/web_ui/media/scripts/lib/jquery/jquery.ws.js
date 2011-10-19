@@ -136,24 +136,10 @@ $.extend({
                 }
                 //response data [{'param1':param1,'param2':param2},'origin url', method_uuid]
                 else {
-                    
-                     //no access granted, handle gracefully
-                    if(response[0] == false) {
-                        console.log('Access to resource denied...');
-                    }
-                    else if(response[0] != null) {
-                        //var origin = response.splice(1,1)[0];
+                    if(response[0] != false) {
                         //match origin with available callbacks
                         $.each(ws.remote_callback[response[1]], function(method_uuid, _callback) {           
                             if(method_uuid == response[2]) {
-                                if('status' in response[0]) {
-                                    if('i18n' in response[0].status) {
-                                        $("#notify-container").notify("create",ws.tt[response[0].status.type], {i18n: response[0].status.i18n});
-                                    }
-                                    if('state' in response[0].status) {
-                                        history.pushState(null, null, response[0].status.state);    
-                                    }
-                                }
                                 _callback(response[0]);
                                 delete(ws.remote_callback[response[1]][method_uuid]);
                                 if(response[0]['data'] != undefined) {
@@ -163,6 +149,26 @@ $.extend({
                                 }
                             }                    
                         });
+                        if('status' in response[0]) {
+                            if('i18n' in response[0].status) {
+                                $("#notify-container").notify("create",ws.tt[response[0].status.type], {i18n: response[0].status.i18n});
+                            }
+                            if('state' in response[0].status) {
+                                history.pushState(null, null, response[0].status.state);
+                            }
+                        }
+                    }
+                    //no access granted, handle gracefully
+                    else {
+                        //if not authenticated, give option to login with redirect
+                        if(!application.settings.user.is_authenticated){
+                            application.route_uri_to_mod('/data/profiles/login/access_denied/', false);
+                        }
+                        //Notify user about unaccessable resource, and block view update
+                        else {
+
+                        }
+                        console.log('Access to resource denied...');
                     }
                 }
             });

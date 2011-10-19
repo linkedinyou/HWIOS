@@ -74,6 +74,7 @@ function bind_functions() {
         },
         mark_menu: function(){
             //on first load, set our menu like when clicked on
+            $('.menu-item-selected').removeClass('menu-item-selected');
             $('.menu-item').each(function(idx,value){
                 _data = $(this).data();
                 if('uri' in _data && location.pathname.indexOf(_data.uri) != -1){
@@ -116,11 +117,7 @@ function bind_events() {
     * Handle the function-call events when clicking on the menu items
     */
     $('body').undelegate('.menu-item','click').delegate('.menu-item', 'click', function(event){
-        $('.menu-item-selected').removeClass('menu-item-selected');
-        if(!$(this).hasClass('menu-item-selected')) {
-            $(this).addClass('menu-item-selected');
-            $(this).parents('li').addClass('menu-item-selected');
-        }
+        application.functions.ui.mark_menu();
         var params = $(this).data();
         if('uri' in params){
             //Don't push state of data function's to navbar state
