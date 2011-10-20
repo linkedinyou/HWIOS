@@ -1,0 +1,59 @@
+Writing modules
+===============
+
+If you want to write a custom realtime web-application with HWIOS, it's generally recommended to follow the development pattern
+for modules that's used in HWIOS. Currently there is no extensive module-convention or module-installation capability yet. In time a
+module-installer will be added, and some of the file-structuring may be subject of change. Following the pattern defined here
+should make it easier for you as developer to get started though. 
+
+Example
+-------
+We will look at a very basic example module called *my_mod*. First fire up HWIOS and navigate to the /my_mod/ url to show our example.
+This module shows the basic concepts of HWIOS websocket messaging. It simply send a message to all other connected clients when the client presses
+the Send button. The example doesn't use any database interaction, but much of the extra functionality that larger modules have are basically
+all django-related topics.
+
+Files
++++++
+The involved files for the module are already prepared in the hwios source-code, which are:
+
+::
+
+ services/web_ui/controllers/ws/my_mod.py <= websocket view handler
+ services/web_ui/templates/start/my_mod/view_my_mod.html <= our html template
+ services/web_ui/urls.py <= url's for the view handler go here
+ services/web_ui/media/scripts/modules/my_app.js <= javascript code to handle the module views
+
+
+Controller
+++++++++++
+
+.. automodule:: services.web_ui.controllers.ws.my_mod
+   :members:
+
+All module logic ends up in a controller. A client requests some data from an url over the websocket, after which hwios routes the url to the
+appropriate function in one of the websocket controllers. A lot of django-related code is used to handle operations like template-rendering or working
+with database-objects. Definitions of models is currently beyond the reach of this tutorial, but those should go in services/web_ui/models/.
+
+Template
+++++++++
+
+All visual layout is defined in hmtl templates, using the django templating system. These templates are rendered then in memory, and send as json
+to the client. The convention to send html data to the client, is by stuffing it into a dict object, like: {'data':{'dom':{'<<css_class>>':my_html_data}}}
+The name of the css-class defines for what section in the dom this html data is proposed.
+
+
+URL-Routing
++++++++++++
+
+In urls.py there is a ws_patterns list, that defines all routes to websocket controllers. Each route is a tupple with 4 parameters. The first is a regular
+expression for the url-matching, the second is the module, the third is the class-name and the fourth is the function name. Named groups can be used in
+the regular expression, and are used as parameters in the controller function.
+
+
+Client-module
++++++++++++++
+
+Each HWIOS client-module is essentially a requirejs module, that's being loaded once the url dictates it. HWIOS defines two kind of urls; there are urls
+for views and urls for data. The first part of the url is normally a reference to the module, like /my_mod/some/function/ references the my_mod module.
+The client-module should have the same name, otherwise it can't be found. Data urls use the preserved data keyword in the url, like /data/some/function/.

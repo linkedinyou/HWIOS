@@ -1,0 +1,183 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>services.web_ui.controllers.ws.maps &mdash; HWIOS v0.6 documentation</title>
+    <link rel="stylesheet" href="../../../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '0.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="HWIOS v0.6 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">HWIOS v0.6 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for services.web_ui.controllers.ws.maps</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    services.web_ui.controllers.ws.maps</span>
+<span class="sd">    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">    The websocket logics for the map. This is either going to the opensim module,</span>
+<span class="sd">    or some code is going from the opensim module. It stays here until then.</span>
+
+<span class="sd">    :copyright: Copyright 2011-2012 OS-Networks</span>
+<span class="sd">    :license: LGPL, See LICENSE for details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span><span class="o">,</span><span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">django.core</span> <span class="kn">import</span> <span class="n">serializers</span>
+<span class="kn">from</span> <span class="nn">django.template.loader</span> <span class="kn">import</span> <span class="n">render_to_string</span>
+
+<span class="kn">from</span> <span class="nn">core.application</span> <span class="kn">import</span> <span class="n">HWIOS</span>
+<span class="kn">from</span> <span class="nn">web_ui.models.ws_auth</span> <span class="kn">import</span> <span class="n">WSAuth</span>
+<span class="kn">from</span> <span class="nn">web_ui.models.profiles</span> <span class="kn">import</span> <span class="n">Profile</span>
+<span class="kn">from</span> <span class="nn">web_ui.models.opensim</span> <span class="kn">import</span> <span class="n">Regions</span><span class="p">,</span> <span class="n">Maps</span>
+<span class="kn">from</span> <span class="nn">web_ui.models.settings</span> <span class="kn">import</span> <span class="n">Settings</span>
+
+
+<span class="k">class</span> <span class="nc">WS_Maps</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_Maps"><a class="viewcode-back" href="../../../../../modules/opensim.html#services.web_ui.controllers.ws.maps.WS_Maps">[docs]</a>    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The websocket controller class for the mapping part in opensim</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dispatcher</span><span class="p">):</span>
+        <span class="k">pass</span>  
+    
+    <span class="k">def</span> <span class="nf">load_maps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_Maps.load_maps"><a class="viewcode-back" href="../../../../../modules/opensim.html#services.web_ui.controllers.ws.maps.WS_Maps.load_maps">[docs]</a>        <span class="sd">&quot;&quot;&quot;Render the template for the worldmap to our client</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :return: dict - Html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&#39;maps/worldmap.html&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">}}}</span>
+
+
+    <span class="k">def</span> <span class="nf">_lonlat2tile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">zlevel</span><span class="p">,</span> <span class="n">lonlat</span><span class="p">):</span></div>
+        <span class="sd">&quot;&quot;&quot;World offset helper, converts lattitude/longitude coordinates to a grid position</span>
+
+<span class="sd">        :param int zlevel: The zoom-level at which to calculate</span>
+<span class="sd">        :param list lonlat: The coordinates to use</span>
+<span class="sd">        :return: tuple - The related grid-location </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tile_x</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="nb">float</span><span class="p">(</span><span class="n">lonlat</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">+</span><span class="mi">180</span><span class="p">)</span><span class="o">/</span><span class="mi">360</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">zlevel</span><span class="p">))</span>
+        <span class="n">tile_y</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lonlat</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">180</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="o">/</span><span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lonlat</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">180</span><span class="p">))</span><span class="o">/</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span> <span class="o">*</span> <span class="nb">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">zlevel</span><span class="p">))</span>
+        <span class="k">return</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">tile_x</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">tile_y</span><span class="p">))</span>
+        
+        
+    <span class="k">def</span> <span class="nf">_tile2lonlat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">zlevel</span><span class="p">,</span><span class="n">tile_xy</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;World offset helper, converts grid position to a lattitude/longitude coordinate</span>
+
+<span class="sd">        :param int zlevel: The zoom-level at which to calculate</span>
+<span class="sd">        :param list tile_xy: The grid-coordinates to use</span>
+<span class="sd">        :return: tuple - The related lattitude and longitude</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">zlevel</span><span class="p">)</span>
+        <span class="n">lon_deg</span> <span class="o">=</span> <span class="p">(</span><span class="n">tile_xy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">n</span><span class="p">)</span> <span class="o">*</span> <span class="mf">360.0</span> <span class="o">-</span> <span class="mf">180.0</span>
+        <span class="n">lat_rad</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">atan</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">sinh</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">tile_xy</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">n</span><span class="p">)))</span>
+        <span class="n">lat_deg</span> <span class="o">=</span> <span class="n">lat_rad</span> <span class="o">*</span> <span class="mf">180.0</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">lon_deg</span><span class="p">,</span><span class="n">lat_deg</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">read_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span><span class="n">lonlat</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_Maps.read_cell"><a class="viewcode-back" href="../../../../../modules/opensim.html#services.web_ui.controllers.ws.maps.WS_Maps.read_cell">[docs]</a>        <span class="sd">&quot;&quot;&quot;Get the position of the client&#39;s mouseclick in the map, and return region information if there is a region at that location</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param list lonlat: The world-coordinates to lookup</span>
+<span class="sd">        :return: dict - Coordinate data containing region-information if related</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">services</span><span class="p">[</span><span class="s">&#39;tms&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span><span class="s">&#39;map&#39;</span><span class="p">,</span><span class="s">&#39;osm&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="n">click</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lonlat2tile</span><span class="p">(</span><span class="n">HWIOS</span><span class="o">.</span><span class="n">services</span><span class="p">[</span><span class="s">&#39;tms&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span><span class="s">&#39;map&#39;</span><span class="p">,</span><span class="s">&#39;osm_ztop&#39;</span><span class="p">),</span> <span class="n">lonlat</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tile2lonlat</span><span class="p">(</span><span class="mi">17</span><span class="p">,</span><span class="n">click</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c">#openlayers flipped y-coordinates</span>
+            <span class="n">click</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">lonlat</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="mi">256</span><span class="p">),</span><span class="nb">abs</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">lonlat</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="mi">256</span><span class="p">))</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">regions</span> <span class="o">=</span> <span class="n">Regions</span><span class="p">()</span><span class="o">.</span><span class="n">get_regions</span><span class="p">()</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">for</span> <span class="n">region</span> <span class="ow">in</span> <span class="n">regions</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">region</span><span class="p">[</span><span class="s">&#39;Location&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">region</span><span class="p">[</span><span class="s">&#39;Location&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="n">click</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="n">y</span> <span class="o">==</span> <span class="n">click</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">found</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="n">response</span> <span class="o">=</span> <span class="p">{</span> <span class="s">&#39;x&#39;</span><span class="p">:</span><span class="n">click</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="s">&#39;y&#39;</span><span class="p">:</span><span class="n">click</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="s">&#39;lonlat&#39;</span><span class="p">:</span><span class="n">lonlat</span><span class="p">,</span><span class="s">&#39;name&#39;</span><span class="p">:</span><span class="n">region</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">],</span><span class="s">&#39;ip&#39;</span><span class="p">:</span><span class="n">region</span><span class="p">[</span><span class="s">&#39;ExternalHostName&#39;</span><span class="p">],</span><span class="s">&#39;port&#39;</span><span class="p">:</span><span class="n">region</span><span class="p">[</span><span class="s">&#39;InternalPort&#39;</span><span class="p">]}</span>
+                <span class="k">break</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">found</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="p">{</span> <span class="s">&#39;x&#39;</span><span class="p">:</span><span class="n">click</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="s">&#39;y&#39;</span><span class="p">:</span><span class="n">click</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="s">&#39;lonlat&#39;</span><span class="p">:</span><span class="n">lonlat</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">response</span>
+</pre></div></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">HWIOS v0.6 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, OS-Networks.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.8.
+    </div>
+  </body>
+</html>

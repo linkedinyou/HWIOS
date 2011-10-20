@@ -1,0 +1,175 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>services.tms.service &mdash; HWIOS v0.6 documentation</title>
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="HWIOS v0.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">HWIOS v0.6 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for services.tms.service</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    services.tms.service</span>
+<span class="sd">    ~~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">    The tms service is a tilemap service that&#39;s mainly used for opensim-related maps currently, but can be extended for usage</span>
+<span class="sd">    with other virtual world platforms like RealXtend Tundra or MV3D. </span>
+
+<span class="sd">    :copyright: Copyright 2011-2012 OS-Networks</span>
+<span class="sd">    :license: LGPL, See LICENSE for details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span><span class="o">,</span><span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">ConfigParser</span> <span class="kn">import</span> <span class="n">ConfigParser</span>
+
+<span class="kn">from</span> <span class="nn">core.static_file</span> <span class="kn">import</span> <span class="n">StaticFile</span>
+
+<span class="kn">from</span> <span class="nn">twisted.application.internet</span> <span class="kn">import</span> <span class="n">TCPServer</span><span class="p">,</span> <span class="n">SSLServer</span>
+<span class="kn">from</span> <span class="nn">twisted.web</span> <span class="kn">import</span> <span class="n">static</span><span class="p">,</span> <span class="n">server</span>
+<span class="kn">from</span> <span class="nn">twisted.web.static</span> <span class="kn">import</span> <span class="n">File</span><span class="p">,</span> <span class="n">Registry</span>
+<span class="kn">from</span> <span class="nn">twisted.web.resource</span> <span class="kn">import</span> <span class="n">Resource</span>
+<span class="kn">from</span> <span class="nn">tiler</span> <span class="kn">import</span> <span class="n">Tiler</span>
+
+
+
+<span class="k">class</span> <span class="nc">TmsService</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="TmsService"><a class="viewcode-back" href="../../../core/services.html#services.tms.service.TmsService">[docs]</a>    <span class="sd">&quot;&quot;&quot;HWIOS HTTP Service for mapping purposes&quot;&quot;&quot;</span>
+    
+    <span class="n">client_settings</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">service_config</span><span class="p">,</span> <span class="n">hwios_config</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hwios_config</span> <span class="o">=</span> <span class="n">hwios_config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">service_config</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">Resource</span><span class="p">()</span>
+        <span class="n">root</span><span class="o">.</span><span class="n">putChild</span><span class="p">(</span><span class="s">&quot;tiles&quot;</span><span class="p">,</span><span class="n">TileService</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">location</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;map&#39;</span><span class="p">,</span><span class="s">&#39;tilepath&#39;</span><span class="p">))))</span>
+        <span class="n">site</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">Site</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+        <span class="n">site</span><span class="o">.</span><span class="n">displayTracebacks</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">tilepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">location</span><span class="p">,</span><span class="s">&#39;tiles&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tiler</span> <span class="o">=</span> <span class="n">Tiler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_client_settings</span><span class="p">()</span>
+
+        <span class="c">#override hwios general ssl setting</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hwios_config</span><span class="o">.</span><span class="n">has_option</span><span class="p">(</span><span class="s">&#39;general&#39;</span><span class="p">,</span><span class="s">&#39;ssl&#39;</span><span class="p">):</span>
+            <span class="kn">from</span> <span class="nn">twisted.internet</span> <span class="kn">import</span> <span class="n">ssl</span>
+            <span class="kn">from</span> <span class="nn">hwios.core.connection</span> <span class="kn">import</span> <span class="n">ServerContextFactory</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__service</span> <span class="o">=</span> <span class="n">SSLServer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span><span class="s">&#39;service&#39;</span><span class="p">,</span> <span class="s">&#39;port&#39;</span><span class="p">),</span><span class="n">site</span><span class="p">,</span><span class="n">ServerContextFactory</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span> 
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span><span class="s">&#39;service&#39;</span><span class="p">,</span><span class="s">&#39;ssl&#39;</span><span class="p">):</span>
+                <span class="kn">from</span> <span class="nn">twisted.internet</span> <span class="kn">import</span> <span class="n">ssl</span>
+                <span class="kn">from</span> <span class="nn">hwios.core.connection</span> <span class="kn">import</span> <span class="n">ServerContextFactory</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">client_settings</span><span class="p">[</span><span class="s">&#39;ssl&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__service</span> <span class="o">=</span> <span class="n">SSLServer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span><span class="s">&#39;service&#39;</span><span class="p">,</span> <span class="s">&#39;port&#39;</span><span class="p">),</span><span class="n">site</span><span class="p">,</span><span class="n">ServerContextFactory</span><span class="p">())</span>
+            <span class="k">else</span><span class="p">:</span> 
+                <span class="bp">self</span><span class="o">.</span><span class="n">client_settings</span><span class="p">[</span><span class="s">&#39;ssl&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__service</span> <span class="o">=</span> <span class="n">TCPServer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span><span class="s">&#39;service&#39;</span><span class="p">,</span><span class="s">&#39;port&#39;</span><span class="p">),</span><span class="n">site</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;service&#39;</span><span class="p">,</span><span class="s">&#39;listen&#39;</span><span class="p">))</span>				
+
+    <span class="k">def</span> <span class="nf">get_service</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="TmsService.get_service"><a class="viewcode-back" href="../../../core/services.html#services.tms.service.TmsService.get_service">[docs]</a>        <span class="sd">&quot;&quot;&quot;Get a reference to the actual twisted service</span>
+
+<span class="sd">        :return: TCPServer or SSLServer</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__service</span>
+        
+    <span class="k">def</span> <span class="nf">get_client_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+<div class="viewcode-block" id="TmsService.get_client_settings"><a class="viewcode-back" href="../../../core/services.html#services.tms.service.TmsService.get_client_settings">[docs]</a>        <span class="sd">&quot;&quot;&quot;Client-settings are parsed with the bootstrapping process to communicate vital information about the service</span>
+
+<span class="sd">        :return: dict - Some useful information about this service</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client_settings</span><span class="p">[</span><span class="s">&#39;uri&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">:</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hwios_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;general&#39;</span><span class="p">,</span><span class="s">&#39;uri&#39;</span><span class="p">),</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;service&#39;</span><span class="p">,</span><span class="s">&#39;port&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client_settings</span><span class="p">[</span><span class="s">&#39;center&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span><span class="s">&#39;map&#39;</span><span class="p">,</span><span class="s">&#39;center_x&#39;</span><span class="p">),</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span><span class="s">&#39;map&#39;</span><span class="p">,</span><span class="s">&#39;center_y&#39;</span><span class="p">),</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span><span class="s">&#39;map&#39;</span><span class="p">,</span><span class="s">&#39;center_z&#39;</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client_settings</span><span class="p">[</span><span class="s">&#39;osm_ztop&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span><span class="s">&#39;map&#39;</span><span class="p">,</span><span class="s">&#39;osm_ztop&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client_settings</span><span class="p">[</span><span class="s">&#39;raw_ztop&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span><span class="s">&#39;map&#39;</span><span class="p">,</span><span class="s">&#39;raw_ztop&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client_settings</span><span class="p">[</span><span class="s">&#39;zlevels&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span><span class="s">&#39;map&#39;</span><span class="p">,</span><span class="s">&#39;zlevels&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client_settings</span><span class="p">[</span><span class="s">&#39;osm&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span><span class="s">&#39;map&#39;</span><span class="p">,</span><span class="s">&#39;osm&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client_settings</span><span class="p">[</span><span class="s">&#39;theme&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;map&#39;</span><span class="p">,</span><span class="s">&#39;theme&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client_settings</span><span class="p">[</span><span class="s">&#39;cache&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;map&#39;</span><span class="p">,</span><span class="s">&#39;cache&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">client_settings</span>
+        
+        
+<span class="k">class</span> <span class="nc">TileService</span><span class="p">(</span><span class="n">StaticFile</span><span class="p">):</span></div></div>
+<div class="viewcode-block" id="TileService"><a class="viewcode-back" href="../../../core/services.html#services.tms.service.TileService">[docs]</a>    <span class="sd">&quot;&quot;&quot;A modified StaticFile resource, to return opaque images on a 404&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">defaultType</span><span class="o">=</span><span class="s">&quot;text/html&quot;</span><span class="p">,</span> <span class="n">ignoredExts</span><span class="o">=</span><span class="p">(),</span> <span class="n">registry</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">allowExt</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="n">StaticFile</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">childNotFound</span> <span class="o">=</span> <span class="n">StaticFile</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">/404.png&#39;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">childNotFound</span><span class="o">.</span><span class="n">isLeaf</span><span class="o">=</span><span class="bp">True</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">HWIOS v0.6 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, OS-Networks.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.8.
+    </div>
+  </body>
+</html>

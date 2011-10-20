@@ -1,0 +1,294 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>services.web_ui.models.ws_realm &mdash; HWIOS v0.6 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '0.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="HWIOS v0.6 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">HWIOS v0.6 documentation</a> &raquo;</li>
+          <li><a href="../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for services.web_ui.models.ws_realm</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    services.web_ui.models.ws_realm    </span>
+<span class="sd">    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">    Websocket pooling and dispatching handlers</span>
+
+<span class="sd">    :copyright: Copyright 2011-2012 OS-Networks</span>
+<span class="sd">    :license: LGPL, See LICENSE for details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">from</span> <span class="nn">twisted.internet</span> <span class="kn">import</span> <span class="n">reactor</span><span class="p">,</span> <span class="n">defer</span>
+<span class="kn">from</span> <span class="nn">twisted.python</span> <span class="kn">import</span> <span class="n">failure</span><span class="p">,</span> <span class="n">log</span>
+<span class="kn">from</span> <span class="nn">django.contrib.sessions.models</span> <span class="kn">import</span> <span class="n">Session</span>
+
+
+<span class="kn">from</span> <span class="nn">core.application</span> <span class="kn">import</span> <span class="n">HWIOS</span>
+<span class="kn">from</span> <span class="nn">web_ui.models.signal</span> <span class="kn">import</span> <span class="n">Signal</span><span class="p">,</span> <span class="n">SignalPool</span>
+<span class="kn">import</span> <span class="nn">web_ui.urls</span> <span class="kn">as</span> <span class="nn">urls</span>
+
+<span class="kn">from</span> <span class="nn">web_ui.models.statics</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">web_ui.models.profiles</span> <span class="kn">import</span> <span class="n">Profile</span>
+<span class="kn">from</span> <span class="nn">web_ui.models.client</span> <span class="kn">import</span> <span class="n">Client</span>
+
+
+
+<span class="k">class</span> <span class="nc">WebSocketDispatcher</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="WebSocketDispatcher"><a class="viewcode-back" href="../../../../core/hwm.html#services.web_ui.models.ws_realm.WebSocketDispatcher">[docs]</a>    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The websocket dispatcher takes care of routing and matching of urls to the appropriate controller</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">signals</span> <span class="o">=</span> <span class="n">SignalPool</span><span class="p">()</span>
+    
+    <span class="n">compiled_ws_patterns</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">valid_routes</span> <span class="o">=</span> <span class="p">{}</span>
+   
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Initialize all modules that are specified in urls.py</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pool</span> <span class="o">=</span> <span class="n">WebSocketPool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">signals</span><span class="p">)</span>  
+        <span class="k">for</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="n">urls</span><span class="o">.</span><span class="n">ws_patterns</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">pattern</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">module</span> <span class="o">=</span> <span class="nb">__import__</span><span class="p">(</span><span class="n">pattern</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">globals</span><span class="p">(),</span> <span class="nb">locals</span><span class="p">(),</span> <span class="p">[</span><span class="n">pattern</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">compiled_ws_patterns</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">p</span><span class="p">,</span><span class="n">module</span><span class="p">,</span><span class="n">pattern</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">pattern</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>    
+        <span class="k">for</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">compiled_ws_patterns</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">pattern</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">valid_routes</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">valid_routes</span><span class="p">[</span><span class="n">pattern</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span> <span class="o">=</span><span class="p">{</span><span class="s">&#39;instance&#39;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">pattern</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">pattern</span><span class="p">[</span><span class="mi">2</span><span class="p">])(</span><span class="bp">self</span><span class="p">),</span><span class="s">&#39;methods&#39;</span><span class="p">:[]}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">valid_routes</span><span class="p">[</span><span class="n">pattern</span><span class="p">[</span><span class="mi">2</span><span class="p">]][</span><span class="s">&#39;methods&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pattern</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+            
+            
+    <span class="k">def</span> <span class="nf">_match</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Loops though regex patterns to search for a match&#39;&#39;&#39;</span>
+        <span class="k">for</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">compiled_ws_patterns</span><span class="p">:</span>
+            <span class="n">rp</span> <span class="o">=</span> <span class="n">pattern</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> 
+            <span class="k">if</span> <span class="n">rp</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">(</span><span class="n">pattern</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">pattern</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">rp</span><span class="o">.</span><span class="n">groupdict</span><span class="p">())</span>
+        <span class="k">return</span> <span class="bp">None</span>
+        
+    
+    <span class="k">def</span> <span class="nf">route</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
+<div class="viewcode-block" id="WebSocketDispatcher.route"><a class="viewcode-back" href="../../../../core/hwm.html#services.web_ui.models.ws_realm.WebSocketDispatcher.route">[docs]</a>        <span class="sd">&#39;&#39;&#39;Routes urls to the appropriate websocket controller</span>
+
+<span class="sd">        :param str url: the url to match the pattern-collection with</span>
+<span class="sd">        :return: list or None - reference-list to a websocket controller or None</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cls</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_match</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">cls</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">valid_routes</span><span class="p">:</span>
+                <span class="n">instance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">valid_routes</span><span class="p">[</span><span class="n">cls</span><span class="p">][</span><span class="s">&#39;instance&#39;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">method</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="p">[</span><span class="n">instance</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">params</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="bp">None</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+        <span class="k">return</span> <span class="bp">None</span>
+
+    
+<span class="k">class</span> <span class="nc">WebSocketPool</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span></div></div>
+<div class="viewcode-block" id="WebSocketPool"><a class="viewcode-back" href="../../../../core/hwm.html#services.web_ui.models.ws_realm.WebSocketPool">[docs]</a>    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    The websocket pool is used to keep track of subscriptions and clients in the websocket domain</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">clients</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">subscription</span> <span class="o">=</span> <span class="p">{}</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signals</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">signals</span> <span class="o">=</span> <span class="n">signals</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">userlist</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c">#register signals</span>
+        <span class="c">#TODO: move to it&#39;s own signal initializing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Signal</span><span class="p">(</span><span class="s">&#39;view_changed&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Signal</span><span class="p">(</span><span class="s">&#39;ws_connect&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Signal</span><span class="p">(</span><span class="s">&#39;ws_disconnect&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Signal</span><span class="p">(</span><span class="s">&#39;profile_changed&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Signal</span><span class="p">(</span><span class="s">&#39;profile_created&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Signal</span><span class="p">(</span><span class="s">&#39;profile_deleted&#39;</span><span class="p">))</span>
+        
+    
+    <span class="k">def</span> <span class="nf">name_taken</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">):</span>
+<div class="viewcode-block" id="WebSocketPool.name_taken"><a class="viewcode-back" href="../../../../core/hwm.html#services.web_ui.models.ws_realm.WebSocketPool.name_taken">[docs]</a>        <span class="sd">&quot;&quot;&quot;Checks if the username exists in our list of anonymous and registered clients</span>
+
+<span class="sd">        :param str username: the username to check for</span>
+<span class="sd">        :return: bool - Acknowledgement whether username exists or not</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">_client</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">clients</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">_client</span><span class="o">.</span><span class="n">profile</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">_client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">username</span> <span class="o">==</span> <span class="n">username</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="bp">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="bp">False</span>        
+        
+
+        
+    <span class="k">def</span> <span class="nf">_clear_subscriptions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span></div>
+        <span class="sd">&quot;&quot;&quot;When a client disconnects, remove all subscription references that may be left&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">area</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">subscription</span><span class="p">:</span> 
+            <span class="k">for</span> <span class="n">cid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="n">area</span><span class="p">]:</span>
+                <span class="k">for</span> <span class="n">_client</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="n">area</span><span class="p">][</span><span class="n">cid</span><span class="p">][</span><span class="s">&#39;clients&#39;</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">_client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">uuid</span> <span class="o">==</span> <span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">uuid</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="n">area</span><span class="p">][</span><span class="n">cid</span><span class="p">][</span><span class="s">&#39;clients&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">_client</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">add_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transport</span><span class="p">):</span>
+<div class="viewcode-block" id="WebSocketPool.add_client"><a class="viewcode-back" href="../../../../core/hwm.html#services.web_ui.models.ws_realm.WebSocketPool.add_client">[docs]</a>        <span class="sd">&quot;&quot;&quot;Setup a client instance for this transport, and add it to the general client-list</span>
+
+<span class="sd">        :param transport transport: A representation of the socket connection</span>
+<span class="sd">        :return: client - Return the client object for further processing</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">transport</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span> <span class="n">transport</span><span class="o">.</span><span class="n">session</span><span class="p">,</span> <span class="s">&#39;nl&#39;</span><span class="p">)</span>
+        <span class="n">new_client</span><span class="o">.</span><span class="n">transport</span> <span class="o">=</span> <span class="n">transport</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">clients</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_client</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> WS/76/HRM&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s">&#39;New client added...&#39;</span><span class="p">),</span><span class="n">system</span><span class="o">=</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">,IN&#39;</span> <span class="o">%</span> <span class="n">transport</span><span class="o">.</span><span class="n">getPeer</span><span class="p">()</span><span class="o">.</span><span class="n">host</span><span class="p">)</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s">&#39;ws_connect&#39;</span><span class="p">,</span> <span class="n">client</span> <span class="o">=</span> <span class="n">new_client</span><span class="p">)</span> 
+        <span class="k">return</span> <span class="n">new_client</span>
+
+            
+    <span class="k">def</span> <span class="nf">rm_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transport</span><span class="p">):</span></div>
+<div class="viewcode-block" id="WebSocketPool.rm_client"><a class="viewcode-back" href="../../../../core/hwm.html#services.web_ui.models.ws_realm.WebSocketPool.rm_client">[docs]</a>        <span class="sd">&quot;&quot;&quot;Remove a client from the general client-list when the client websocket connection is terminated</span>
+
+<span class="sd">        :param transport transport: A representation of the socket connection</span>
+<span class="sd">        &quot;&quot;&quot;</span>        
+        <span class="k">try</span><span class="p">:</span>        
+            <span class="k">for</span> <span class="n">_client</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">clients</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">_client</span><span class="o">.</span><span class="n">transport</span> <span class="o">==</span> <span class="n">transport</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">clients</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">_client</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_clear_subscriptions</span><span class="p">(</span><span class="n">_client</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span> <span class="k">pass</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s">&#39;ws_disconnect&#39;</span><span class="p">,</span> <span class="n">client</span> <span class="o">=</span> <span class="n">transport</span><span class="p">)</span>
+            
+        
+    <span class="k">def</span> <span class="nf">get_clients</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client_filter</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span></div>
+<div class="viewcode-block" id="WebSocketPool.get_clients"><a class="viewcode-back" href="../../../../core/hwm.html#services.web_ui.models.ws_realm.WebSocketPool.get_clients">[docs]</a>        <span class="sd">&quot;&quot;&quot;Find clients in the general client-list, and optionally apply a filter.</span>
+<span class="sd">        Filter options are: &#39;all&#39;,&#39;users&#39; or &#39;moderators&#39;.</span>
+
+<span class="sd">        :param str client_filter: a predefined filter to operate on the general client-list</span>
+<span class="sd">        :return: list - Return a list of clients</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">__clients</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">client_filter</span> <span class="o">==</span> <span class="s">&#39;all&#39;</span> <span class="ow">or</span> <span class="n">client_filter</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">clients</span> 
+        <span class="k">elif</span> <span class="n">client_filter</span> <span class="o">==</span> <span class="s">&#39;users&#39;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">_client</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">clients</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">_client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">is_authenticated</span><span class="p">:</span>
+                    <span class="n">__clients</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_client</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">client_filter</span> <span class="o">==</span> <span class="s">&#39;moderators&#39;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">_client</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">clients</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">_client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">is_staff</span><span class="p">:</span>
+                    <span class="n">__clients</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_client</span><span class="p">)</span>
+        <span class="c">#:todo: friends and groups added later</span>
+        <span class="k">return</span> <span class="n">__clients</span>        
+    
+        
+    <span class="k">def</span> <span class="nf">get_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uuid</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">username</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span></div>
+<div class="viewcode-block" id="WebSocketPool.get_client"><a class="viewcode-back" href="../../../../core/hwm.html#services.web_ui.models.ws_realm.WebSocketPool.get_client">[docs]</a>        <span class="sd">&quot;&quot;&quot;Find a client in the general client-list, based on it&#39;s profile uuid</span>
+
+<span class="sd">        :param str profile_uuid: The profile uuid to find the client with</span>
+<span class="sd">        :return: client or None </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">uuid</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">_client</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">clients</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">_client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">uuid</span> <span class="o">==</span> <span class="n">uuid</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">_client</span>
+        <span class="k">elif</span> <span class="n">username</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">_client</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">clients</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">_client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">username</span> <span class="o">==</span> <span class="n">username</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">_client</span>
+        <span class="k">return</span> <span class="bp">None</span>
+        
+        
+
+<span class="k">class</span> <span class="nc">WSRealm</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span></div></div>
+<div class="viewcode-block" id="WSRealm"><a class="viewcode-back" href="../../../../core/hwm.html#services.web_ui.models.ws_realm.WSRealm">[docs]</a>    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Initializes and keeps all websocket related handlers together.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dispatcher</span> <span class="o">=</span> <span class="n">WebSocketDispatcher</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dispatcher</span><span class="o">.</span><span class="n">pool</span>
+        <span class="c">#self.queue = HWM_Queue()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_t</span> <span class="o">=</span> <span class="n">ws_table</span>   
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">HWIOS v0.6 documentation</a> &raquo;</li>
+          <li><a href="../../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, OS-Networks.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.8.
+    </div>
+  </body>
+</html>

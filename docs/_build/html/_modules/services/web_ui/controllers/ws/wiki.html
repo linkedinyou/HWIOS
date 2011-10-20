@@ -1,0 +1,612 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>services.web_ui.controllers.ws.wiki &mdash; HWIOS v0.6 documentation</title>
+    <link rel="stylesheet" href="../../../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '0.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="HWIOS v0.6 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">HWIOS v0.6 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for services.web_ui.controllers.ws.wiki</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    services.web_ui.controllers.ws.wiki</span>
+<span class="sd">    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">    The websocket controller for the wiki module</span>
+
+<span class="sd">    :copyright: Copyright 2011-2012 OS-Networks</span>
+<span class="sd">    :license: LGPL, See LICENSE for details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="kn">from</span> <span class="nn">django.core.exceptions</span> <span class="kn">import</span> <span class="n">ObjectDoesNotExist</span>
+<span class="kn">from</span> <span class="nn">django.template.loader</span> <span class="kn">import</span> <span class="n">render_to_string</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="kn">from</span> <span class="nn">core.application</span> <span class="kn">import</span> <span class="n">HWIOS</span>
+<span class="kn">from</span> <span class="nn">lib.diff_match_patch</span> <span class="kn">import</span> <span class="n">diff_match_patch</span>
+
+<span class="kn">from</span> <span class="nn">web_ui.models.ws_auth</span> <span class="kn">import</span> <span class="n">WSAuth</span>
+<span class="kn">from</span> <span class="nn">web_ui.models.wiki</span> <span class="kn">import</span> <span class="n">WikiArticle</span><span class="p">,</span> <span class="n">WikiRevision</span>
+<span class="kn">from</span> <span class="nn">web_ui.forms.wiki</span> <span class="kn">import</span> <span class="n">EditArticleForm</span><span class="p">,</span> <span class="n">EditArticleHistoryForm</span>
+<span class="kn">from</span> <span class="nn">web_ui.models.infinote</span> <span class="kn">import</span> <span class="n">InfinotePool</span>
+<span class="kn">from</span> <span class="nn">web_ui.models.activity</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="kn">from</span> <span class="nn">web_ui.models.signal</span> <span class="kn">import</span> <span class="n">Signal</span>
+<span class="kn">from</span> <span class="nn">markdown.inlinepatterns</span> <span class="kn">import</span> <span class="n">LINK_RE</span>
+
+
+<span class="k">class</span> <span class="nc">WS_Wiki</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_Wiki"><a class="viewcode-back" href="../../../../../modules/wiki.html#services.web_ui.controllers.ws.wiki.WS_Wiki">[docs]</a>    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Websocket handler for the wiki module. Mainly involves infinote operations.</span>
+<span class="sd">    &quot;&quot;&quot;</span>     
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dispatcher</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">infinote_pool</span> <span class="o">=</span> <span class="n">InfinotePool</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">diff_mp</span> <span class="o">=</span> <span class="n">diff_match_patch</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_wiki_graph</span><span class="p">()</span>
+        <span class="n">dispatcher</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="s">&#39;ws_disconnect&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">leave_wiki_article</span><span class="p">)</span>
+        <span class="n">dispatcher</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="s">&#39;view_changed&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">leave_wiki_article</span><span class="p">,</span> <span class="n">filters</span> <span class="o">=</span> <span class="p">[(</span><span class="s">r&#39;/wiki/(?P&lt;slug&gt;[^/]+)/&#39;</span><span class="p">,</span><span class="bp">True</span><span class="p">),(</span><span class="s">r&#39;/wiki/(?P&lt;slug&gt;[^/]+)/edit/$&#39;</span><span class="p">,</span><span class="bp">False</span><span class="p">)])</span>
+        
+
+    <span class="k">def</span> <span class="nf">get_context</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;wiki/context_menu.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;profile&#39;</span><span class="p">:</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">})</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;context&#39;</span><span class="p">:</span><span class="n">context</span><span class="p">}}}</span>
+
+
+    <span class="k">def</span> <span class="nf">view_wiki_article</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">slug</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_Wiki.view_wiki_article"><a class="viewcode-back" href="../../../../../modules/wiki.html#services.web_ui.controllers.ws.wiki.WS_Wiki.view_wiki_article">[docs]</a>        <span class="sd">&quot;&quot;&quot;Infinote client wants to join the subscription log based on the content-id(cid). In this case within the wiki, the</span>
+<span class="sd">        client requests the cid from the page-slug, subscribes to the channel and starts sending operation requests out, </span>
+<span class="sd">        with the cid included. When the client disconnects(other page view or websocket closes), the client gets </span>
+<span class="sd">        unsubscribed from the log.</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param str slug: The wiki slug reference</span>
+<span class="sd">        :return: dict - wiki article state information or html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">article</span> <span class="o">=</span> <span class="n">WikiArticle</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">slug</span><span class="o">=</span><span class="n">slug</span><span class="p">)</span>
+            <span class="n">article_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_revision_text</span><span class="p">(</span><span class="n">article</span><span class="p">)</span>
+            <span class="n">revisions</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">WikiRevision</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">article</span> <span class="o">=</span> <span class="n">article</span><span class="p">))</span>
+            <span class="n">client</span><span class="o">.</span><span class="n">role</span> <span class="o">=</span> <span class="s">&#39;view&#39;</span>
+            <span class="n">subscriber</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">infinote_pool</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">slug</span><span class="p">,</span> <span class="n">article_text</span><span class="p">,</span> <span class="s">&#39;wiki&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal_presence</span><span class="p">,</span> <span class="s">&#39;view&#39;</span><span class="p">)</span>
+            <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;wiki/read_article.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&quot;profile&quot;</span><span class="p">:</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span><span class="s">&#39;page&#39;</span><span class="p">:</span><span class="n">article</span><span class="p">})</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s">&#39;data&#39;</span><span class="p">:{</span>
+                    <span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">},</span>
+                    <span class="s">&#39;page&#39;</span><span class="p">:{</span>
+                        <span class="s">&#39;title&#39;</span><span class="p">:</span><span class="n">article</span><span class="o">.</span><span class="n">slug</span><span class="p">,</span>
+                        <span class="s">&#39;state&#39;</span><span class="p">:</span><span class="n">subscriber</span><span class="p">[</span><span class="s">&#39;state&#39;</span><span class="p">],</span>
+                        <span class="s">&#39;log&#39;</span><span class="p">:</span><span class="n">subscriber</span><span class="p">[</span><span class="s">&#39;log&#39;</span><span class="p">],</span>
+                        <span class="s">&#39;revisions&#39;</span><span class="p">:</span><span class="n">revisions</span>
+                    <span class="p">},</span> 
+                    <span class="s">&#39;online&#39;</span><span class="p">:</span><span class="n">subscriber</span><span class="p">[</span><span class="s">&#39;online&#39;</span><span class="p">],</span>
+                    <span class="s">&#39;uid&#39;</span><span class="p">:</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">pk</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="k">except</span> <span class="n">ObjectDoesNotExist</span><span class="p">:</span>
+            <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;wiki/create_article.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&quot;profile&quot;</span><span class="p">:</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span><span class="s">&quot;page&quot;</span><span class="p">:{</span><span class="s">&#39;slug&#39;</span><span class="p">:</span><span class="n">slug</span><span class="p">}})</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">},</span><span class="s">&#39;page&#39;</span><span class="p">:{</span><span class="s">&#39;title&#39;</span><span class="p">:</span><span class="n">slug</span><span class="p">,</span> <span class="s">&#39;state&#39;</span><span class="p">:</span><span class="bp">False</span><span class="p">}}}</span>
+            
+
+    <span class="nd">@WSAuth.is_authenticated</span></div>
+    <span class="k">def</span> <span class="nf">edit_wiki_article</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">slug</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_Wiki.edit_wiki_article"><a class="viewcode-back" href="../../../../../modules/wiki.html#services.web_ui.controllers.ws.wiki.WS_Wiki.edit_wiki_article">[docs]</a>        <span class="sd">&quot;&quot;&quot;Joins an infinote subscription pool and returns document state information to sync client-side infinote editor with,</span>
+<span class="sd">        or return a new-article template view</span>
+<span class="sd">        </span>
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param str slug: The wiki slug reference</span>
+<span class="sd">        :return: dict - wiki article state information or html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">article</span> <span class="o">=</span> <span class="n">WikiArticle</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">slug</span><span class="o">=</span><span class="n">slug</span><span class="p">)</span>
+            <span class="n">article_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_revision_text</span><span class="p">(</span><span class="n">article</span><span class="p">)</span>
+            <span class="n">revisions</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">WikiRevision</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">article</span> <span class="o">=</span> <span class="n">article</span><span class="p">))</span>
+            <span class="n">client</span><span class="o">.</span><span class="n">role</span> <span class="o">=</span> <span class="s">&#39;edit&#39;</span>
+            <span class="n">subscriber</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">infinote_pool</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">slug</span><span class="p">,</span> <span class="n">article_text</span><span class="p">,</span> <span class="s">&#39;wiki&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal_presence</span><span class="p">,</span><span class="s">&#39;edit&#39;</span><span class="p">)</span>
+            <span class="n">form</span> <span class="o">=</span> <span class="n">EditArticleForm</span><span class="p">(</span><span class="n">initial</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;id&#39;</span><span class="p">:</span><span class="n">article</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span> <span class="s">&#39;slug&#39;</span><span class="p">:</span><span class="n">slug</span><span class="p">})</span>
+            <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&#39;wiki/edit_article.html&#39;</span><span class="p">,</span>  <span class="p">{</span><span class="s">&#39;form&#39;</span><span class="p">:</span> <span class="n">form</span><span class="p">,</span><span class="s">&quot;page&quot;</span><span class="p">:</span><span class="n">article</span><span class="p">})</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">view_history</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s">&#39;/wiki/</span><span class="si">%s</span><span class="s">/edit/&#39;</span> <span class="o">%</span> <span class="n">slug</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">client</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">view_history</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]:</span>
+                    <span class="n">publish_activity</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Wiki article editing&#39;</span><span class="p">),</span><span class="s">&#39;/wiki/</span><span class="si">%s</span><span class="s">/edit/&#39;</span> <span class="o">%</span> <span class="n">slug</span><span class="p">,[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">publish_activity</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Wiki article editing&#39;</span><span class="p">),</span><span class="s">&#39;/wiki/</span><span class="si">%s</span><span class="s">/edit/&#39;</span> <span class="o">%</span> <span class="n">slug</span><span class="p">,[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s">&#39;data&#39;</span><span class="p">:{</span>
+                    <span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">},</span>
+                    <span class="s">&#39;page&#39;</span><span class="p">:{</span>
+                        <span class="s">&#39;title&#39;</span><span class="p">:</span><span class="n">article</span><span class="o">.</span><span class="n">slug</span><span class="p">,</span>
+                        <span class="s">&#39;state&#39;</span><span class="p">:</span><span class="n">subscriber</span><span class="p">[</span><span class="s">&#39;state&#39;</span><span class="p">],</span>
+                        <span class="s">&#39;log&#39;</span><span class="p">:</span><span class="n">subscriber</span><span class="p">[</span><span class="s">&#39;log&#39;</span><span class="p">],</span>
+                        <span class="s">&#39;revisions&#39;</span><span class="p">:</span><span class="n">revisions</span>
+                    <span class="p">},</span> 
+                    <span class="s">&#39;online&#39;</span><span class="p">:</span><span class="n">subscriber</span><span class="p">[</span><span class="s">&#39;online&#39;</span><span class="p">],</span>
+                    <span class="s">&#39;uid&#39;</span><span class="p">:</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="k">except</span> <span class="n">ObjectDoesNotExist</span><span class="p">:</span>
+            <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;wiki/create_article.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&quot;profile&quot;</span><span class="p">:</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span><span class="s">&quot;page&quot;</span><span class="p">:{</span><span class="s">&#39;slug&#39;</span><span class="p">:</span><span class="n">slug</span><span class="p">}})</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">},</span><span class="s">&#39;page&#39;</span><span class="p">:{</span><span class="s">&#39;title&#39;</span><span class="p">:</span><span class="n">slug</span><span class="p">,</span> <span class="s">&#39;state&#39;</span><span class="p">:</span><span class="bp">False</span><span class="p">}}}</span>
+
+
+    <span class="k">def</span> <span class="nf">_signal_presence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">online</span><span class="p">,</span> <span class="n">app_pool</span><span class="p">,</span> <span class="n">item_id</span><span class="p">):</span></div>
+        <span class="sd">&quot;&quot;&quot;Callback function when someone subscribes or unsubscribes to the infinote pool&quot;&quot;&quot;</span>
+        <span class="n">client</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="s">&#39;/data/</span><span class="si">%s</span><span class="s">/</span><span class="si">%s</span><span class="s">/online/update/&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">app_pool</span><span class="p">,</span> <span class="n">item_id</span><span class="p">),{</span><span class="s">&#39;online&#39;</span><span class="p">:</span><span class="n">online</span><span class="p">})</span>
+
+
+    <span class="k">def</span> <span class="nf">_signal_operation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">app_pool</span><span class="p">,</span> <span class="n">item_id</span><span class="p">,</span> <span class="n">operation_type</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Client callback function for an infinote operation&quot;&quot;&quot;</span>
+        <span class="n">client</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="s">&#39;/data/</span><span class="si">%s</span><span class="s">/</span><span class="si">%s</span><span class="s">/</span><span class="si">%s</span><span class="s">/&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">app_pool</span><span class="p">,</span> <span class="n">item_id</span><span class="p">,</span> <span class="n">operation_type</span><span class="p">),</span> <span class="n">params</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">_signal_caret</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">app_pool</span><span class="p">,</span> <span class="n">item_id</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Client callback function for a caret operation&quot;&quot;&quot;</span>
+        <span class="n">client</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="s">&#39;/data/</span><span class="si">%s</span><span class="s">/</span><span class="si">%s</span><span class="s">/caret/&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">app_pool</span><span class="p">,</span> <span class="n">item_id</span><span class="p">),</span> <span class="p">{</span><span class="s">&#39;id&#39;</span><span class="p">:</span> <span class="n">params</span><span class="p">[</span><span class="s">&#39;id&#39;</span><span class="p">],</span><span class="s">&#39;cursor&#39;</span><span class="p">:</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;cursor&#39;</span><span class="p">]})</span>
+        
+
+    <span class="k">def</span> <span class="nf">leave_wiki_article</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_Wiki.leave_wiki_article"><a class="viewcode-back" href="../../../../../modules/wiki.html#services.web_ui.controllers.ws.wiki.WS_Wiki.leave_wiki_article">[docs]</a>        <span class="sd">&quot;&quot;&quot;Remove client page subscription after client left the wiki page or disconnected. This is tracked</span>
+<span class="sd">        by signal observers defined in the controller constructor.</span>
+<span class="sd">        </span>
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">infinote_pool</span><span class="o">.</span><span class="n">unsubscribe</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="s">&#39;wiki&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal_presence</span><span class="p">)</span>
+                
+
+    <span class="nd">@WSAuth.is_authenticated</span></div>
+    <span class="k">def</span> <span class="nf">request_wiki_insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">slug</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_Wiki.request_wiki_insert"><a class="viewcode-back" href="../../../../../modules/wiki.html#services.web_ui.controllers.ws.wiki.WS_Wiki.request_wiki_insert">[docs]</a>        <span class="sd">&quot;&quot;&quot;Infinote client insert operation request on the subscription log</span>
+<span class="sd">        </span>
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param str slug: The wiki slug reference</span>
+<span class="sd">        :param dict params: Contains the operation parameters</span>
+<span class="sd">        :return: dict - status data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">infinote_pool</span><span class="o">.</span><span class="n">request_insert</span><span class="p">(</span><span class="n">client</span><span class="p">,</span><span class="s">&#39;wiki&#39;</span><span class="p">,</span> <span class="n">slug</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal_operation</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s">&#39;status&#39;</span><span class="p">:{</span><span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;OP_OK&#39;</span><span class="p">}}</span>
+            
+
+    <span class="nd">@WSAuth.is_authenticated</span></div>
+    <span class="k">def</span> <span class="nf">request_wiki_remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">slug</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_Wiki.request_wiki_remove"><a class="viewcode-back" href="../../../../../modules/wiki.html#services.web_ui.controllers.ws.wiki.WS_Wiki.request_wiki_remove">[docs]</a>        <span class="sd">&quot;&quot;&quot;Infinote client delete operation request on the subscription log</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param str slug: The wiki slug reference</span>
+<span class="sd">        :param dict params: Contains the operation parameters</span>
+<span class="sd">        :return: dict - status data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">infinote_pool</span><span class="o">.</span><span class="n">request_delete</span><span class="p">(</span><span class="n">client</span><span class="p">,</span><span class="s">&#39;wiki&#39;</span><span class="p">,</span> <span class="n">slug</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal_operation</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s">&#39;status&#39;</span><span class="p">:{</span><span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;OP_OK&#39;</span><span class="p">}}</span>
+        
+                
+    <span class="nd">@WSAuth.is_authenticated</span>       </div>
+    <span class="k">def</span> <span class="nf">request_wiki_undo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">slug</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_Wiki.request_wiki_undo"><a class="viewcode-back" href="../../../../../modules/wiki.html#services.web_ui.controllers.ws.wiki.WS_Wiki.request_wiki_undo">[docs]</a>        <span class="sd">&quot;&quot;&quot;Infinote client undo operation request on the subscription log</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param str slug: The wiki slug reference</span>
+<span class="sd">        :param dict params: Contains the operation parameters</span>
+<span class="sd">        :return: dict - status data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">infinote_pool</span><span class="o">.</span><span class="n">request_undo</span><span class="p">(</span><span class="n">client</span><span class="p">,</span><span class="s">&#39;wiki&#39;</span><span class="p">,</span> <span class="n">slug</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal_operation</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s">&#39;status&#39;</span><span class="p">:{</span><span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;OP_OK&#39;</span><span class="p">}}</span>
+        
+           
+    <span class="k">def</span> <span class="nf">update_remote_caret</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">slug</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span></div>
+<div class="viewcode-block" id="WS_Wiki.update_remote_caret"><a class="viewcode-back" href="../../../../../modules/wiki.html#services.web_ui.controllers.ws.wiki.WS_Wiki.update_remote_caret">[docs]</a>        <span class="sd">&quot;&quot;&quot;Infinote client caret move broadcast</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param str slug: The wiki slug reference</span>
+<span class="sd">        :param dict params: Contains the operation parameters</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">infinote_pool</span><span class="o">.</span><span class="n">update_caret</span><span class="p">(</span><span class="n">client</span><span class="p">,</span><span class="s">&#39;wiki&#39;</span><span class="p">,</span> <span class="n">slug</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_signal_caret</span><span class="p">)</span>
+        
+                
+    <span class="nd">@WSAuth.is_authenticated</span></div>
+    <span class="k">def</span> <span class="nf">edit_history</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">slug</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_Wiki.edit_history"><a class="viewcode-back" href="../../../../../modules/wiki.html#services.web_ui.controllers.ws.wiki.WS_Wiki.edit_history">[docs]</a>        <span class="sd">&quot;&quot;&quot;Render the wiki page history view and return an overview of all page revisions for time-warp slider</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param str slug: The wiki slug reference</span>
+<span class="sd">        :return: dict - Revision data and html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">article</span> <span class="o">=</span> <span class="n">WikiArticle</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">slug</span> <span class="o">=</span> <span class="n">slug</span><span class="p">)</span>
+        <span class="n">revisions</span> <span class="o">=</span> <span class="n">WikiRevision</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">article</span> <span class="o">=</span> <span class="n">article</span><span class="p">)</span>
+        <span class="n">rev_data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">revision</span> <span class="ow">in</span> <span class="n">revisions</span><span class="p">:</span>
+            <span class="n">rev_data</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s">&#39;submit_comments&#39;</span><span class="p">:</span><span class="n">revision</span><span class="o">.</span><span class="n">submit_comments</span><span class="p">,</span><span class="s">&#39;submit_date&#39;</span><span class="p">:</span><span class="nb">str</span><span class="p">(</span><span class="n">revision</span><span class="o">.</span><span class="n">submit_date</span><span class="p">),</span><span class="s">&#39;patch&#39;</span><span class="p">:</span><span class="n">revision</span><span class="o">.</span><span class="n">patch</span><span class="p">,</span>
+            <span class="s">&#39;submit_profile&#39;</span><span class="p">:</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">revision</span><span class="o">.</span><span class="n">submit_profile</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span><span class="n">revision</span><span class="o">.</span><span class="n">submit_profile</span><span class="o">.</span><span class="n">last_name</span><span class="p">)})</span>
+        <span class="n">rev_data</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">EditArticleHistoryForm</span><span class="p">(</span><span class="n">initial</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;undo&#39;</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">revisions</span><span class="p">)})</span>
+        <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;wiki/edit_history.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;page&#39;</span><span class="p">:</span><span class="n">article</span><span class="p">,</span><span class="s">&#39;form&#39;</span><span class="p">:</span><span class="n">form</span><span class="p">})</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s">&#39;data&#39;</span><span class="p">:{</span>
+                <span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">}</span>
+            <span class="p">},</span>
+            <span class="s">&#39;page&#39;</span><span class="p">:{</span>
+                <span class="s">&#39;slug&#39;</span><span class="p">:</span><span class="n">article</span><span class="o">.</span><span class="n">slug</span><span class="p">,</span>
+                <span class="s">&#39;revisions&#39;</span><span class="p">:</span><span class="n">rev_data</span>
+            <span class="p">}</span>
+        <span class="p">}</span> 
+        
+
+    <span class="nd">@WSAuth.is_authenticated</span></div>
+    <span class="k">def</span> <span class="nf">save_page</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">slug</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_Wiki.save_page"><a class="viewcode-back" href="../../../../../modules/wiki.html#services.web_ui.controllers.ws.wiki.WS_Wiki.save_page">[docs]</a>        <span class="sd">&quot;&quot;&quot;Saves an infinote document&#39;s state to the database and notifies participants of the action</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param str slug: The wiki slug reference</span>
+<span class="sd">        :return: dict - Revision data and html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_content</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s">&#39;content&#39;</span><span class="p">]</span>
+        <span class="k">del</span> <span class="n">params</span><span class="p">[</span><span class="s">&#39;content&#39;</span><span class="p">]</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">EditArticleForm</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+            
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">article</span> <span class="o">=</span> <span class="n">WikiArticle</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">slug</span> <span class="o">=</span> <span class="n">slug</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">WikiArticle</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">:</span>
+                <span class="n">article</span> <span class="o">=</span> <span class="n">WikiArticle</span><span class="p">()</span>
+                <span class="n">article</span><span class="o">.</span><span class="n">slug</span> <span class="o">=</span> <span class="n">slug</span>
+                <span class="n">article</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>                
+                <span class="bp">self</span><span class="o">.</span><span class="n">_update_wiki_graph</span><span class="p">()</span>
+                <span class="n">publish_activity</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Wiki article created&#39;</span><span class="p">),</span><span class="s">&#39;/wiki/</span><span class="si">%s</span><span class="s">/&#39;</span> <span class="o">%</span> <span class="n">slug</span><span class="p">,[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+                <span class="k">for</span> <span class="n">_client</span> <span class="ow">in</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">get_clients</span><span class="p">():</span>
+                    <span class="c">#this client is watching our attempt to create a new article. Send it a request to resubscribe to the article                    </span>
+                    <span class="k">if</span> <span class="n">client</span> <span class="o">!=</span> <span class="n">_client</span> <span class="ow">and</span> <span class="s">&#39;/wiki/&#39;</span> <span class="ow">in</span> <span class="n">_client</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">view_history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                        <span class="n">_client</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="s">&#39;/wiki/</span><span class="si">%s</span><span class="s">/&#39;</span> <span class="o">%</span> <span class="n">slug</span><span class="p">,{</span>
+                            <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                                <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;WIKI_PAGE_CREATED&#39;</span><span class="p">,</span>
+                                <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%(first_name)s</span><span class="s"> </span><span class="si">%(last_name)s</span><span class="s"> just created article </span><span class="si">%(slug)s</span><span class="s">!&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;first_name&#39;</span><span class="p">:</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span><span class="s">&#39;last_name&#39;</span><span class="p">:</span> <span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">last_name</span><span class="p">,</span><span class="s">&#39;slug&#39;</span><span class="p">:</span><span class="n">slug</span><span class="p">},</span>
+                                <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+                            <span class="p">}</span>
+                        <span class="p">})</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">edit_wiki_article</span><span class="p">(</span><span class="n">client</span><span class="p">,</span><span class="n">slug</span><span class="p">)</span>
+            <span class="n">article</span><span class="o">.</span><span class="n">last_modified</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>            
+            <span class="c">#construct a revision</span>
+            <span class="n">previous_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_revision_text</span><span class="p">(</span><span class="n">article</span><span class="p">)</span>
+            <span class="n">patch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">diff_mp</span><span class="o">.</span><span class="n">patch_make</span><span class="p">(</span><span class="n">previous_text</span><span class="p">,</span> <span class="n">_content</span><span class="p">)</span>
+            <span class="c">#if the patch applied, save a revision</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">patch</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">revision</span> <span class="o">=</span> <span class="n">WikiRevision</span><span class="p">()</span>
+                <span class="n">revision</span><span class="o">.</span><span class="n">article</span> <span class="o">=</span> <span class="n">article</span>
+                <span class="n">revision</span><span class="o">.</span><span class="n">patch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">diff_mp</span><span class="o">.</span><span class="n">patch_toText</span><span class="p">(</span><span class="n">patch</span><span class="p">)</span>
+                <span class="n">revision</span><span class="o">.</span><span class="n">submit_profile</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">profile</span>
+                <span class="n">revision</span><span class="o">.</span><span class="n">submit_comments</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s">&quot;submit_comments&quot;</span><span class="p">]</span>
+                <span class="n">revision</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+                <span class="n">revisions</span> <span class="o">=</span> <span class="n">WikiRevision</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">article</span> <span class="o">=</span> <span class="n">article</span><span class="p">)</span>
+                <span class="c">#evaluate queryset</span>
+                <span class="n">revision_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">revisions</span><span class="p">)</span>
+                <span class="n">last_revision</span> <span class="o">=</span> <span class="n">revisions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="sd">&#39;&#39;&#39;send our latest rev with the notification to other users, just in case we have someone fooling around in history&#39;&#39;&#39;</span>
+                <span class="n">rev_data</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;submit_comments&#39;</span><span class="p">:</span><span class="n">last_revision</span><span class="o">.</span><span class="n">submit_comments</span><span class="p">,</span><span class="s">&#39;submit_date&#39;</span><span class="p">:</span><span class="nb">str</span><span class="p">(</span><span class="n">last_revision</span><span class="o">.</span><span class="n">submit_date</span><span class="p">),</span><span class="s">&#39;patch&#39;</span><span class="p">:</span><span class="n">last_revision</span><span class="o">.</span><span class="n">patch</span><span class="p">,</span>
+                <span class="s">&#39;submit_profile&#39;</span><span class="p">:</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">last_revision</span><span class="o">.</span><span class="n">submit_profile</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span><span class="n">last_revision</span><span class="o">.</span><span class="n">submit_profile</span><span class="o">.</span><span class="n">last_name</span><span class="p">)}</span>
+                <span class="n">article</span><span class="o">.</span><span class="n">content</span> <span class="o">=</span> <span class="n">_content</span>                
+                <span class="n">article</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+                <span class="n">publish_activity</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Wiki article saved&#39;</span><span class="p">),</span><span class="s">&#39;/wiki/</span><span class="si">%s</span><span class="s">/&#39;</span> <span class="o">%</span> <span class="n">slug</span><span class="p">,[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">response</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                        <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;WIKI_EDIT_OK&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Wiki article </span><span class="si">%(slug)s</span><span class="s"> stored...&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;slug&#39;</span><span class="p">:</span><span class="n">slug</span><span class="p">},</span>
+                        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">],</span>
+                        <span class="s">&#39;state&#39;</span><span class="p">:</span> <span class="s">&#39;/wiki/</span><span class="si">%s</span><span class="s">/&#39;</span> <span class="o">%</span> <span class="n">slug</span><span class="p">,</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_update_wiki_graph</span><span class="p">()</span>
+                <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&#39;wiki/read_article.html&#39;</span><span class="p">,{</span><span class="s">&quot;profile&quot;</span><span class="p">:</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span> <span class="s">&quot;page&quot;</span><span class="p">:</span><span class="n">article</span><span class="p">})</span>
+                <span class="n">response</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">},</span><span class="s">&#39;page&#39;</span><span class="p">:{</span><span class="s">&#39;title&#39;</span><span class="p">:</span><span class="n">article</span><span class="o">.</span><span class="n">slug</span><span class="p">,</span> <span class="s">&#39;slug&#39;</span><span class="p">:</span><span class="n">slug</span><span class="p">}}})</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">response</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                        <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;WIKI_EDIT_NO_CHANGE&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;No changes found in wiki article. Page was not stored...&#39;</span><span class="p">),</span>
+                        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-warning&#39;</span><span class="p">],</span>
+                        <span class="s">&#39;state&#39;</span><span class="p">:</span> <span class="s">&#39;/wiki/</span><span class="si">%s</span><span class="s">/&#39;</span> <span class="o">%</span> <span class="n">slug</span><span class="p">,</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+                <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&#39;wiki/read_article.html&#39;</span><span class="p">,{</span><span class="s">&quot;profile&quot;</span><span class="p">:</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span> <span class="s">&quot;page&quot;</span><span class="p">:</span><span class="n">article</span><span class="p">})</span>
+                <span class="n">response</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">},</span><span class="s">&#39;page&#39;</span><span class="p">:{</span><span class="s">&#39;title&#39;</span><span class="p">:</span><span class="n">article</span><span class="o">.</span><span class="n">slug</span><span class="p">,</span> <span class="s">&#39;slug&#39;</span><span class="p">:</span><span class="n">slug</span><span class="p">}}})</span>
+                <span class="k">return</span> <span class="n">response</span>
+            <span class="c">#Inform all users that are editing this article. Update history views with the latest revision</span>
+            <span class="k">for</span> <span class="n">target_client</span> <span class="ow">in</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;wiki&#39;</span><span class="p">][</span><span class="n">slug</span><span class="p">][</span><span class="s">&#39;clients&#39;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">client</span> <span class="o">!=</span> <span class="n">target_client</span> <span class="ow">and</span> <span class="n">target_client</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s">&#39;edit&#39;</span><span class="p">:</span>
+                    <span class="n">target_client</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="s">&quot;/data/wiki/</span><span class="si">%s</span><span class="s">/saved/&quot;</span> <span class="o">%</span> <span class="n">slug</span><span class="p">,{</span>
+                        <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                            <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;WIKI_PAGE_SAVED&#39;</span><span class="p">,</span>
+                            <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">],</span>
+                            <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Wiki article was stored by </span><span class="si">%(first_name)s</span><span class="s"> </span><span class="si">%(last_name)s</span><span class="s"> as revision </span><span class="si">%(revision)s</span><span class="s">: </span><span class="si">%(comments)s</span><span class="s">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;first_name&#39;</span><span class="p">:</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span> <span class="s">&#39;last_name&#39;</span><span class="p">:</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">last_name</span><span class="p">,</span><span class="s">&#39;revision&#39;</span><span class="p">:</span><span class="n">revision_count</span><span class="p">,</span><span class="s">&#39;comments&#39;</span><span class="p">:</span><span class="n">last_revision</span><span class="o">.</span><span class="n">submit_comments</span><span class="p">}</span>
+                        <span class="p">},</span>
+                        <span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;revision&#39;</span><span class="p">:</span><span class="n">rev_data</span><span class="p">}</span>
+                    <span class="p">})</span>  
+            <span class="k">return</span> <span class="n">response</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">article</span> <span class="o">=</span> <span class="n">WikiArticle</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">slug</span><span class="o">=</span><span class="n">slug</span><span class="p">)</span>
+                <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&#39;wiki/edit_article.html&#39;</span><span class="p">,</span>  <span class="p">{</span><span class="s">&#39;form&#39;</span><span class="p">:</span> <span class="n">form</span><span class="p">,</span><span class="s">&quot;page&quot;</span><span class="p">:</span><span class="n">article</span><span class="p">})</span>
+            <span class="k">except</span> <span class="n">WikiArticle</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">:</span>
+                <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;wiki/create_article.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&quot;slug&quot;</span><span class="p">:</span><span class="n">slug</span><span class="p">,</span><span class="s">&quot;form&quot;</span><span class="p">:</span><span class="n">form</span><span class="p">})</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                    <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;FORM_INVALID&#39;</span><span class="p">,</span>
+                    <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Invalid Form!&#39;</span><span class="p">),</span>
+                    <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-warning&#39;</span><span class="p">]</span>
+                <span class="p">},</span>
+                <span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">}}</span>
+            <span class="p">}</span>
+            <span class="k">return</span> <span class="n">response</span>  
+        
+     
+    <span class="nd">@WSAuth.is_authenticated</span></div>
+    <span class="k">def</span> <span class="nf">delete_page</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">slug</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_Wiki.delete_page"><a class="viewcode-back" href="../../../../../modules/wiki.html#services.web_ui.controllers.ws.wiki.WS_Wiki.delete_page">[docs]</a>        <span class="sd">&quot;&quot;&quot;Deletes an infinote document from the infinote pool and database, and notifies participants of the action</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param str slug: The wiki slug reference</span>
+<span class="sd">        :return: dict - Status and html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">params</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">article</span> <span class="o">=</span> <span class="n">WikiArticle</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">slug</span><span class="o">=</span><span class="n">slug</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">WikiArticle</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">False</span>
+            <span class="n">dialog</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;wiki/delete_article_confirm.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&quot;page&quot;</span><span class="p">:</span><span class="n">article</span><span class="p">})</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s">&#39;data&#39;</span><span class="p">:{</span>
+                    <span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;dialog&#39;</span><span class="p">:</span><span class="n">dialog</span><span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">article</span> <span class="o">=</span> <span class="n">WikiArticle</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">slug</span><span class="o">=</span><span class="n">slug</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">WikiArticle</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                    <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;WIKI_INVALID_PAGE&#39;</span><span class="p">,</span>
+                    <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Invalid article&#39;</span><span class="p">),</span>
+                    <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-error&#39;</span><span class="p">]</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;wiki/create_article.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&quot;profile&quot;</span><span class="p">:</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span><span class="s">&quot;page&quot;</span><span class="p">:{</span><span class="s">&#39;slug&#39;</span><span class="p">:</span><span class="n">slug</span><span class="p">}})</span>
+        <span class="k">for</span> <span class="n">_client</span> <span class="ow">in</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">get_clients</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">client</span> <span class="o">!=</span> <span class="n">_client</span> <span class="ow">and</span> <span class="s">&#39;/wiki/&#39;</span> <span class="ow">in</span> <span class="n">_client</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">view_history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">_client</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="s">&#39;/data/wiki/</span><span class="si">%s</span><span class="s">/deleted/&#39;</span> <span class="o">%</span> <span class="n">slug</span><span class="p">,{</span>
+                    <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                        <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;WIKI_PAGE_DELETED&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%(first_name)s</span><span class="s"> </span><span class="si">%(last_name)s</span><span class="s"> removed the current article...&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;first_name&#39;</span><span class="p">:</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span><span class="s">&#39;last_name&#39;</span><span class="p">:</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">last_name</span><span class="p">},</span>
+                        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+                    <span class="p">},</span>
+                    <span class="s">&#39;data&#39;</span><span class="p">:{</span>
+                        <span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">},</span>
+                        <span class="s">&#39;page&#39;</span><span class="p">:{</span><span class="s">&#39;title&#39;</span><span class="p">:</span><span class="n">slug</span><span class="p">,</span> <span class="s">&#39;content&#39;</span><span class="p">:</span><span class="bp">False</span><span class="p">,</span><span class="s">&#39;slug&#39;</span><span class="p">:</span><span class="n">slug</span><span class="p">}</span>
+                    <span class="p">}</span>
+                <span class="p">})</span>              
+        <span class="k">del</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;wiki&#39;</span><span class="p">][</span><span class="n">slug</span><span class="p">]</span>
+        <span class="n">article</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+        <span class="n">publish_activity</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Wiki article deleted&#39;</span><span class="p">),</span><span class="s">&#39;/wiki/</span><span class="si">%s</span><span class="s">/&#39;</span> <span class="o">%</span> <span class="n">slug</span><span class="p">,[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_wiki_graph</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;WIKI_DELETE_OK&#39;</span><span class="p">,</span>
+                <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Wiki article deleted successfully...&#39;</span><span class="p">),</span>
+                <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+            <span class="p">},</span>
+            <span class="s">&#39;data&#39;</span><span class="p">:{</span>
+                <span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>        
+        
+        
+    <span class="nd">@WSAuth.is_authenticated</span></div>
+    <span class="k">def</span> <span class="nf">notify_editors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">slug</span><span class="p">,</span> <span class="n">revision</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_Wiki.notify_editors"><a class="viewcode-back" href="../../../../../modules/wiki.html#services.web_ui.controllers.ws.wiki.WS_Wiki.notify_editors">[docs]</a>        <span class="sd">&quot;&quot;&quot;After a client replaced the document state with a revision, it sends a request to notify participants</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param str slug: The wiki slug reference</span>
+<span class="sd">        :param int revision: The revision that has been restored        </span>
+<span class="sd">        :return: dict - Empty response to trigger re-init editor on the client-side</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">article</span> <span class="o">=</span> <span class="n">WikiArticle</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">slug</span><span class="o">=</span><span class="n">slug</span><span class="p">)</span>
+        <span class="n">_rev</span> <span class="o">=</span> <span class="n">WikiRevision</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">article</span> <span class="o">=</span> <span class="n">article</span><span class="p">)</span>
+        <span class="n">_revision</span> <span class="o">=</span> <span class="n">_rev</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">_rev</span><span class="p">)</span> <span class="o">-</span> <span class="n">revision</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">_client</span> <span class="ow">in</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;wiki&#39;</span><span class="p">][</span><span class="n">slug</span><span class="p">][</span><span class="s">&#39;clients&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">_client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">uuid</span> <span class="o">!=</span> <span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">uuid</span><span class="p">:</span>
+                <span class="n">_client</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="s">&#39;/data/wiki/&#39;</span><span class="o">+</span><span class="n">slug</span><span class="o">+</span><span class="s">&#39;/edit/notify/&#39;</span><span class="p">,{</span>
+                    <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                        <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;WIKI_HISTORY_RESTORE_OK&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Client </span><span class="si">%(first_name)s</span><span class="s"> </span><span class="si">%(last_name)s</span><span class="s"> restored article text to revision </span><span class="si">%(revision)s</span><span class="s">: </span><span class="se">\&#39;</span><span class="si">%(comments)s</span><span class="se">\&#39;</span><span class="s">&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;first_name&#39;</span><span class="p">:</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span> <span class="s">&#39;last_name&#39;</span><span class="p">:</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">last_name</span><span class="p">,</span> <span class="s">&#39;revision&#39;</span><span class="p">:</span><span class="n">revision</span><span class="p">,</span> <span class="s">&#39;comments&#39;</span><span class="p">:</span><span class="n">_revision</span><span class="o">.</span><span class="n">submit_comments</span><span class="p">},</span>
+                        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+                        <span class="p">}})</span>        
+        <span class="n">publish_activity</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Wiki revision restored&#39;</span><span class="p">),</span><span class="s">&#39;/wiki/</span><span class="si">%s</span><span class="s">/&#39;</span> <span class="o">%</span> <span class="n">slug</span><span class="p">,[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">return</span> <span class="p">{}</span>
+        
+            
+    <span class="k">def</span> <span class="nf">_get_revision_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">article</span><span class="p">,</span> <span class="n">revision</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span></div>
+        <span class="sd">&quot;&quot;&quot;Retrieve the page&#39;s current persistent revision text from the stored patches&quot;&quot;&quot;</span>
+        <span class="n">revisions</span> <span class="o">=</span> <span class="n">WikiRevision</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">article</span> <span class="o">=</span> <span class="n">article</span><span class="p">)</span>
+        <span class="n">patches</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">revision</span> <span class="ow">in</span> <span class="n">revisions</span><span class="p">:</span>
+            <span class="n">patches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">diff_mp</span><span class="o">.</span><span class="n">patch_fromText</span><span class="p">(</span><span class="n">revision</span><span class="o">.</span><span class="n">patch</span><span class="p">))</span>
+        <span class="n">patches</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+        <span class="k">for</span> <span class="n">patch</span> <span class="ow">in</span> <span class="n">patches</span><span class="p">:</span>            
+            <span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">diff_mp</span><span class="o">.</span><span class="n">patch_apply</span><span class="p">(</span><span class="n">patch</span><span class="p">,</span> <span class="n">text</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">text</span>          
+        
+                        
+    <span class="k">def</span> <span class="nf">_get_editing_clients</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">slug</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a list of editing clients, suitable for display&quot;&quot;&quot;</span>
+        <span class="n">editing_clients</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">_client</span> <span class="ow">in</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;wiki&#39;</span><span class="p">][</span><span class="n">slug</span><span class="p">][</span><span class="s">&#39;clients&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">_client</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="s">&#39;edit&#39;</span><span class="p">:</span>  
+                 <span class="n">editing_clients</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">_client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span> <span class="n">_client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">last_name</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">editing_clients</span>
+        
+        
+    <span class="k">def</span> <span class="nf">plasmoid_get_wiki_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_Wiki.plasmoid_get_wiki_tree"><a class="viewcode-back" href="../../../../../modules/wiki.html#services.web_ui.controllers.ws.wiki.WS_Wiki.plasmoid_get_wiki_tree">[docs]</a>        <span class="sd">&quot;&quot;&quot;Get a graph representation of the wiki structure,</span>
+<span class="sd">        with links as edges and articles as nodes</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :return: dict - TheJIT-compatible graph structure</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;tree&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">graph_info</span><span class="p">}}</span>
+        <span class="k">return</span> <span class="n">response</span>         
+        
+    
+    <span class="k">def</span> <span class="nf">_update_wiki_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+        <span class="sd">&quot;&quot;&quot;write a python-graph of wiki articles(nodes) and their links(edges) to other articles&quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">re</span>
+        <span class="kn">from</span> <span class="nn">pygraph.classes.graph</span> <span class="kn">import</span> <span class="n">graph</span>
+        <span class="n">pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">LINK_RE</span><span class="p">)</span>
+        <span class="n">articles</span> <span class="o">=</span> <span class="n">WikiArticle</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="n">gr</span> <span class="o">=</span> <span class="n">graph</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">articles</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">article</span> <span class="ow">in</span> <span class="n">articles</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">article</span><span class="o">.</span><span class="n">id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">gr</span><span class="o">.</span><span class="n">nodes</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_create_node</span><span class="p">(</span><span class="n">gr</span><span class="p">,</span> <span class="n">article</span><span class="p">)</span>
+                <span class="n">article_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_revision_text</span><span class="p">(</span><span class="n">article</span><span class="p">)</span>
+                <span class="n">results</span> <span class="o">=</span> <span class="n">pattern</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">article_text</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">link</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+                    <span class="n">_source</span> <span class="o">=</span> <span class="n">link</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">_link</span> <span class="o">=</span> <span class="n">link</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">_source</span> <span class="o">==</span> <span class="s">&#39;wiki&#39;</span><span class="p">:</span>
+                        <span class="c">#adjacency article links</span>
+                        <span class="k">for</span> <span class="n">_article</span> <span class="ow">in</span> <span class="n">articles</span><span class="p">:</span>
+                            <span class="c">#match link with article</span>
+                            <span class="k">if</span> <span class="n">_article</span><span class="o">.</span><span class="n">slug</span> <span class="o">==</span> <span class="n">_link</span><span class="p">:</span>
+                                <span class="c">#doesnt point to itself</span>
+                                <span class="k">if</span> <span class="n">_article</span> <span class="o">!=</span> <span class="n">article</span><span class="p">:</span>
+                                    <span class="c">#target node doesn&#39;t exist yet</span>
+                                    <span class="k">if</span> <span class="n">_article</span><span class="o">.</span><span class="n">id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">gr</span><span class="o">.</span><span class="n">nodes</span><span class="p">():</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">_create_node</span><span class="p">(</span><span class="n">gr</span><span class="p">,</span> <span class="n">_article</span><span class="p">)</span>
+                                        <span class="n">gr</span><span class="o">.</span><span class="n">add_edge</span><span class="p">((</span><span class="n">article</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">_article</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+                                    <span class="k">else</span><span class="p">:</span>
+                                        <span class="k">if</span> <span class="ow">not</span> <span class="n">gr</span><span class="o">.</span><span class="n">has_edge</span><span class="p">((</span><span class="n">_article</span><span class="o">.</span><span class="n">id</span><span class="p">,</span><span class="n">article</span><span class="o">.</span><span class="n">id</span><span class="p">)):</span>
+                                            <span class="n">gr</span><span class="o">.</span><span class="n">add_edge</span><span class="p">((</span><span class="n">article</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">_article</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">graph_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_graph_to_thejit_tree</span><span class="p">(</span><span class="n">gr</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">graph_info</span> <span class="o">=</span> <span class="bp">False</span>
+
+
+    <span class="k">def</span> <span class="nf">_create_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">article</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create pygraph node&quot;&quot;&quot;</span>
+        <span class="n">graph</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">article</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">graph</span><span class="o">.</span><span class="n">add_node_attribute</span><span class="p">(</span><span class="n">article</span><span class="o">.</span><span class="n">id</span><span class="p">,{</span>
+            <span class="s">&#39;name&#39;</span><span class="p">:</span><span class="n">article</span><span class="o">.</span><span class="n">slug</span><span class="p">,</span>
+            <span class="s">&#39;data&#39;</span><span class="p">:{}</span>
+        <span class="p">})</span>
+
+
+    <span class="k">def</span> <span class="nf">_format_graph_to_thejit_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">graph</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert pygraph graph to theJIT compatible graph&quot;&quot;&quot;</span>
+        <span class="n">thejit_graph</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">():</span>
+            <span class="n">jit_node</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">node_attr</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">jit_node</span><span class="p">[</span><span class="s">&#39;id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span>
+            <span class="n">jit_node</span><span class="p">[</span><span class="s">&#39;adjacencies&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">node_neighbors</span><span class="p">[</span><span class="n">node</span><span class="p">]</span>
+            <span class="n">thejit_graph</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">jit_node</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">thejit_graph</span>
+
+
+    <span class="k">def</span> <span class="nf">_format_graph_to_thejit_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert pygraph graph to theJIT compatible tree. This will fail if you have a</span>
+<span class="sd">        &#39;disconnected&#39; graph&quot;&quot;&quot;</span>
+        <span class="n">thejit_graph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_node</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[])</span>
+        <span class="k">return</span> <span class="n">thejit_graph</span>
+
+
+    <span class="k">def</span> <span class="nf">_make_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">all_nodes</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a jit node from pygraph nodes. Check if there any &#39;data&#39; attrs inside `graph`</span>
+<span class="sd">        we can use&quot;&quot;&quot;</span>
+        <span class="n">jit_node</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">jit_node</span><span class="p">[</span><span class="s">&#39;id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span>
+        <span class="n">jit_node</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">node_attr</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;name&#39;</span><span class="p">]</span>
+        <span class="n">jit_children</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">node_neighbors</span><span class="p">[</span><span class="n">node</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">all_nodes</span><span class="p">:</span>
+                <span class="c"># Avoid infinite recursion!</span>
+                <span class="k">continue</span>
+            <span class="n">jit_children</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_make_node</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="n">all_nodes</span> <span class="o">+</span> <span class="p">[</span><span class="n">child</span><span class="p">]))</span>
+        <span class="n">jit_node</span><span class="p">[</span><span class="s">&#39;children&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">jit_children</span>
+        <span class="k">return</span> <span class="n">jit_node</span>      
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">HWIOS v0.6 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, OS-Networks.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.8.
+    </div>
+  </body>
+</html>

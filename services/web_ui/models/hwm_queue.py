@@ -20,7 +20,7 @@ from twisted.web import resource, server, http
 from twisted.internet import defer, protocol, reactor
 from twisted.python import log, reflect, failure
 
-from hwios.core.application import HWIOS
+from core.application import HWIOS
 
 class HWM_Queue(object):
     """Queueing mechanism for the websocket. Not functional yet"""

@@ -1,0 +1,1001 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>services.web_ui.controllers.ws.opensim &mdash; HWIOS v0.6 documentation</title>
+    <link rel="stylesheet" href="../../../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '0.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="HWIOS v0.6 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">HWIOS v0.6 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for services.web_ui.controllers.ws.opensim</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    services.web_ui.controllers.ws.opensim</span>
+<span class="sd">    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">    The websocket controller for the wiki module</span>
+
+<span class="sd">    :copyright: Copyright 2011-2012 OS-Networks</span>
+<span class="sd">    :license: LGPL, See LICENSE for details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span><span class="o">,</span><span class="nn">sys</span><span class="o">,</span><span class="nn">uuid</span><span class="o">,</span><span class="nn">time</span><span class="o">,</span> <span class="nn">uuid</span><span class="o">,</span> <span class="nn">random</span><span class="o">,</span> <span class="nn">hashlib</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">import</span> <span class="nn">pymysql</span>
+
+<span class="kn">from</span> <span class="nn">twisted.internet</span> <span class="kn">import</span> <span class="n">defer</span><span class="p">,</span> <span class="n">reactor</span>
+<span class="kn">from</span> <span class="nn">django.template.loader</span> <span class="kn">import</span> <span class="n">render_to_string</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">django.db</span> <span class="kn">import</span> <span class="n">models</span>
+<span class="kn">from</span> <span class="nn">django.db</span> <span class="kn">import</span> <span class="n">connections</span>
+<span class="kn">from</span> <span class="nn">django.core.exceptions</span> <span class="kn">import</span> <span class="n">ObjectDoesNotExist</span>
+
+<span class="kn">from</span> <span class="nn">core.application</span> <span class="kn">import</span> <span class="n">HWIOS</span>
+<span class="kn">from</span> <span class="nn">web_ui.models.ws_auth</span> <span class="kn">import</span> <span class="n">WSAuth</span>
+<span class="kn">from</span> <span class="nn">web_ui.models.opensim</span> <span class="kn">import</span> <span class="n">Simulators</span><span class="p">,</span> <span class="n">Luggage</span><span class="p">,</span> <span class="n">Regions</span><span class="p">,</span> <span class="n">Scenes</span><span class="p">,</span> <span class="n">Maps</span>
+
+<span class="kn">from</span> <span class="nn">web_ui.models.profiles</span> <span class="kn">import</span> <span class="n">Profile</span>
+<span class="kn">from</span> <span class="nn">web_ui.forms.opensim</span> <span class="kn">import</span> <span class="n">RegionForm</span><span class="p">,</span> <span class="n">BackupRegionForm</span><span class="p">,</span> <span class="n">LoadSceneForm</span><span class="p">,</span> <span class="n">UploadSceneForm</span><span class="p">,</span> <span class="n">BackupLuggageForm</span><span class="p">,</span> <span class="n">LoadLuggageForm</span><span class="p">,</span> <span class="n">UploadLuggageForm</span><span class="p">,</span> <span class="n">SimulatorSettingsForm</span><span class="p">,</span> <span class="n">MapSettingsForm</span>
+
+<span class="kn">from</span> <span class="nn">web_ui.models.notifications</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">web_ui.models.activity</span> <span class="kn">import</span> <span class="o">*</span>
+
+
+
+<span class="k">class</span> <span class="nc">OSauth</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+<div class="viewcode-block" id="OSauth"><a class="viewcode-back" href="../../../../../modules/opensim.html#services.web_ui.controllers.ws.opensim.OSauth">[docs]</a>    <span class="sd">&quot;&quot;&quot;Representation of vanilla Opensim&#39;s auth table&quot;&quot;&quot;</span>
+    <span class="n">connection_name</span><span class="o">=</span><span class="s">&quot;grid&quot;</span>
+
+    <span class="n">UUID</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">36</span><span class="p">,</span> <span class="n">unique</span> <span class="o">=</span> <span class="bp">True</span><span class="p">,</span><span class="n">db_column</span><span class="o">=</span><span class="s">&#39;UUID&#39;</span><span class="p">)</span>
+    <span class="n">passwordHash</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+    <span class="n">passwordSalt</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+    <span class="n">webLoginKey</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">36</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="s">&#39;00000000-0000-0000-0000-000000000000&#39;</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">db_table</span> <span class="o">=</span> <span class="s">&#39;auth&#39;</span>
+        <span class="n">app_label</span> <span class="o">=</span> <span class="s">&#39;core&#39;</span>
+        <span class="n">managed</span> <span class="o">=</span> <span class="bp">False</span>
+
+
+<span class="k">class</span> <span class="nc">OSUserAccounts</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span></div>
+<div class="viewcode-block" id="OSUserAccounts"><a class="viewcode-back" href="../../../../../modules/opensim.html#services.web_ui.controllers.ws.opensim.OSUserAccounts">[docs]</a>    <span class="sd">&quot;&quot;&quot;Representation of vanilla Opensim&#39;s user account table&quot;&quot;&quot;</span>
+    <span class="n">connection_name</span><span class="o">=</span><span class="s">&quot;grid&quot;</span>
+
+    <span class="n">PrincipalID</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">OneToOneField</span><span class="p">(</span><span class="n">OSauth</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">db_column</span><span class="o">=</span><span class="s">&#39;PrincipalID&#39;</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">ScopeID</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">36</span><span class="p">,</span> <span class="n">unique</span> <span class="o">=</span> <span class="bp">True</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="s">&#39;00000000-0000-0000-0000-000000000000&#39;</span><span class="p">)</span>
+    <span class="n">FirstName</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">64</span><span class="p">)</span>
+    <span class="n">LastName</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">64</span><span class="p">)</span>
+    <span class="n">Email</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">EmailField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">64</span><span class="p">)</span>
+    <span class="n">ServiceURLS</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s">&#39;HomeURI= GatekeeperURI= InventoryServerURI= AssetServerURI=&#39;</span><span class="p">)</span>
+    <span class="n">Created</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+    <span class="n">UserLevel</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">UserFlags</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">UserTitle</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">64</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">db_table</span> <span class="o">=</span> <span class="s">&#39;UserAccounts&#39;</span>
+        <span class="n">app_label</span> <span class="o">=</span> <span class="s">&#39;core&#39;</span>
+        <span class="n">managed</span> <span class="o">=</span> <span class="bp">False</span>
+
+
+<span class="k">class</span> <span class="nc">OSinventoryfolders</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span></div>
+<div class="viewcode-block" id="OSinventoryfolders"><a class="viewcode-back" href="../../../../../modules/opensim.html#services.web_ui.controllers.ws.opensim.OSinventoryfolders">[docs]</a>    <span class="sd">&quot;&quot;&quot;Representation of vanilla Opensim&#39;s inventory table&quot;&quot;&quot;</span>
+    <span class="n">connection_name</span><span class="o">=</span><span class="s">&quot;grid&quot;</span>
+
+    <span class="n">foldername</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="s">&quot;My Inventory&quot;</span><span class="p">)</span>
+    <span class="nb">type</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
+    <span class="n">version</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">folderID</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">36</span><span class="p">,</span><span class="n">db_column</span><span class="o">=</span><span class="s">&#39;folderID&#39;</span><span class="p">)</span>
+    <span class="n">agentID</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">36</span><span class="p">)</span>
+    <span class="n">parentFolderID</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">36</span><span class="p">,</span><span class="n">default</span><span class="o">=</span><span class="s">&#39;00000000-0000-0000-0000-000000000000&#39;</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">db_table</span> <span class="o">=</span> <span class="s">&#39;inventoryfolders&#39;</span>
+        <span class="n">app_label</span> <span class="o">=</span> <span class="s">&#39;core&#39;</span>
+        <span class="n">managed</span> <span class="o">=</span> <span class="bp">False</span>
+        
+        
+<span class="k">class</span> <span class="nc">WS_OpenSim</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span></div>
+<div class="viewcode-block" id="WS_OpenSim"><a class="viewcode-back" href="../../../../../modules/opensim.html#services.web_ui.controllers.ws.opensim.WS_OpenSim">[docs]</a>    <span class="sd">&quot;&quot;&quot;Websocket handler for the opensim module.&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dispatcher</span><span class="p">):</span>
+        <span class="n">dispatcher</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="s">&#39;profile_changed&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">change_avatar</span><span class="p">)</span>
+        <span class="n">dispatcher</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="s">&#39;profile_created&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">change_avatar</span><span class="p">)</span>
+        <span class="n">dispatcher</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="s">&#39;profile_deleted&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">delete_avatar</span><span class="p">)</span>
+
+    
+    <span class="k">def</span> <span class="nf">change_avatar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">profile</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_OpenSim.change_avatar"><a class="viewcode-back" href="../../../../../modules/opensim.html#services.web_ui.controllers.ws.opensim.WS_OpenSim.change_avatar">[docs]</a>        <span class="sd">&quot;&quot;&quot;After hwios changes the profile, this observer takes care of updating the opensim profile.</span>
+<span class="sd">        </span>
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param Profile profile: The profile that got updated</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#check if grid db exists first. For now use pymysql handling(so, mysql only for now)</span>
+        <span class="k">try</span><span class="p">:</span>            
+            <span class="n">cursor</span> <span class="o">=</span> <span class="n">connections</span><span class="p">[</span><span class="s">&#39;grid&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">pymysql</span><span class="o">.</span><span class="n">err</span><span class="o">.</span><span class="n">InternalError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>            
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">osprofile</span> <span class="o">=</span> <span class="n">OSUserAccounts</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">using</span><span class="p">(</span><span class="s">&#39;grid&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">PrincipalID</span> <span class="o">=</span> <span class="n">profile</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>            
+            <span class="n">osauth</span><span class="o">=</span><span class="n">OSauth</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">using</span><span class="p">(</span><span class="s">&#39;grid&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">UUID</span><span class="o">=</span><span class="n">profile</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+            <span class="n">osauth</span><span class="o">.</span><span class="n">passwordSalt</span> <span class="o">=</span> <span class="n">profile</span><span class="o">.</span><span class="n">salt</span>
+            <span class="n">osauth</span><span class="o">.</span><span class="n">passwordHash</span> <span class="o">=</span> <span class="n">profile</span><span class="o">.</span><span class="n">password</span>
+            <span class="n">osauth</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+            
+            <span class="n">osprofile</span><span class="o">.</span><span class="n">FirstName</span> <span class="o">=</span> <span class="n">profile</span><span class="o">.</span><span class="n">first_name</span>
+            <span class="n">osprofile</span><span class="o">.</span><span class="n">LastName</span> <span class="o">=</span> <span class="n">profile</span><span class="o">.</span><span class="n">last_name</span>
+            <span class="n">osprofile</span><span class="o">.</span><span class="n">Email</span> <span class="o">=</span> <span class="n">profile</span><span class="o">.</span><span class="n">email</span>
+            <span class="n">osprofile</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">ObjectDoesNotExist</span><span class="p">:</span>
+            <span class="c">#a user with this name already exist</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">osprofile</span> <span class="o">=</span> <span class="n">OSUserAccounts</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">using</span><span class="p">(</span><span class="s">&#39;grid&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">FirstName</span><span class="o">=</span><span class="n">profile</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span> <span class="n">LastName</span><span class="o">=</span><span class="n">profile</span><span class="o">.</span><span class="n">last_name</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">delete_avatar</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">profile</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">ObjectDoesNotExist</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">osauth</span><span class="o">=</span><span class="n">OSauth</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">UUID</span><span class="o">=</span><span class="n">profile</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">passwordHash</span><span class="o">=</span> <span class="n">profile</span><span class="o">.</span><span class="n">password</span><span class="p">,</span> <span class="n">passwordSalt</span> <span class="o">=</span> <span class="n">profile</span><span class="o">.</span><span class="n">salt</span><span class="p">)</span>
+                <span class="n">osprofile</span> <span class="o">=</span> <span class="n">OSUserAccounts</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">using</span><span class="p">(</span><span class="s">&#39;grid&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">PrincipalID</span><span class="o">=</span><span class="n">osauth</span><span class="p">,</span> <span class="n">FirstName</span><span class="o">=</span><span class="n">profile</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span> <span class="n">LastName</span><span class="o">=</span><span class="n">profile</span><span class="o">.</span><span class="n">last_name</span><span class="p">,</span> <span class="n">Email</span><span class="o">=</span><span class="n">profile</span><span class="o">.</span><span class="n">email</span><span class="p">)</span>
+                <span class="n">osfolder</span> <span class="o">=</span> <span class="n">OSinventoryfolders</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">using</span><span class="p">(</span><span class="s">&#39;grid&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">folderID</span><span class="o">=</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">(),</span><span class="n">agentID</span><span class="o">=</span><span class="n">profile</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">ObjectDoesNotExist</span><span class="p">:</span>
+                <span class="k">pass</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span><span class="s">&#39;raw_password&#39;</span><span class="p">):</span>
+            <span class="k">del</span> <span class="n">profile</span><span class="o">.</span><span class="n">raw_password</span>
+
+
+    <span class="k">def</span> <span class="nf">delete_avatar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">profile_uuid</span><span class="p">):</span></div>
+<div class="viewcode-block" id="WS_OpenSim.delete_avatar"><a class="viewcode-back" href="../../../../../modules/opensim.html#services.web_ui.controllers.ws.opensim.WS_OpenSim.delete_avatar">[docs]</a>        <span class="sd">&quot;&quot;&quot;After hwios changes the profile, this observer takes care of deleting the opensim profile.</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param str profile_uuid: The uuid of the profile to delete</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#check if grid db exists first.</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cursor</span> <span class="o">=</span> <span class="n">connections</span><span class="p">[</span><span class="s">&#39;grid&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">pymysql</span><span class="o">.</span><span class="n">err</span><span class="o">.</span><span class="n">InternalError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">try</span><span class="p">:</span> <span class="n">osprofile</span> <span class="o">=</span> <span class="n">OSUserAccounts</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">using</span><span class="p">(</span><span class="s">&#39;grid&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span> <span class="o">=</span> <span class="n">profile_uuid</span><span class="p">)</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">ObjectDoesNotExist</span><span class="p">:</span> <span class="k">pass</span>
+        <span class="k">try</span><span class="p">:</span> <span class="n">osauth</span> <span class="o">=</span> <span class="n">OSauth</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">using</span><span class="p">(</span><span class="s">&#39;grid&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span> <span class="o">=</span> <span class="n">profile_uuid</span><span class="p">)</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">ObjectDoesNotExist</span><span class="p">:</span> <span class="k">pass</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">osfolders</span> <span class="o">=</span> <span class="n">OSinventoryfolders</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">using</span><span class="p">(</span><span class="s">&#39;grid&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">agentID</span> <span class="o">=</span> <span class="n">profile_uuid</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">osfolder</span> <span class="ow">in</span> <span class="n">osfolders</span><span class="p">:</span>
+                <span class="n">osfolder</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">ObjectDoesNotExist</span><span class="p">:</span> <span class="k">pass</span>    
+    
+    
+    <span class="nd">@WSAuth.is_staff</span></div>
+    <span class="k">def</span> <span class="nf">view_regions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_OpenSim.view_regions"><a class="viewcode-back" href="../../../../../modules/opensim.html#services.web_ui.controllers.ws.opensim.WS_OpenSim.view_regions">[docs]</a>        <span class="sd">&quot;&quot;&quot;Renders the current available regions view</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :return: dict - Html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#check if grid db exists first.</span>
+        <span class="n">scenes</span> <span class="o">=</span> <span class="n">Scenes</span><span class="o">.</span><span class="n">get_scenes</span><span class="p">()</span>
+        <span class="n">regions</span> <span class="o">=</span> <span class="n">Regions</span><span class="o">.</span><span class="n">get_regions</span><span class="p">()</span>
+        <span class="n">region_services</span> <span class="o">=</span> <span class="n">Regions</span><span class="p">()</span><span class="o">.</span><span class="n">get_region_services</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">count1</span><span class="p">,</span><span class="n">region_service</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">region_services</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">count2</span><span class="p">,</span><span class="n">region</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">region_service</span><span class="p">[</span><span class="s">&#39;regions&#39;</span><span class="p">]):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="s">&#39;MasterAvatarUUID&#39;</span> <span class="ow">in</span> <span class="n">region</span><span class="p">:</span>
+                        <span class="n">profile</span> <span class="o">=</span> <span class="n">Profile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">uuid</span> <span class="o">=</span> <span class="n">region</span><span class="p">[</span><span class="s">&#39;MasterAvatarUUID&#39;</span><span class="p">])</span>
+                        <span class="n">region_services</span><span class="p">[</span><span class="n">count1</span><span class="p">][</span><span class="s">&#39;regions&#39;</span><span class="p">][</span><span class="n">count2</span><span class="p">][</span><span class="s">&#39;profile&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;first_name&#39;</span><span class="p">:</span><span class="n">profile</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span><span class="s">&#39;last_name&#39;</span><span class="p">:</span><span class="n">profile</span><span class="o">.</span><span class="n">last_name</span><span class="p">}</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">region_services</span><span class="p">[</span><span class="n">count1</span><span class="p">][</span><span class="s">&#39;regions&#39;</span><span class="p">][</span><span class="n">count2</span><span class="p">][</span><span class="s">&#39;profile&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;first_name&#39;</span><span class="p">:</span><span class="s">&#39;Invalid&#39;</span><span class="p">,</span><span class="s">&#39;last_name&#39;</span><span class="p">:</span><span class="s">&#39;Invalid&#39;</span><span class="p">}</span>
+                <span class="k">except</span> <span class="n">ObjectDoesNotExist</span><span class="p">,</span><span class="ne">KeyError</span><span class="p">:</span>
+                    <span class="n">region_services</span><span class="p">[</span><span class="n">count1</span><span class="p">][</span><span class="s">&#39;regions&#39;</span><span class="p">][</span><span class="n">count2</span><span class="p">][</span><span class="s">&#39;profile&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;first_name&#39;</span><span class="p">:</span><span class="s">&#39;Invalid&#39;</span><span class="p">,</span><span class="s">&#39;last_name&#39;</span><span class="p">:</span><span class="s">&#39;Invalid&#39;</span><span class="p">}</span>
+        <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;opensim/read_regions.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;regions&#39;</span><span class="p">:</span> <span class="n">regions</span><span class="p">,</span><span class="s">&#39;scenes&#39;</span><span class="p">:</span><span class="n">scenes</span><span class="p">})</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">}}}</span>
+        
+    
+    <span class="nd">@defer.inlineCallbacks</span></div>
+    <span class="nd">@WSAuth.is_staff</span>
+    <span class="k">def</span> <span class="nf">create_region</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_OpenSim.create_region"><a class="viewcode-back" href="../../../../../modules/opensim.html#services.web_ui.controllers.ws.opensim.WS_OpenSim.create_region">[docs]</a>        <span class="sd">&quot;&quot;&quot;Either renders the template to create a new region, or handle the creation process</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param dict params: Optional; contains the form parameters</span>
+<span class="sd">        :return: dict - Html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">params</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">form</span> <span class="o">=</span> <span class="n">RegionForm</span><span class="p">()</span>
+            <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;opensim/create_region.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;form&#39;</span><span class="p">:</span><span class="n">form</span><span class="p">})</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">}}}</span> 
+            <span class="n">defer</span><span class="o">.</span><span class="n">returnValue</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">form</span> <span class="o">=</span> <span class="n">RegionForm</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+                <span class="n">response</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;status&#39;</span><span class="p">:{}}</span>
+                <span class="n">profile</span> <span class="o">=</span> <span class="n">Profile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s">&#39;owner&#39;</span><span class="p">])</span>
+                <span class="n">radmin_params</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s">&#39;region_name&#39;</span><span class="p">:</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">],</span>
+                <span class="s">&#39;region_id&#39;</span><span class="p">:</span><span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()),</span>
+                <span class="s">&#39;region_x&#39;</span><span class="p">:</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;sim_location_x&#39;</span><span class="p">],</span>
+                <span class="s">&#39;region_y&#39;</span><span class="p">:</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;sim_location_y&#39;</span><span class="p">],</span>
+                <span class="s">&#39;estate_owner_uuid&#39;</span><span class="p">:</span><span class="n">profile</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span>
+                <span class="s">&#39;estate_owner_first&#39;</span><span class="p">:</span><span class="n">profile</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span>
+                <span class="s">&#39;estate_owner_last&#39;</span><span class="p">:</span><span class="n">profile</span><span class="o">.</span><span class="n">last_name</span><span class="p">,</span>
+                <span class="s">&#39;estate_name&#39;</span><span class="p">:</span><span class="s">&#39;My Estate&#39;</span><span class="p">,</span>
+                <span class="s">&#39;public&#39;</span><span class="p">:</span><span class="s">&#39;true&#39;</span><span class="p">,</span>
+                <span class="s">&#39;enable_voice&#39;</span><span class="p">:</span><span class="s">&#39;true&#39;</span>
+                <span class="p">}</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">pb_server</span><span class="o">.</span><span class="n">radmin_proxy</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;service&#39;</span><span class="p">],</span><span class="s">&#39;admin_create_region&#39;</span><span class="p">,</span><span class="n">radmin_params</span><span class="p">)</span>
+                <span class="n">client_response</span><span class="p">,</span> <span class="n">tpl_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_regions</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
+                <span class="k">if</span> <span class="s">&#39;success&#39;</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span> 
+                    <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;success&#39;</span><span class="p">]:</span>
+                        <span class="c">#queued = Maps.render_cell(params[&#39;sim_location_x&#39;],params[&#39;sim_location_y&#39;],image_loc)</span>
+                        <span class="c">#map-image is not ready yet at this point. Call a little later                        </span>
+                        <span class="k">def</span> <span class="nf">_map_cb</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">region_uuid</span><span class="p">):</span>
+                            <span class="n">service_client</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">pb_server</span><span class="o">.</span><span class="n">search_service</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;service&#39;</span><span class="p">])</span>
+                            <span class="n">image_loc</span> <span class="o">=</span> <span class="s">&#39;http://</span><span class="si">%s</span><span class="s">:</span><span class="si">%s</span><span class="s">/index.php?method=regionImage</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">service_client</span><span class="p">[</span><span class="s">&#39;client&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">peer</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="n">service_client</span><span class="p">[</span><span class="s">&#39;service&#39;</span><span class="p">][</span><span class="s">&#39;port&#39;</span><span class="p">],</span> <span class="n">region_uuid</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;-&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">))</span>
+                            <span class="n">queued</span> <span class="o">=</span> <span class="n">Maps</span><span class="o">.</span><span class="n">render_cell</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;sim_location_x&#39;</span><span class="p">],</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;sim_location_y&#39;</span><span class="p">],</span><span class="n">image_loc</span><span class="p">)</span>
+                        <span class="n">reactor</span><span class="o">.</span><span class="n">callLater</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">_map_cb</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;region_uuid&#39;</span><span class="p">])</span>
+                        <span class="n">client_response</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s">&#39;status&#39;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;REGION_CREATED&#39;</span><span class="p">,</span>
+                            <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Succesfully created region in simulator!&#39;</span><span class="p">),</span>
+                            <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+                            <span class="p">}</span>
+                        <span class="p">})</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;error&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;SIM_OFFLINE&#39;</span><span class="p">:</span>
+                            <span class="n">client_response</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s">&#39;status&#39;</span><span class="p">:</span> <span class="p">{</span>
+                                <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;REGION_CREATED&#39;</span><span class="p">,</span>
+                                <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Region created on offline simulator. Please verify that the simulator still boots correctly...&#39;</span><span class="p">),</span>
+                                <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+                                <span class="p">}</span>
+                            <span class="p">})</span>
+                    <span class="n">notify_others</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">client_response</span><span class="p">,</span><span class="s">&#39;/opensim/regions/modified/&#39;</span><span class="p">,</span> <span class="s">&#39;^/opensim/regions/$&#39;</span><span class="p">,</span> <span class="n">tpl_params</span><span class="p">)</span>
+                    <span class="n">publish_activity</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Region created&#39;</span><span class="p">),</span><span class="s">&#39;/opensim/regions/&#39;</span><span class="p">,[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">][</span><span class="s">&#39;code&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;RADMIN_FAILED&#39;</span><span class="p">:</span>
+                        <span class="n">result</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">][</span><span class="s">&#39;feedback&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Remote Admin OpenSimulator Interface Failure!&#39;</span>
+                    <span class="n">client_response</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s">&#39;status&#39;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="n">result</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">][</span><span class="s">&#39;code&#39;</span><span class="p">],</span>
+                        <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">][</span><span class="s">&#39;feedback&#39;</span><span class="p">]),</span>
+                        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+                        <span class="p">}</span>
+                    <span class="p">})</span>               
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;opensim/create_region.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;form&#39;</span><span class="p">:</span><span class="n">form</span><span class="p">})</span>
+                <span class="n">client_response</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                        <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;FORM_INVALID&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Please pay attention to the region details...&#39;</span><span class="p">),</span>
+                        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-warning&#39;</span><span class="p">]</span>
+                    <span class="p">},</span>
+                    <span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">}}</span>
+                <span class="p">}</span> 
+            <span class="n">defer</span><span class="o">.</span><span class="n">returnValue</span><span class="p">(</span><span class="n">client_response</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">_get_regions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span></div>
+        <span class="sd">&quot;&quot;&quot;Notify_others helper that gets the template-info and rendering of the regions view&quot;&quot;&quot;</span>
+        <span class="n">scenes</span> <span class="o">=</span> <span class="n">Scenes</span><span class="o">.</span><span class="n">get_scenes</span><span class="p">()</span>
+        <span class="n">regions</span> <span class="o">=</span> <span class="n">Regions</span><span class="o">.</span><span class="n">get_regions</span><span class="p">()</span>
+        <span class="n">tpl_params</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;regions&#39;</span><span class="p">:</span> <span class="n">regions</span><span class="p">,</span><span class="s">&#39;scenes&#39;</span><span class="p">:</span><span class="n">scenes</span><span class="p">}</span>
+        <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;opensim/read_regions.html&quot;</span><span class="p">,</span> <span class="n">tpl_params</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">}}},</span>
+            <span class="p">{</span><span class="s">&#39;main&#39;</span><span class="p">:{</span><span class="s">&#39;tpl&#39;</span><span class="p">:</span><span class="s">&#39;opensim/read_regions.html&#39;</span><span class="p">,</span><span class="s">&#39;params&#39;</span><span class="p">:</span><span class="n">tpl_params</span><span class="p">}}</span>
+        <span class="p">]</span>
+        
+            
+    <span class="nd">@WSAuth.is_staff</span>
+    <span class="nd">@defer.inlineCallbacks</span>
+    <span class="k">def</span> <span class="nf">edit_region</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">region_uuid</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_OpenSim.edit_region"><a class="viewcode-back" href="../../../../../modules/opensim.html#services.web_ui.controllers.ws.opensim.WS_OpenSim.edit_region">[docs]</a>        <span class="sd">&quot;&quot;&quot;Either renders the template to edit an existing region, or handle the update process</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param str region_uuid: The region uuid reference to select the appropriate region for updating</span>
+<span class="sd">        :param dict params: Optional; contains the form parameters</span>
+<span class="sd">        :return: dict - Status and Html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">params</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">region</span> <span class="o">=</span> <span class="n">Regions</span><span class="p">()</span><span class="o">.</span><span class="n">get_region</span><span class="p">(</span><span class="n">region_uuid</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;sim_uuid&#39;</span><span class="p">:</span> <span class="n">region</span><span class="p">[</span><span class="s">&#39;RegionUUID&#39;</span><span class="p">],</span> 
+                    <span class="s">&#39;internal_ip_address&#39;</span><span class="p">:</span><span class="n">region</span><span class="p">[</span><span class="s">&#39;InternalAddress&#39;</span><span class="p">],</span>
+                    <span class="s">&#39;internal_ip_port&#39;</span><span class="p">:</span><span class="n">region</span><span class="p">[</span><span class="s">&#39;InternalPort&#39;</span><span class="p">],</span>
+                    <span class="s">&#39;external_host_name&#39;</span><span class="p">:</span><span class="n">region</span><span class="p">[</span><span class="s">&#39;ExternalHostName&#39;</span><span class="p">],</span>
+                    <span class="s">&#39;object_capacity&#39;</span><span class="p">:</span><span class="mi">15000</span><span class="p">,</span>
+                    <span class="s">&#39;sim_location_x&#39;</span><span class="p">:</span><span class="n">region</span><span class="p">[</span><span class="s">&#39;Location&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+                    <span class="s">&#39;sim_location_y&#39;</span><span class="p">:</span><span class="n">region</span><span class="p">[</span><span class="s">&#39;Location&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span>
+                    <span class="s">&#39;name&#39;</span><span class="p">:</span><span class="n">region</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">],</span>
+                    <span class="s">&#39;owner&#39;</span><span class="p">:</span><span class="bp">None</span><span class="p">,</span>
+                    <span class="s">&#39;service&#39;</span><span class="p">:</span><span class="n">region</span><span class="p">[</span><span class="s">&#39;service_uuid&#39;</span><span class="p">]}</span>
+            <span class="n">form</span> <span class="o">=</span> <span class="n">RegionForm</span><span class="p">(</span><span class="n">initial</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;opensim/edit_region.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;form&#39;</span><span class="p">:</span><span class="n">form</span><span class="p">,</span><span class="s">&#39;region_uuid&#39;</span><span class="p">:</span><span class="n">region_uuid</span><span class="p">})</span>
+            <span class="n">defer</span><span class="o">.</span><span class="n">returnValue</span><span class="p">({</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">}}})</span>
+        <span class="k">else</span><span class="p">:</span>        
+            <span class="n">response</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;status&#39;</span><span class="p">:{}}</span>
+            <span class="n">profile</span> <span class="o">=</span> <span class="n">Profile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s">&#39;owner&#39;</span><span class="p">])</span>
+            <span class="n">radmin_params</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&#39;region_name&#39;</span><span class="p">:</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">],</span>
+            <span class="s">&#39;region_id&#39;</span><span class="p">:</span><span class="n">region_uuid</span><span class="p">,</span>
+            <span class="s">&#39;region_x&#39;</span><span class="p">:</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;sim_location_x&#39;</span><span class="p">],</span>
+            <span class="s">&#39;region_y&#39;</span><span class="p">:</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;sim_location_y&#39;</span><span class="p">],</span>
+            <span class="s">&#39;region_master_uuid&#39;</span><span class="p">:</span><span class="n">profile</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span>
+            <span class="s">&#39;region_master_first&#39;</span><span class="p">:</span><span class="n">profile</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span>
+            <span class="s">&#39;region_master_last&#39;</span><span class="p">:</span><span class="n">profile</span><span class="o">.</span><span class="n">last_name</span><span class="p">,</span>
+            <span class="s">&#39;region_master_password&#39;</span><span class="p">:</span><span class="s">&#39;foo&#39;</span><span class="p">,</span>
+            <span class="s">&#39;public&#39;</span><span class="p">:</span><span class="s">&#39;true&#39;</span><span class="p">,</span>
+            <span class="s">&#39;enable_voice&#39;</span><span class="p">:</span><span class="s">&#39;true&#39;</span>
+            <span class="p">}</span>
+            <span class="c">#clean old map-location with an opaque tile</span>
+            <span class="n">region_old</span> <span class="o">=</span> <span class="n">Regions</span><span class="p">()</span><span class="o">.</span><span class="n">get_region</span><span class="p">(</span><span class="n">region_uuid</span><span class="p">)</span>
+            <span class="n">old_xy</span> <span class="o">=</span> <span class="p">[</span><span class="n">region_old</span><span class="p">[</span><span class="s">&#39;Location&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span><span class="n">region_old</span><span class="p">[</span><span class="s">&#39;Location&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]]</span>
+            <span class="n">queued</span> <span class="o">=</span> <span class="n">Maps</span><span class="o">.</span><span class="n">render_cell</span><span class="p">(</span><span class="n">old_xy</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">old_xy</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">service_client</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">pb_server</span><span class="o">.</span><span class="n">search_service</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;service&#39;</span><span class="p">])</span>
+            <span class="c">#if the service is not online, take the existing image</span>
+            <span class="n">tms_config</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">services</span><span class="p">[</span><span class="s">&#39;tms&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">config</span>
+            <span class="k">if</span> <span class="n">tms_config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span><span class="s">&#39;map&#39;</span><span class="p">,</span><span class="s">&#39;osm&#39;</span><span class="p">):</span> <span class="n">ztop</span> <span class="o">=</span> <span class="n">tms_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;map&#39;</span><span class="p">,</span><span class="s">&#39;osm_ztop&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span> <span class="n">ztop</span> <span class="o">=</span> <span class="n">tms_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;map&#39;</span><span class="p">,</span><span class="s">&#39;raw_ztop&#39;</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">service_client</span><span class="p">[</span><span class="s">&#39;service&#39;</span><span class="p">][</span><span class="s">&#39;status&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;OFF&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">tms_config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span><span class="s">&#39;service&#39;</span><span class="p">,</span><span class="s">&#39;ssl&#39;</span><span class="p">):</span>
+                    <span class="n">image_loc</span> <span class="o">=</span> <span class="s">&#39;https://</span><span class="si">%s</span><span class="s">:</span><span class="si">%s</span><span class="s">/tiles/</span><span class="si">%s</span><span class="s">/</span><span class="si">%s</span><span class="s">/</span><span class="si">%s</span><span class="s">.</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">HWIOS</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;general&#39;</span><span class="p">,</span><span class="s">&#39;uri&#39;</span><span class="p">),</span><span class="n">tms_config</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span><span class="s">&#39;service&#39;</span><span class="p">,</span><span class="s">&#39;port&#39;</span><span class="p">),</span> <span class="n">ztop</span> <span class="p">,</span><span class="n">old_xy</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">old_xy</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">tms_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;map&#39;</span><span class="p">,</span><span class="s">&#39;format&#39;</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">image_loc</span> <span class="o">=</span> <span class="s">&#39;http://</span><span class="si">%s</span><span class="s">:</span><span class="si">%s</span><span class="s">/tiles/</span><span class="si">%s</span><span class="s">/</span><span class="si">%s</span><span class="s">/</span><span class="si">%s</span><span class="s">.</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">HWIOS</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;general&#39;</span><span class="p">,</span><span class="s">&#39;uri&#39;</span><span class="p">),</span><span class="n">tms_config</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span><span class="s">&#39;service&#39;</span><span class="p">,</span><span class="s">&#39;port&#39;</span><span class="p">),</span> <span class="n">ztop</span> <span class="p">,</span><span class="n">old_xy</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">old_xy</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">tms_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;map&#39;</span><span class="p">,</span><span class="s">&#39;format&#39;</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">image_loc</span> <span class="o">=</span> <span class="s">&#39;http://</span><span class="si">%s</span><span class="s">:</span><span class="si">%s</span><span class="s">/index.php?method=regionImage</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">service_client</span><span class="p">[</span><span class="s">&#39;client&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">peer</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="n">service_client</span><span class="p">[</span><span class="s">&#39;service&#39;</span><span class="p">][</span><span class="s">&#39;port&#39;</span><span class="p">],</span> <span class="n">region_uuid</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;-&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">))</span>
+            <span class="n">queued</span> <span class="o">=</span> <span class="n">Maps</span><span class="o">.</span><span class="n">render_cell</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;sim_location_x&#39;</span><span class="p">],</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;sim_location_y&#39;</span><span class="p">],</span><span class="n">image_loc</span><span class="p">)</span>
+            <span class="n">pb_client</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">pb_server</span><span class="o">.</span><span class="n">search_client</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;service&#39;</span><span class="p">])</span>
+            <span class="n">watchdog</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">pb_client</span><span class="o">.</span><span class="n">switch_watchdog</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;service&#39;</span><span class="p">],</span><span class="s">&#39;TRIGGER&#39;</span><span class="p">)</span>            
+            <span class="n">result</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">pb_server</span><span class="o">.</span><span class="n">radmin_proxy</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;service&#39;</span><span class="p">],</span><span class="s">&#39;admin_shutdown&#39;</span><span class="p">,</span><span class="n">radmin_params</span><span class="p">)</span>
+            <span class="n">client_response</span><span class="p">,</span> <span class="n">tpl_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_regions</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s">&#39;error&#39;</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;error&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;SIM_OFFLINE&#39;</span><span class="p">:</span> 
+                    <span class="n">client_response</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s">&#39;status&#39;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;REGION_UPDATED&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Updated region in offline simulator!&#39;</span><span class="p">),</span>
+                        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+                        <span class="p">}</span>
+                    <span class="p">})</span>
+                <span class="k">else</span><span class="p">:</span> 
+                    <span class="n">client_response</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s">&#39;status&#39;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="n">result</span><span class="p">[</span><span class="s">&#39;error&#39;</span><span class="p">],</span>
+                        <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s">&#39;error&#39;</span><span class="p">]),</span>
+                        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-error&#39;</span><span class="p">]</span>
+                        <span class="p">}</span>
+                    <span class="p">})</span>
+            <span class="k">else</span><span class="p">:</span> 
+                <span class="n">client_response</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s">&#39;status&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;REGION_UPDATED&#39;</span><span class="p">,</span>
+                    <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Region updated. Region service restarting with watchdog...&#39;</span><span class="p">),</span>
+                    <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+                    <span class="p">}</span>
+                <span class="p">})</span>
+            <span class="n">notify_others</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">client_response</span><span class="p">,</span><span class="s">&#39;/opensim/regions/modified/&#39;</span><span class="p">,</span> <span class="s">&#39;^/opensim/regions/$&#39;</span><span class="p">,</span> <span class="n">tpl_params</span><span class="p">)</span>
+            <span class="n">publish_activity</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Region modified&#39;</span><span class="p">),</span><span class="s">&#39;/opensim/regions/&#39;</span><span class="p">,[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">defer</span><span class="o">.</span><span class="n">returnValue</span><span class="p">(</span><span class="n">client_response</span><span class="p">)</span>
+
+
+    <span class="nd">@WSAuth.is_staff</span></div>
+    <span class="nd">@defer.inlineCallbacks</span>
+    <span class="k">def</span> <span class="nf">delete_regions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_OpenSim.delete_regions"><a class="viewcode-back" href="../../../../../modules/opensim.html#services.web_ui.controllers.ws.opensim.WS_OpenSim.delete_regions">[docs]</a>        <span class="sd">&quot;&quot;&quot;Either renders the template to confirm deleting a region, or handle the deletion process ifself</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param dict params: Optional; contains the form parameters</span>
+<span class="sd">        :return: dict - Status and Html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">params</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">dialog</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;opensim/delete_region_confirmation.html&quot;</span><span class="p">)</span>
+            <span class="n">defer</span><span class="o">.</span><span class="n">returnValue</span><span class="p">({</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;dialog&#39;</span><span class="p">:</span><span class="n">dialog</span><span class="p">}}})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">deleted_offline</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">deleted_online</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">region_uuid</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+                <span class="n">region</span> <span class="o">=</span> <span class="n">Regions</span><span class="p">()</span><span class="o">.</span><span class="n">get_region</span><span class="p">(</span><span class="n">region_uuid</span><span class="p">)</span>
+                <span class="n">queued</span> <span class="o">=</span> <span class="n">Maps</span><span class="o">.</span><span class="n">render_cell</span><span class="p">(</span><span class="n">region</span><span class="p">[</span><span class="s">&#39;Location&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span><span class="n">region</span><span class="p">[</span><span class="s">&#39;Location&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">pb_server</span><span class="o">.</span><span class="n">radmin_proxy</span><span class="p">(</span><span class="n">region</span><span class="p">[</span><span class="s">&#39;service_uuid&#39;</span><span class="p">],</span><span class="s">&#39;admin_delete_region&#39;</span><span class="p">,{</span><span class="s">&#39;region_id&#39;</span><span class="p">:</span><span class="n">region_uuid</span><span class="p">})</span>
+                <span class="k">if</span> <span class="s">&#39;error&#39;</span> <span class="ow">in</span> <span class="n">result</span> <span class="ow">and</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;error&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;SIM_OFFLINE&#39;</span><span class="p">:</span>
+                    <span class="n">deleted_offline</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s">&#39;error&#39;</span><span class="p">])</span>
+                <span class="k">elif</span> <span class="s">&#39;success&#39;</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+                    <span class="n">deleted_online</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s">&#39;success&#39;</span><span class="p">])</span>            
+            <span class="n">client_response</span><span class="p">,</span> <span class="n">tpl_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_regions</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
+            <span class="n">client_response</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                    <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;DELETE_OK&#39;</span><span class="p">,</span>
+                    <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Deleted: </span><span class="si">%(online)s</span><span class="s"> online and </span><span class="si">%(offline)s</span><span class="s"> offline region(s) &#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;online&#39;</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">deleted_online</span><span class="p">),</span><span class="s">&#39;offline&#39;</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">deleted_offline</span><span class="p">)},</span>
+                    <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+                <span class="p">},</span>
+            <span class="p">})</span>
+            <span class="n">notify_others</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">client_response</span><span class="p">,</span><span class="s">&#39;/opensim/regions/modified/&#39;</span><span class="p">,</span> <span class="s">&#39;^/opensim/regions/$&#39;</span><span class="p">,</span> <span class="n">tpl_params</span><span class="p">)</span>
+            <span class="n">publish_activity</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Region deleted&#39;</span><span class="p">),</span><span class="s">&#39;/opensim/regions/&#39;</span><span class="p">,[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">defer</span><span class="o">.</span><span class="n">returnValue</span><span class="p">(</span><span class="n">client_response</span><span class="p">)</span>
+            
+
+    <span class="nd">@WSAuth.is_staff</span></div>
+    <span class="nd">@defer.inlineCallbacks</span>
+    <span class="k">def</span> <span class="nf">backup_region</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">region_uuid</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_OpenSim.backup_region"><a class="viewcode-back" href="../../../../../modules/opensim.html#services.web_ui.controllers.ws.opensim.WS_OpenSim.backup_region">[docs]</a>        <span class="sd">&quot;&quot;&quot;Either renders the template to confirm backing up a region, or handle the backup process ifself</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param str region_uuid: The region&#39;s uuid to operate on</span>
+<span class="sd">        :param dict params: Optional; contains the form parameters</span>
+<span class="sd">        :return: dict - Status and Html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">params</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">region</span> <span class="o">=</span> <span class="n">Regions</span><span class="p">()</span><span class="o">.</span><span class="n">get_region</span><span class="p">(</span><span class="n">region_uuid</span><span class="p">)</span>
+            <span class="n">current_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&#39;%Y-%m-</span><span class="si">%d</span><span class="s">-%H.%M&#39;</span><span class="p">)</span>
+            <span class="n">proposed_name</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">-</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">region</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">],</span><span class="n">current_time</span><span class="p">)</span>
+            <span class="n">form</span> <span class="o">=</span> <span class="n">BackupRegionForm</span><span class="p">(</span><span class="n">initial</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span><span class="n">proposed_name</span><span class="p">,</span><span class="s">&#39;region_uuid&#39;</span><span class="p">:</span><span class="n">region</span><span class="p">[</span><span class="s">&#39;RegionUUID&#39;</span><span class="p">],</span><span class="s">&#39;service_uuid&#39;</span><span class="p">:</span><span class="n">region</span><span class="p">[</span><span class="s">&#39;service_uuid&#39;</span><span class="p">]})</span> 
+            <span class="n">dialog</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;opensim/backup_region_confirmation.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;form&#39;</span><span class="p">:</span><span class="n">form</span><span class="p">})</span>
+            <span class="n">defer</span><span class="o">.</span><span class="n">returnValue</span><span class="p">({</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;dialog&#39;</span><span class="p">:</span><span class="n">dialog</span><span class="p">}}})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;status&#39;</span><span class="p">:{}}</span>
+            <span class="n">region</span> <span class="o">=</span> <span class="n">Regions</span><span class="p">()</span><span class="o">.</span><span class="n">get_region</span><span class="p">(</span><span class="n">region_uuid</span><span class="p">)</span>
+            <span class="n">service_client</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">pb_server</span><span class="o">.</span><span class="n">search_service</span><span class="p">(</span><span class="n">region</span><span class="p">[</span><span class="s">&#39;service_uuid&#39;</span><span class="p">])</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">service_client</span><span class="p">[</span><span class="s">&#39;client&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">backup_region</span><span class="p">(</span><span class="n">region</span><span class="p">[</span><span class="s">&#39;service_uuid&#39;</span><span class="p">],</span><span class="n">region_uuid</span><span class="p">,</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">])</span>
+            <span class="k">print</span> <span class="n">result</span>
+            <span class="k">if</span> <span class="s">&#39;saved&#39;</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;saved&#39;</span><span class="p">]:</span>
+                    <span class="n">response</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;BACKUP_MADE&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Backup of region </span><span class="si">%(name)s</span><span class="s"> finished...&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span><span class="n">region</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]},</span>
+                        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+                    <span class="p">}</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">][</span><span class="s">&#39;code&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;RADMIN_FAILED&#39;</span><span class="p">:</span>
+                    <span class="n">response</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">][</span><span class="s">&#39;i18n&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Backup failed! Region must be online when creating a backup...&#39;</span><span class="p">)</span>
+                    <span class="n">response</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">][</span><span class="s">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-error&#39;</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">response</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">][</span><span class="s">&#39;i18n&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;This may take a while...&#39;</span><span class="p">)</span>
+                    <span class="n">response</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">][</span><span class="s">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+                    
+            <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;opensim/read_regions.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;region_services&#39;</span><span class="p">:</span> <span class="n">Regions</span><span class="p">()</span><span class="o">.</span><span class="n">get_region_services</span><span class="p">(),</span><span class="s">&#39;scenes&#39;</span><span class="p">:</span><span class="n">Scenes</span><span class="o">.</span><span class="n">get_scenes</span><span class="p">()})</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">}}})</span>
+            <span class="n">defer</span><span class="o">.</span><span class="n">returnValue</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        
+
+    <span class="nd">@WSAuth.is_staff</span></div>
+    <span class="k">def</span> <span class="nf">delete_scenes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_OpenSim.delete_scenes"><a class="viewcode-back" href="../../../../../modules/opensim.html#services.web_ui.controllers.ws.opensim.WS_OpenSim.delete_scenes">[docs]</a>        <span class="sd">&quot;&quot;&quot;Either renders the template to confirm deleting a scene, or handle the scene deletion process ifself</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param dict params: Optional; contains the form parameters</span>
+<span class="sd">        :return: dict - Status and Html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">params</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">dialog</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;opensim/delete_scene_confirmation.html&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;dialog&#39;</span><span class="p">:</span><span class="n">dialog</span><span class="p">}}}</span>   
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">deleted</span> <span class="o">=</span> <span class="n">Scenes</span><span class="o">.</span><span class="n">delete_scenes</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">view_regions</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>            
+            <span class="k">if</span> <span class="n">deleted</span><span class="p">:</span>
+                <span class="n">response</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                    <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                        <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;SCENES_DELETE_OK&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Deleted: </span><span class="si">%(deleted)s</span><span class="s"> scene(s)&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;deleted&#39;</span><span class="p">:</span><span class="n">deleted</span><span class="p">},</span>
+                        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+                    <span class="p">}</span>
+                <span class="p">})</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">response</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                    <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                        <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;SCENES_DELETE_FAIL&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Failed to delete scenes. Invalid characters!&#39;</span><span class="p">),</span>
+                        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-error&#39;</span><span class="p">]</span>
+                    <span class="p">}</span>
+                <span class="p">})</span>
+            <span class="k">return</span> <span class="n">response</span>
+        
+
+    <span class="nd">@WSAuth.is_staff</span></div>
+    <span class="nd">@defer.inlineCallbacks</span>
+    <span class="k">def</span> <span class="nf">load_scene</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">scene_name</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_OpenSim.load_scene"><a class="viewcode-back" href="../../../../../modules/opensim.html#services.web_ui.controllers.ws.opensim.WS_OpenSim.load_scene">[docs]</a>        <span class="sd">&quot;&quot;&quot;Either renders the template to confirm loading up a region, or handle the scene loading process ifself</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param str scene_name: The scene&#39;s name to operate on</span>
+<span class="sd">        :param dict params: Optional; contains the form parameters</span>
+<span class="sd">        :return: dict - Status and Html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">params</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">regions</span> <span class="o">=</span> <span class="n">Regions</span><span class="o">.</span><span class="n">get_regions</span><span class="p">()</span>
+            <span class="n">selection</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">region</span> <span class="ow">in</span> <span class="n">regions</span><span class="p">:</span>
+                <span class="n">selection</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">region</span><span class="p">[</span><span class="s">&#39;RegionUUID&#39;</span><span class="p">],</span><span class="n">region</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]))</span>
+            <span class="n">form</span> <span class="o">=</span> <span class="n">LoadSceneForm</span><span class="p">(</span><span class="n">choices</span><span class="o">=</span><span class="n">selection</span><span class="p">,</span><span class="n">initial</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;scene_name&#39;</span><span class="p">:</span><span class="n">scene_name</span><span class="p">})</span>
+            <span class="n">dialog</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;opensim/load_scene_confirmation.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;form&#39;</span><span class="p">:</span><span class="n">form</span><span class="p">})</span>
+            <span class="n">defer</span><span class="o">.</span><span class="n">returnValue</span><span class="p">({</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;dialog&#39;</span><span class="p">:</span><span class="n">dialog</span><span class="p">}}})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;status&#39;</span><span class="p">:{}}</span>
+            <span class="n">region</span> <span class="o">=</span> <span class="n">Regions</span><span class="o">.</span><span class="n">get_region</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;region_uuid&#39;</span><span class="p">])</span>
+            <span class="n">service_client</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">pb_server</span><span class="o">.</span><span class="n">search_service</span><span class="p">(</span><span class="n">region</span><span class="p">[</span><span class="s">&#39;service_uuid&#39;</span><span class="p">])</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">service_client</span><span class="p">[</span><span class="s">&#39;client&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">load_scene</span><span class="p">(</span><span class="n">region</span><span class="p">[</span><span class="s">&#39;service_uuid&#39;</span><span class="p">],</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;region_uuid&#39;</span><span class="p">],</span> <span class="n">params</span><span class="p">[</span><span class="s">&#39;scene_name&#39;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="s">&#39;loaded&#39;</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;loaded&#39;</span><span class="p">]:</span>
+                    <span class="n">response</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                            <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;RESTORE_MADE&#39;</span><span class="p">,</span>
+                            <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Succesfully restored scene </span><span class="si">%(scene)s</span><span class="s"> in region </span><span class="si">%(region)s</span><span class="s">...&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;scene&#39;</span><span class="p">:</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;scene_name&#39;</span><span class="p">],</span><span class="s">&#39;region&#39;</span><span class="p">:</span><span class="n">region</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]},</span>
+                            <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s">&#39;RADMIN_FAILED&#39;</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">][</span><span class="s">&#39;code&#39;</span><span class="p">]:</span>
+                    <span class="n">response</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                            <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;RADMIN_FAILED&#39;</span><span class="p">,</span>
+                            <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">][</span><span class="s">&#39;feedback&#39;</span><span class="p">]),</span>
+                            <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-error&#39;</span><span class="p">]</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+                <span class="k">elif</span> <span class="s">&#39;error&#39;</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;error&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;SIM_OFFLINE&#39;</span><span class="p">:</span>
+                        <span class="n">response</span> <span class="o">=</span> <span class="p">{</span>
+                            <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                                <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;RESTORE_FAILED&#39;</span><span class="p">,</span>
+                                <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Restore failed! Region must be online when loading a scene...&#39;</span><span class="p">),</span>
+                                <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-error&#39;</span><span class="p">]</span>
+                            <span class="p">}</span>
+                        <span class="p">}</span>
+                    <span class="k">elif</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;error&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;radmin response timed out&#39;</span><span class="p">:</span>
+                        <span class="n">response</span> <span class="o">=</span> <span class="p">{</span>
+                            <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                                <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;RESTORE_RUNNING&#39;</span><span class="p">,</span>
+                                <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Loading this OAR may take a while. Check the console for the current progress...&#39;</span><span class="p">),</span>
+                                <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+                            <span class="p">}</span>
+                        <span class="p">}</span>
+            <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;opensim/read_regions.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;region_services&#39;</span><span class="p">:</span> <span class="n">Regions</span><span class="p">()</span><span class="o">.</span><span class="n">get_region_services</span><span class="p">(),</span><span class="s">&#39;scenes&#39;</span><span class="p">:</span><span class="n">Scenes</span><span class="o">.</span><span class="n">get_scenes</span><span class="p">()})</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">}}})</span>
+            <span class="n">defer</span><span class="o">.</span><span class="n">returnValue</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+            
+            
+    <span class="nd">@WSAuth.is_staff</span>        </div>
+    <span class="k">def</span> <span class="nf">upload_scenes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_OpenSim.upload_scenes"><a class="viewcode-back" href="../../../../../modules/opensim.html#services.web_ui.controllers.ws.opensim.WS_OpenSim.upload_scenes">[docs]</a>        <span class="sd">&quot;&quot;&quot;Renders the template that shows an upload overview of scenes. We only provide the view here.</span>
+<span class="sd">        File uploads over websocket doesn&#39;t make sense atm with utf-8 only.</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param dict params: Optional; contains the form parameters</span>
+<span class="sd">        :return: dict - Status and Html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">params</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">form</span> <span class="o">=</span> <span class="n">UploadSceneForm</span><span class="p">()</span>
+            <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;opensim/upload_scene.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;form&#39;</span><span class="p">:</span><span class="n">form</span><span class="p">})</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">}}}</span>
+            
+            
+    <span class="nd">@WSAuth.is_staff</span></div>
+    <span class="nd">@defer.inlineCallbacks</span>
+    <span class="k">def</span> <span class="nf">load_luggage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">luggage_name</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_OpenSim.load_luggage"><a class="viewcode-back" href="../../../../../modules/opensim.html#services.web_ui.controllers.ws.opensim.WS_OpenSim.load_luggage">[docs]</a>        <span class="sd">&quot;&quot;&quot;Either renders the template that shows the dialog to load lugguge,</span>
+<span class="sd">        or handle the load luggage process itself.</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param str luggage_name: The luggage&#39;s name to operate on</span>
+<span class="sd">        :param dict params: Optional; contains the form parameters</span>
+<span class="sd">        :return: dict - Status and Html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">params</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">online_simulators</span> <span class="o">=</span> <span class="n">Simulators</span><span class="o">.</span><span class="n">get_simulators</span><span class="p">(</span><span class="n">online</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="n">selection</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">simulator</span> <span class="ow">in</span> <span class="n">online_simulators</span><span class="p">:</span>
+                <span class="n">selection</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">simulator</span><span class="p">[</span><span class="s">&#39;uuid&#39;</span><span class="p">],</span><span class="n">simulator</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]))</span>
+            <span class="n">form</span> <span class="o">=</span> <span class="n">LoadLuggageForm</span><span class="p">(</span><span class="n">choices</span><span class="o">=</span><span class="n">selection</span><span class="p">,</span><span class="n">initial</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;luggage_name&#39;</span><span class="p">:</span><span class="n">luggage_name</span><span class="p">})</span>
+            <span class="n">dialog</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;opensim/load_luggage_confirmation.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;form&#39;</span><span class="p">:</span><span class="n">form</span><span class="p">})</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;dialog&#39;</span><span class="p">:</span><span class="n">dialog</span><span class="p">}}}</span>
+            <span class="n">defer</span><span class="o">.</span><span class="n">returnValue</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c">#{&#39;simulator_uuid&#39;: &#39;5ced4744-f5b7-4100-9a4e-40ab73ec5c0c&#39;, &#39;inventory_dir&#39;: &#39;/&#39;, &#39;luggage_name&#39;: &#39;InventoryDump.iar&#39;, &#39;avatar&#39;: &#39;13&#39;}</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;status&#39;</span><span class="p">:{}}</span>
+            <span class="n">online_simulators</span> <span class="o">=</span> <span class="n">Simulators</span><span class="o">.</span><span class="n">get_simulators</span><span class="p">(</span><span class="n">online</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="n">selection</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">simulator</span> <span class="ow">in</span> <span class="n">online_simulators</span><span class="p">:</span>
+                <span class="n">selection</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">simulator</span><span class="p">[</span><span class="s">&#39;uuid&#39;</span><span class="p">],</span><span class="n">simulator</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]))</span>
+            <span class="n">form</span> <span class="o">=</span> <span class="n">LoadLuggageForm</span><span class="p">(</span><span class="n">params</span><span class="p">,</span><span class="n">choices</span><span class="o">=</span><span class="n">selection</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+                <span class="n">profile</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s">&#39;avatar&#39;</span><span class="p">]</span>
+                <span class="n">simulator</span> <span class="o">=</span> <span class="n">Simulators</span><span class="o">.</span><span class="n">get_simulator</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;simulator_uuid&#39;</span><span class="p">])</span>
+                <span class="n">service_client</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">pb_server</span><span class="o">.</span><span class="n">search_service</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;simulator_uuid&#39;</span><span class="p">])</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">service_client</span><span class="p">[</span><span class="s">&#39;client&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">load_luggage</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;simulator_uuid&#39;</span><span class="p">],[</span><span class="n">profile</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span><span class="n">profile</span><span class="o">.</span><span class="n">last_name</span><span class="p">,</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;password&#39;</span><span class="p">]],</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;inventory_dir&#39;</span><span class="p">],</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;luggage_name&#39;</span><span class="p">])</span>
+                <span class="n">luggage</span> <span class="o">=</span> <span class="n">Luggage</span><span class="o">.</span><span class="n">get_luggage</span><span class="p">()</span>
+                <span class="n">profiles</span> <span class="o">=</span> <span class="n">Profile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+                <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;opensim/read_avatars.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;profiles&#39;</span><span class="p">:</span><span class="n">profiles</span><span class="p">,</span><span class="s">&#39;luggage&#39;</span><span class="p">:</span><span class="n">luggage</span><span class="p">,</span><span class="s">&#39;online_simulators&#39;</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">online_simulators</span><span class="p">)})</span>
+                <span class="n">response</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;LUGGAGE_LOAD_OK&#39;</span><span class="p">,</span>
+                    <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Trying to load luggage file. Check your avatar in-world for the notification, or open the remote console for further information...&#39;</span><span class="p">),</span>
+                    <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+                <span class="p">}</span>
+                <span class="n">response</span><span class="p">[</span><span class="s">&#39;dom&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">}</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">response</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;FORM_INVALID&#39;</span><span class="p">,</span>
+                    <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Invalid form...&#39;</span><span class="p">),</span>
+                    <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-warning&#39;</span><span class="p">]</span>
+                <span class="p">}</span>
+                <span class="n">dialog</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;opensim/load_luggage_confirmation.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;form&#39;</span><span class="p">:</span><span class="n">form</span><span class="p">})</span>
+                <span class="n">response</span><span class="p">[</span><span class="s">&#39;dom&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;dialog&#39;</span><span class="p">:</span><span class="n">dialog</span><span class="p">}</span>
+            <span class="n">defer</span><span class="o">.</span><span class="n">returnValue</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        
+
+    <span class="nd">@WSAuth.is_staff</span></div>
+    <span class="nd">@defer.inlineCallbacks</span>
+    <span class="k">def</span> <span class="nf">backup_luggage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">profile_uuid</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_OpenSim.backup_luggage"><a class="viewcode-back" href="../../../../../modules/opensim.html#services.web_ui.controllers.ws.opensim.WS_OpenSim.backup_luggage">[docs]</a>        <span class="sd">&quot;&quot;&quot;Either renders the template that shows the dialog to backup lugguge,</span>
+<span class="sd">        or handle the backup luggage process itself.</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param str profile_uuid: The profile&#39;s uuid to operate on</span>
+<span class="sd">        :param dict params: Optional; contains the form parameters</span>
+<span class="sd">        :return: dict - Status and Html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">params</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">online_simulators</span> <span class="o">=</span> <span class="n">Simulators</span><span class="o">.</span><span class="n">get_simulators</span><span class="p">(</span><span class="n">online</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="n">selection</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">profile</span> <span class="o">=</span> <span class="n">Profile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">uuid</span><span class="o">=</span><span class="n">profile_uuid</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">simulator</span> <span class="ow">in</span> <span class="n">online_simulators</span><span class="p">:</span>
+                <span class="n">selection</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">simulator</span><span class="p">[</span><span class="s">&#39;uuid&#39;</span><span class="p">],</span><span class="n">simulator</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]))</span>
+            <span class="n">current_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&#39;%Y-%m-</span><span class="si">%d</span><span class="s">-%H.%M&#39;</span><span class="p">)</span>
+            <span class="n">proposed_name</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">_</span><span class="si">%s</span><span class="s">-</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">profile</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span><span class="n">profile</span><span class="o">.</span><span class="n">last_name</span><span class="p">,</span><span class="n">current_time</span><span class="p">)</span>
+            <span class="n">form</span> <span class="o">=</span> <span class="n">BackupLuggageForm</span><span class="p">(</span><span class="n">choices</span><span class="o">=</span><span class="n">selection</span><span class="p">,</span><span class="n">initial</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;luggage_name&#39;</span><span class="p">:</span><span class="n">proposed_name</span><span class="p">})</span>
+            <span class="n">dialog</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;opensim/backup_luggage_confirmation.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;form&#39;</span><span class="p">:</span><span class="n">form</span><span class="p">})</span>
+            <span class="n">response</span> <span class="o">=</span><span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;dialog&#39;</span><span class="p">:</span><span class="n">dialog</span><span class="p">}}}</span>
+            <span class="n">defer</span><span class="o">.</span><span class="n">returnValue</span><span class="p">(</span><span class="n">response</span><span class="p">)</span> 
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c">#{&#39;simulator_uuid&#39;: &#39;5ced4744-f5b7-4100-9a4e-40ab73ec5c0c&#39;, &#39;inventory_dir&#39;: &#39;/&#39;, &#39;luggage_name&#39;: &#39;InventoryDump.iar&#39;, &#39;avatar&#39;: &#39;13&#39;}</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;status&#39;</span><span class="p">:{},</span><span class="s">&#39;data&#39;</span><span class="p">:{}}</span>
+            <span class="n">online_simulators</span> <span class="o">=</span> <span class="n">Simulators</span><span class="o">.</span><span class="n">get_simulators</span><span class="p">(</span><span class="n">online</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="n">profile</span> <span class="o">=</span> <span class="n">Profile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">uuid</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;profile_uuid&#39;</span><span class="p">])</span>
+            <span class="n">selection</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">simulator</span> <span class="ow">in</span> <span class="n">online_simulators</span><span class="p">:</span>
+                <span class="n">selection</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">simulator</span><span class="p">[</span><span class="s">&#39;uuid&#39;</span><span class="p">],</span><span class="n">simulator</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]))</span>
+            <span class="n">form</span> <span class="o">=</span> <span class="n">BackupLuggageForm</span><span class="p">(</span><span class="n">params</span><span class="p">,</span><span class="n">choices</span><span class="o">=</span><span class="n">selection</span><span class="p">,</span><span class="n">profile</span><span class="o">=</span><span class="n">profile</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+                <span class="n">simulator</span> <span class="o">=</span> <span class="n">Simulators</span><span class="o">.</span><span class="n">get_simulator</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;simulator_uuid&#39;</span><span class="p">])</span>
+                <span class="n">service_client</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">pb_server</span><span class="o">.</span><span class="n">search_service</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;simulator_uuid&#39;</span><span class="p">])</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">service_client</span><span class="p">[</span><span class="s">&#39;client&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">backup_luggage</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;simulator_uuid&#39;</span><span class="p">],[</span><span class="n">profile</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span><span class="n">profile</span><span class="o">.</span><span class="n">last_name</span><span class="p">,</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;password&#39;</span><span class="p">]],</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;inventory_dir&#39;</span><span class="p">],</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;luggage_name&#39;</span><span class="p">])</span>
+                <span class="n">luggage</span> <span class="o">=</span> <span class="n">Luggage</span><span class="o">.</span><span class="n">get_luggage</span><span class="p">()</span>
+                <span class="n">profiles</span> <span class="o">=</span> <span class="n">Profile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+                <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;opensim/read_avatars.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;profiles&#39;</span><span class="p">:</span><span class="n">profiles</span><span class="p">,</span><span class="s">&#39;luggage&#39;</span><span class="p">:</span><span class="n">luggage</span><span class="p">,</span><span class="s">&#39;online_simulators&#39;</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">online_simulators</span><span class="p">)})</span>
+                <span class="n">response</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;LUGGAGE_LOAD_OK&#39;</span><span class="p">,</span>
+                    <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Trying to backup luggage file. Check your avatar in-world for the notification, or open the remote console for further information...&#39;</span><span class="p">),</span>
+                    <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+                <span class="p">}</span>                
+                <span class="n">response</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">][</span><span class="s">&#39;dom&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">}</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">response</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;FORM_INVALID&#39;</span><span class="p">,</span>
+                    <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Invalid form...&#39;</span><span class="p">),</span>
+                    <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-warning&#39;</span><span class="p">]</span>
+                <span class="p">}</span>
+                <span class="n">dialog</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;opensim/backup_luggage_confirmation.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;form&#39;</span><span class="p">:</span><span class="n">form</span><span class="p">})</span>
+                <span class="n">response</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">][</span><span class="s">&#39;dom&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;dialog&#39;</span><span class="p">:</span><span class="n">dialog</span><span class="p">}</span>
+            <span class="n">defer</span><span class="o">.</span><span class="n">returnValue</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+            
+            
+    <span class="nd">@WSAuth.is_staff</span></div>
+    <span class="k">def</span> <span class="nf">delete_luggage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_OpenSim.delete_luggage"><a class="viewcode-back" href="../../../../../modules/opensim.html#services.web_ui.controllers.ws.opensim.WS_OpenSim.delete_luggage">[docs]</a>        <span class="sd">&quot;&quot;&quot;Either renders the template that shows the dialog to confirm lugguge deletion,</span>
+<span class="sd">        or handle the luggage deletion process itself.</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param dict params: Optional; contains the form parameters</span>
+<span class="sd">        :return: dict - Status and Html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">params</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">dialog</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;opensim/delete_luggage_confirmation.html&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;dialog&#39;</span><span class="p">:</span><span class="n">dialog</span><span class="p">}}}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">deleted</span> <span class="o">=</span> <span class="n">Luggage</span><span class="o">.</span><span class="n">delete_luggage</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+            <span class="n">online_simulators</span> <span class="o">=</span> <span class="n">Simulators</span><span class="o">.</span><span class="n">get_simulators</span><span class="p">(</span><span class="n">online</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">deleted</span><span class="p">:</span> 
+                <span class="n">response</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                        <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;SCENES_DELETE_OK&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Deleted: </span><span class="si">%(deleted)s</span><span class="s"> inventory archive file(s) &#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;deleted&#39;</span><span class="p">:</span><span class="n">deleted</span><span class="p">},</span>
+                        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            <span class="k">else</span><span class="p">:</span> 
+                <span class="n">response</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                        <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;SCENES_DELETE_FAIL&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Failed to delete inventory archive file(s). Invalid characters!&#39;</span><span class="p">),</span>
+                        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-error&#39;</span><span class="p">]</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">view_avatars</span><span class="p">(</span><span class="n">client</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">response</span>
+
+            
+    <span class="nd">@WSAuth.is_staff</span></div>
+    <span class="k">def</span> <span class="nf">upload_luggage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_OpenSim.upload_luggage"><a class="viewcode-back" href="../../../../../modules/opensim.html#services.web_ui.controllers.ws.opensim.WS_OpenSim.upload_luggage">[docs]</a>        <span class="sd">&quot;&quot;&quot;Renders the template that shows the upload luggage overview. We only provide the view here.</span>
+<span class="sd">        File uploads over websocket doesn&#39;t make sense atm with utf-8 only</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param dict params: Optional; contains the form parameters</span>
+<span class="sd">        :return: dict - Html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">params</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">form</span> <span class="o">=</span> <span class="n">UploadLuggageForm</span><span class="p">()</span>
+            <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;opensim/upload_luggage.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;form&#39;</span><span class="p">:</span><span class="n">form</span><span class="p">})</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">}}}</span>
+            
+            
+    <span class="nd">@WSAuth.is_staff</span></div>
+    <span class="k">def</span> <span class="nf">view_avatars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_OpenSim.view_avatars"><a class="viewcode-back" href="../../../../../modules/opensim.html#services.web_ui.controllers.ws.opensim.WS_OpenSim.view_avatars">[docs]</a>        <span class="sd">&quot;&quot;&quot;Renders the template that shows the avatars available. </span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :return: dict - Html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>        
+        <span class="n">profiles</span> <span class="o">=</span> <span class="n">OSUserAccounts</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">using</span><span class="p">(</span><span class="s">&#39;grid&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="n">luggage</span> <span class="o">=</span> <span class="n">Luggage</span><span class="o">.</span><span class="n">get_luggage</span><span class="p">()</span>
+        <span class="n">online_simulators</span> <span class="o">=</span> <span class="n">Simulators</span><span class="o">.</span><span class="n">get_simulators</span><span class="p">(</span><span class="n">online</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;opensim/read_avatars.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;profiles&#39;</span><span class="p">:</span><span class="n">profiles</span><span class="p">,</span><span class="s">&#39;luggage&#39;</span><span class="p">:</span><span class="n">luggage</span><span class="p">,</span><span class="s">&#39;online_simulators&#39;</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">online_simulators</span><span class="p">)})</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">}}}</span>
+
+
+    <span class="nd">@WSAuth.is_staff</span></div>
+    <span class="k">def</span> <span class="nf">sync_avatars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_OpenSim.sync_avatars"><a class="viewcode-back" href="../../../../../modules/opensim.html#services.web_ui.controllers.ws.opensim.WS_OpenSim.sync_avatars">[docs]</a>        <span class="sd">&quot;&quot;&quot;Synchronizes between hwios and opensim accounts in both ways. Only works while opensim&#39;s hashing method</span>
+<span class="sd">        is used in HWIOS(default).</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :return: dict - Status and Html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>   
+        <span class="n">response</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;synced&#39;</span><span class="p">:[]}}</span>
+        <span class="n">new_profiles</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">profiles</span> <span class="o">=</span> <span class="n">Profile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="n">os_profiles</span> <span class="o">=</span> <span class="n">OSUserAccounts</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">using</span><span class="p">(</span><span class="s">&#39;grid&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="n">new_profiles</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">new_osprofiles</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c">#sync osprofile to profile</span>
+        <span class="k">for</span> <span class="n">os_profile</span> <span class="ow">in</span> <span class="n">os_profiles</span><span class="p">:</span>
+            <span class="n">match</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="k">for</span> <span class="n">profile</span> <span class="ow">in</span> <span class="n">profiles</span><span class="p">:</span>
+                <span class="n">profile_name</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">profile</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span><span class="n">profile</span><span class="o">.</span><span class="n">last_name</span><span class="p">)</span>
+                <span class="n">osprofile_name</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">os_profile</span><span class="o">.</span><span class="n">FirstName</span><span class="p">,</span> <span class="n">os_profile</span><span class="o">.</span><span class="n">LastName</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">profile</span><span class="o">.</span><span class="n">uuid</span> <span class="o">==</span> <span class="n">os_profile</span><span class="o">.</span><span class="n">PrincipalID</span><span class="o">.</span><span class="n">UUID</span><span class="p">:</span>
+                    <span class="n">match</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="k">elif</span> <span class="p">(</span><span class="n">profile_name</span> <span class="o">==</span> <span class="n">osprofile_name</span><span class="p">):</span>
+                    <span class="n">match</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">if</span> <span class="n">match</span> <span class="o">==</span> <span class="bp">False</span><span class="p">:</span> <span class="n">new_profiles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os_profile</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">new_profile</span> <span class="ow">in</span> <span class="n">new_profiles</span><span class="p">:</span>
+            <span class="n">profile</span> <span class="o">=</span> <span class="n">Profile</span><span class="p">()</span>
+            <span class="n">profile</span><span class="o">.</span><span class="n">username</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">new_profile</span><span class="o">.</span><span class="n">FirstName</span><span class="p">,</span> <span class="n">new_profile</span><span class="o">.</span><span class="n">LastName</span><span class="p">)</span>
+            <span class="n">profile</span><span class="o">.</span><span class="n">first_name</span> <span class="o">=</span> <span class="n">new_profile</span><span class="o">.</span><span class="n">FirstName</span>
+            <span class="n">profile</span><span class="o">.</span><span class="n">last_name</span> <span class="o">=</span> <span class="n">new_profile</span><span class="o">.</span><span class="n">LastName</span>
+            <span class="n">profile</span><span class="o">.</span><span class="n">email</span> <span class="o">=</span> <span class="n">new_profile</span><span class="o">.</span><span class="n">Email</span>
+            <span class="n">profile</span><span class="o">.</span><span class="n">is_active</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">profile</span><span class="o">.</span><span class="n">uuid</span> <span class="o">=</span> <span class="n">new_profile</span><span class="o">.</span><span class="n">PrincipalID</span><span class="o">.</span><span class="n">UUID</span>
+            <span class="n">profile</span><span class="o">.</span><span class="n">salt</span> <span class="o">=</span> <span class="n">new_profile</span><span class="o">.</span><span class="n">PrincipalID</span><span class="o">.</span><span class="n">passwordSalt</span>
+            <span class="n">profile</span><span class="o">.</span><span class="n">password</span> <span class="o">=</span> <span class="n">new_profile</span><span class="o">.</span><span class="n">PrincipalID</span><span class="o">.</span><span class="n">passwordHash</span>
+            <span class="n">profile</span><span class="o">.</span><span class="n">ip</span> <span class="o">=</span> <span class="s">&#39;0.0.0.0&#39;</span>
+            <span class="n">profile</span><span class="o">.</span><span class="n">date_joined</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+            <span class="n">profile</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="c">#sync profile to osprofile</span>
+        <span class="k">for</span> <span class="n">profile</span> <span class="ow">in</span> <span class="n">profiles</span><span class="p">:</span>
+            <span class="n">match</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="k">for</span> <span class="n">os_profile</span> <span class="ow">in</span> <span class="n">os_profiles</span><span class="p">:</span>
+                <span class="n">profile_name</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">profile</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span><span class="n">profile</span><span class="o">.</span><span class="n">last_name</span><span class="p">)</span>
+                <span class="n">osprofile_name</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">os_profile</span><span class="o">.</span><span class="n">FirstName</span><span class="p">,</span> <span class="n">os_profile</span><span class="o">.</span><span class="n">LastName</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">profile</span><span class="o">.</span><span class="n">uuid</span> <span class="o">==</span> <span class="n">os_profile</span><span class="o">.</span><span class="n">PrincipalID</span><span class="o">.</span><span class="n">UUID</span><span class="p">:</span>
+                    <span class="n">match</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="k">elif</span> <span class="p">(</span><span class="n">profile_name</span> <span class="o">==</span> <span class="n">osprofile_name</span><span class="p">):</span>
+                    <span class="n">match</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">if</span> <span class="n">match</span> <span class="o">==</span> <span class="bp">False</span><span class="p">:</span>
+                <span class="n">new_osprofiles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">profile</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">_profile</span> <span class="ow">in</span> <span class="n">new_osprofiles</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">change_avatar</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">_profile</span><span class="p">)</span>
+        <span class="n">client_response</span><span class="p">,</span> <span class="n">tpl_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_avatars</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
+        <span class="n">_target_state</span> <span class="o">=</span> <span class="s">&#39;/opensim/avatars/&#39;</span>
+        <span class="n">client_response</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+            <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;PROFILE_SYNC_OK&#39;</span><span class="p">,</span>
+                <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%(profiles)s</span><span class="s">/</span><span class="si">%(osprofiles)s</span><span class="s"> profile(s)/avatar(s) were synced!&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;profiles&#39;</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">new_profiles</span><span class="p">),</span><span class="s">&#39;osprofiles&#39;</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">new_osprofiles</span><span class="p">)},</span>
+                <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+            <span class="p">}</span>
+        <span class="p">})</span>
+        <span class="n">notify_others</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">client_response</span><span class="p">,</span><span class="s">&#39;/opensim/avatars/modified/&#39;</span><span class="p">,</span> <span class="s">&#39;^/opensim/avatars/$&#39;</span><span class="p">,</span> <span class="n">tpl_params</span><span class="p">,</span> <span class="n">_target_state</span><span class="p">)</span>
+        <span class="n">publish_activity</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Avatar(s) synced&#39;</span><span class="p">),</span><span class="s">&#39;/opensim/avatars/&#39;</span><span class="p">,[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">client_response</span>    
+
+
+    <span class="k">def</span> <span class="nf">_get_avatars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span></div>
+        <span class="sd">&quot;&quot;&quot;Notify_others helper function that prepares an overview of avatars&quot;&quot;&quot;</span>
+        <span class="n">profiles</span> <span class="o">=</span> <span class="n">OSUserAccounts</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">using</span><span class="p">(</span><span class="s">&#39;grid&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="n">luggage</span> <span class="o">=</span> <span class="n">Luggage</span><span class="o">.</span><span class="n">get_luggage</span><span class="p">()</span>
+        <span class="n">online_simulators</span> <span class="o">=</span> <span class="n">Simulators</span><span class="o">.</span><span class="n">get_simulators</span><span class="p">(</span><span class="n">online</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">tpl_params</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;profiles&#39;</span><span class="p">:</span><span class="n">profiles</span><span class="p">,</span><span class="s">&#39;luggage&#39;</span><span class="p">:</span><span class="n">luggage</span><span class="p">,</span><span class="s">&#39;online_simulators&#39;</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">online_simulators</span><span class="p">)}</span>
+        <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;opensim/read_avatars.html&quot;</span><span class="p">,</span> <span class="n">tpl_params</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">}}},</span>
+            <span class="p">{</span><span class="s">&#39;main&#39;</span><span class="p">:{</span><span class="s">&#39;tpl&#39;</span><span class="p">:</span><span class="s">&#39;opensim/read_avatars.html&#39;</span><span class="p">,</span><span class="s">&#39;params&#39;</span><span class="p">:</span><span class="n">tpl_params</span><span class="p">}}</span>
+        <span class="p">]</span>
+        
+        
+    <span class="k">def</span> <span class="nf">_get_map_form</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Prepare map ini-data to fit in a django form&quot;&quot;&quot;</span>
+        <span class="n">form_fields</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">service_config</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">services</span><span class="p">[</span><span class="s">&#39;tms&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">config</span>
+        <span class="k">for</span> <span class="n">section</span> <span class="ow">in</span> <span class="n">service_config</span><span class="o">.</span><span class="n">sections</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="n">service_config</span><span class="o">.</span><span class="n">items</span><span class="p">(</span><span class="n">section</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="s">&#39;False&#39;</span><span class="p">:</span>
+                    <span class="n">form_fields</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">form_fields</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">return</span> <span class="n">MapSettingsForm</span><span class="p">(</span><span class="n">initial</span><span class="o">=</span><span class="n">form_fields</span><span class="p">)</span>
+        
+        
+    <span class="nd">@WSAuth.is_staff</span>
+    <span class="k">def</span> <span class="nf">handle_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_OpenSim.handle_settings"><a class="viewcode-back" href="../../../../../modules/opensim.html#services.web_ui.controllers.ws.opensim.WS_OpenSim.handle_settings">[docs]</a>        <span class="sd">&quot;&quot;&quot;Either renders the template to change opensim&#39;s settings, or handle the update settings process itself</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param dict params: Optional; contains the form parameters</span>
+<span class="sd">        :return: dict - Status and Html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>   
+        <span class="k">if</span> <span class="n">params</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;status&#39;</span><span class="p">:{}}</span>
+            <span class="n">simulator_form</span> <span class="o">=</span> <span class="n">SimulatorSettingsForm</span><span class="p">(</span><span class="n">initial</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;master_ini&#39;</span><span class="p">:</span> <span class="nb">open</span><span class="p">(</span><span class="s">&quot;./services/web_ui/dav_store/config/grid_master.ini&quot;</span><span class="p">,</span><span class="s">&quot;r&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()})</span>       
+            <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;opensim/read_settings.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;simulator_form&#39;</span><span class="p">:</span><span class="n">simulator_form</span><span class="p">,</span><span class="s">&#39;map_form&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_map_form</span><span class="p">()})</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">}}}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s">&#39;master_ini&#39;</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+                <span class="n">simulator_form</span> <span class="o">=</span> <span class="n">SimulatorSettingsForm</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">simulator_form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+                    <span class="n">infile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s">&quot;./services/web_ui/dav_store/config/grid_master.ini&quot;</span><span class="p">,</span><span class="s">&quot;w&quot;</span><span class="p">)</span>
+                    <span class="n">infile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">simulator_form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s">&#39;master_ini&#39;</span><span class="p">])</span>
+                    <span class="n">response</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                        <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;SETTINGS_UPDATE_OK&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Simulator settings succesfully updated&#39;</span><span class="p">),</span>
+                        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+                <span class="k">else</span><span class="p">:</span> 
+                    <span class="n">response</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                        <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;INVALID_FORM&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Invalid form&#39;</span><span class="p">),</span>
+                        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+            <span class="k">elif</span> <span class="s">&#39;center_z&#39;</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+                <span class="n">simulator_form</span> <span class="o">=</span> <span class="n">SimulatorSettingsForm</span><span class="p">(</span><span class="n">initial</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;master_ini&#39;</span><span class="p">:</span> <span class="nb">open</span><span class="p">(</span><span class="s">&quot;./services/web_ui/dav_store/config/grid_master.ini&quot;</span><span class="p">,</span><span class="s">&quot;r&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()})</span>     
+                <span class="k">if</span> <span class="s">&#39;osm&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+                    <span class="n">params</span><span class="p">[</span><span class="s">&#39;osm&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+                <span class="n">response</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;status&#39;</span><span class="p">:{}}</span>
+                <span class="n">map_form</span> <span class="o">=</span> <span class="n">MapSettingsForm</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">map_form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+                    <span class="n">service_config</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">services</span><span class="p">[</span><span class="s">&#39;tms&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">config</span>
+                    <span class="k">for</span> <span class="n">section</span> <span class="ow">in</span> <span class="n">service_config</span><span class="o">.</span><span class="n">sections</span><span class="p">():</span>
+                        <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="n">service_config</span><span class="o">.</span><span class="n">items</span><span class="p">(</span><span class="n">section</span><span class="p">):</span>
+                            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+                                <span class="n">service_config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">section</span><span class="p">,</span><span class="n">key</span><span class="p">,</span><span class="n">params</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+                    <span class="n">service_config</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">service_config</span><span class="o">.</span><span class="n">location</span><span class="p">,</span><span class="s">&#39;service.ini&#39;</span><span class="p">),</span><span class="s">&#39;wb&#39;</span><span class="p">))</span>
+                    <span class="n">service_config</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">service_config</span><span class="o">.</span><span class="n">location</span><span class="p">,</span><span class="s">&#39;service.ini&#39;</span><span class="p">))</span>
+                    <span class="n">response</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;CONFIG_UPDATE_OK&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Configuration updated...&#39;</span><span class="p">),</span>
+                        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+                    <span class="p">}</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">response</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;FORM_INVALID&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Invalid form!&#39;</span><span class="p">),</span>
+                        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-warning&#39;</span><span class="p">]</span>
+                    <span class="p">}</span>
+                <span class="n">Maps</span><span class="o">.</span><span class="n">update_client_settings</span><span class="p">()</span>
+            <span class="n">client_response</span><span class="p">,</span> <span class="n">tpl_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_settings</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
+            <span class="n">client_response</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+            <span class="n">_target_state</span> <span class="o">=</span> <span class="s">&#39;/opensim/settings/&#39;</span>
+            <span class="n">notify_others</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">client_response</span><span class="p">,</span><span class="s">&#39;/opensim/settings/modified/&#39;</span><span class="p">,</span> <span class="s">&#39;^/opensim/settings/$&#39;</span><span class="p">,</span> <span class="n">tpl_params</span><span class="p">,</span> <span class="n">_target_state</span><span class="p">)</span>
+            <span class="n">publish_activity</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;OpenSim Settings updated&#39;</span><span class="p">),</span><span class="s">&#39;/opensim/settings/&#39;</span><span class="p">,[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">client_response</span>    
+
+
+    <span class="k">def</span> <span class="nf">_get_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span></div>
+        <span class="sd">&quot;&quot;&quot;Notify_others helper function that creates an overview of the settings view&quot;&quot;&quot;</span>
+        <span class="n">simulator_form</span> <span class="o">=</span> <span class="n">SimulatorSettingsForm</span><span class="p">(</span><span class="n">initial</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;master_ini&#39;</span><span class="p">:</span> <span class="nb">open</span><span class="p">(</span><span class="s">&quot;./services/web_ui/dav_store/config/grid_master.ini&quot;</span><span class="p">,</span><span class="s">&quot;r&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()})</span>     
+        <span class="n">tpl_params</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;simulator_form&#39;</span><span class="p">:</span><span class="n">simulator_form</span><span class="p">,</span><span class="s">&#39;map_form&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_map_form</span><span class="p">()}</span>
+        <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&#39;opensim/read_settings.html&#39;</span><span class="p">,</span> <span class="n">tpl_params</span><span class="p">)</span>        
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">}}},</span>
+            <span class="p">{</span><span class="s">&#39;main&#39;</span><span class="p">:{</span><span class="s">&#39;tpl&#39;</span><span class="p">:</span><span class="s">&#39;opensim/read_settings.html&#39;</span><span class="p">,</span><span class="s">&#39;params&#39;</span><span class="p">:</span><span class="n">tpl_params</span><span class="p">}}</span>
+        <span class="p">]</span>
+
+
+    <span class="nd">@WSAuth.is_staff</span>
+    <span class="k">def</span> <span class="nf">render_maps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_OpenSim.render_maps"><a class="viewcode-back" href="../../../../../modules/opensim.html#services.web_ui.controllers.ws.opensim.WS_OpenSim.render_maps">[docs]</a>        <span class="sd">&quot;&quot;&quot;Renders all opensim region cells of the map</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :return: dict - Status data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>   
+        <span class="n">result</span> <span class="o">=</span> <span class="n">Maps</span><span class="p">()</span><span class="o">.</span><span class="n">render_map</span><span class="p">()</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;MAP_RENDER_OK&#39;</span><span class="p">,</span>
+                <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Map succesfully rendered from </span><span class="si">%(cells)s</span><span class="s"> cells...&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;cells&#39;</span><span class="p">:</span><span class="n">result</span><span class="p">[</span><span class="s">&#39;cells&#39;</span><span class="p">]},</span>
+                <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">response</span>
+</pre></div></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">HWIOS v0.6 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, OS-Networks.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.8.
+    </div>
+  </body>
+</html>

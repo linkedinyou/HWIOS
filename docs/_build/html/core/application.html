@@ -1,0 +1,405 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Application &mdash; HWIOS v0.6 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="HWIOS v0.6 documentation" href="../index.html" />
+    <link rel="next" title="Services" href="services.html" />
+    <link rel="prev" title="Writing modules" href="../narratives/writing_modules.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="services.html" title="Services"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../narratives/writing_modules.html" title="Writing modules"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">HWIOS v0.6 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="application">
+<h1>Application<a class="headerlink" href="#application" title="Permalink to this headline">¶</a></h1>
+<p>All application-related code has to do with starting and managing the application and it&#8217;s services. The hwios executable is an executable
+python file, which has some parameter options to select the appropriate hwios action. When it starts the application through &#8211;debug or
+&#8211;start, either the autoreload file is executed(&#8211;debug, just for debugging yes) or the twistd daemonizer is called directly to daemonize the
+hwios process. The core.tac file is responsible to initialize the application and it&#8217;s services. Use <em>./hwios &#8211;help</em> for a list of parameters:</p>
+<div class="highlight-python"><pre># ./hwios --help
+Usage: hwios [options]
+
+Options:
+-h, --help  show this help message and exit
+--setup     Setup HWIOS database and initial data
+--debug     Start HWIOS in debug modus
+--start     Start and daemonize HWIOS
+--pypy      Start HWIOS with PyPy JIT 1.4
+--stop      Stop HWIOS daemon
+--ulang     Updates or creates language files
+--dump      Dump Fixtures
+--syncdb    Synchronize Database
+--load      Load Fixtures
+--deploy    Optimizes web assets for deployment
+--test      Run debug tests</pre>
+</div>
+<div class="section" id="module-core.tac">
+<span id="code-references"></span><h2>Code References<a class="headerlink" href="#module-core.tac" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="core-tac">
+<h3>core.tac<a class="headerlink" href="#core-tac" title="Permalink to this headline">¶</a></h3>
+<p>General twisted tac loader and service initializer. Both being used for autoreload and daemonizing</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">copyright:</th><td class="field-body">Copyright 2011-2012 OS-Networks</td>
+</tr>
+<tr class="field"><th class="field-name">license:</th><td class="field-body">LGPL, See LICENSE for details.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<span class="target" id="module-core.application"></span><div class="section" id="core-application">
+<h3>core.application<a class="headerlink" href="#core-application" title="Permalink to this headline">¶</a></h3>
+<p>Defines the main namespace for the application: &#8220;HWIOS&#8221;</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">copyright:</th><td class="field-body">Copyright 2011-2012 OS-Networks</td>
+</tr>
+<tr class="field"><th class="field-name">license:</th><td class="field-body">LGPL, See LICENSE for details.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="core.application.HWIOS">
+<em class="property">class </em><tt class="descclassname">core.application.</tt><tt class="descname">HWIOS</tt><a class="reference internal" href="../_modules/core/application.html#HWIOS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.application.HWIOS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>The general HWIOS namespace to keep things available through the whole application</p>
+</dd></dl>
+
+</div>
+<span class="target" id="module-services.loader"></span><div class="section" id="services-loader">
+<h3>services.loader<a class="headerlink" href="#services-loader" title="Permalink to this headline">¶</a></h3>
+<p>Automated loader of all services in this directory. Keep the convention used by other services...</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">copyright:</th><td class="field-body">Copyright 2011-2012 OS-Networks</td>
+</tr>
+<tr class="field"><th class="field-name">license:</th><td class="field-body">LGPL, See LICENSE for details.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="services.loader.ServiceLoader">
+<em class="property">class </em><tt class="descclassname">services.loader.</tt><tt class="descname">ServiceLoader</tt><big>(</big><em>hwios_config</em><big>)</big><a class="reference internal" href="../_modules/services/loader.html#ServiceLoader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.loader.ServiceLoader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>Automated service loader for HWIOS</p>
+<dl class="method">
+<dt id="services.loader.ServiceLoader.find_services">
+<tt class="descname">find_services</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/services/loader.html#ServiceLoader.find_services"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.loader.ServiceLoader.find_services" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search for services in the service path, and setup their classname, based on some basic conventions</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">list - A list of information about services</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<span class="target" id="module-core.autoreload"></span><div class="section" id="core-autoreload">
+<h3>core.autoreload<a class="headerlink" href="#core-autoreload" title="Permalink to this headline">¶</a></h3>
+<p>Autoreloading launcher detects changes in the HWIOS filesystem, after which it reloads the whole application.
+Makes debugging and developing a lot easier</p>
+<p>Borrowed from Peter Hunt and the CherryPy project (<a class="reference external" href="http://www.cherrypy.org">http://www.cherrypy.org</a>).
+Some taken from Ian Bicking&#8217;s Paste (<a class="reference external" href="http://pythonpaste.org/">http://pythonpaste.org/</a>).
+Adjustments made by Michael Elsdoerfer (<a class="reference external" href="mailto:michael&#37;&#52;&#48;elsdoerfer&#46;com">michael<span>&#64;</span>elsdoerfer<span>&#46;</span>com</a>).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">copyright:</th><td class="field-body">Portions (c) 2004, CherryPy Team (<a class="reference external" href="mailto:team&#37;&#52;&#48;cherrypy&#46;org">team<span>&#64;</span>cherrypy<span>&#46;</span>org</a>)</td>
+</tr>
+<tr class="field"><th class="field-name">license:</th><td class="field-body">BSD, see <a class="reference external" href="http://cherrypy.org/wiki/CherryPyLicense">http://cherrypy.org/wiki/CherryPyLicense</a> for details.</td>
+</tr>
+</tbody>
+</table>
+<dl class="function">
+<dt id="core.autoreload.code_changed">
+<tt class="descclassname">core.autoreload.</tt><tt class="descname">code_changed</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/core/autoreload.html#code_changed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.autoreload.code_changed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Detect code changes</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">bool - Whether or not a change was detected</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="core.autoreload.get_files">
+<tt class="descclassname">core.autoreload.</tt><tt class="descname">get_files</tt><big>(</big><em>root='.'</em><big>)</big><a class="reference internal" href="../_modules/core/autoreload.html#get_files"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.autoreload.get_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of files by walking the current directory</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>root</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The root directory to start</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">list - A filelist</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="core.autoreload.python_reloader">
+<tt class="descclassname">core.autoreload.</tt><tt class="descname">python_reloader</tt><big>(</big><em>main_func</em>, <em>args</em>, <em>kwargs</em>, <em>check_in_thread=True</em><big>)</big><a class="reference internal" href="../_modules/core/autoreload.html#python_reloader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.autoreload.python_reloader" title="Permalink to this definition">¶</a></dt>
+<dd><p>If <tt class="docutils literal"><span class="pre">check_in_thread</span></tt> is False, <tt class="docutils literal"><span class="pre">main_func</span></tt> will be run in a separate
+thread, and the code checker in the main thread. This was the original
+behavior of this module: I (Michael Elsdoerfer) changed the default
+to be the reverse: Code checker in thread, main func in main thread.
+This was necessary to make the thing work with Twisted
+(<a class="reference external" href="http://twistedmatrix.com/trac/ticket/4072">http://twistedmatrix.com/trac/ticket/4072</a>).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="core.autoreload.reloader_thread">
+<tt class="descclassname">core.autoreload.</tt><tt class="descname">reloader_thread</tt><big>(</big><em>softexit=False</em><big>)</big><a class="reference internal" href="../_modules/core/autoreload.html#reloader_thread"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.autoreload.reloader_thread" title="Permalink to this definition">¶</a></dt>
+<dd><p>If <tt class="docutils literal"><span class="pre">soft_exit</span></tt> is True, we use sys.exit(); otherwise <tt class="docutils literal"><span class="pre">os_exit</span></tt> will be used to end the process.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>softexit</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) &#8211; Whether to force reload or not</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="core.autoreload.restart_with_reloader">
+<tt class="descclassname">core.autoreload.</tt><tt class="descname">restart_with_reloader</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/core/autoreload.html#restart_with_reloader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.autoreload.restart_with_reloader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Try to restart the service</p>
+</dd></dl>
+
+</div>
+<span class="target" id="module-core.connection"></span><div class="section" id="core-connection">
+<h3>core.connection<a class="headerlink" href="#core-connection" title="Permalink to this headline">¶</a></h3>
+<p>SSL Contextfactory, in case we want to start a twisted service with SSL support</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">copyright:</th><td class="field-body">Copyright 2011-2012 OS-Networks</td>
+</tr>
+<tr class="field"><th class="field-name">license:</th><td class="field-body">LGPL, See LICENSE for details.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="core.connection.ServerContextFactory">
+<em class="property">class </em><tt class="descclassname">core.connection.</tt><tt class="descname">ServerContextFactory</tt><a class="reference internal" href="../_modules/core/connection.html#ServerContextFactory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.connection.ServerContextFactory" title="Permalink to this definition">¶</a></dt>
+<dd><p>The SSL Server Context Factory here specifies the ssl certificates to use as well</p>
+</dd></dl>
+
+</div>
+<span class="target" id="module-core.static_file"></span><div class="section" id="core-static-file">
+<h3>core.static_file<a class="headerlink" href="#core-static-file" title="Permalink to this headline">¶</a></h3>
+<p>Modified static-file resource to support gzip compression</p>
+<p>Twisted HTTP and websocket logics</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">copyright:</th><td class="field-body">2001-2010 Twisted Matrix Laboratories.</td>
+</tr>
+<tr class="field"><th class="field-name">license:</th><td class="field-body">MIT, see <a class="reference external" href="http://twistedmatrix.com/trac/browser/trunk/LICENSE">http://twistedmatrix.com/trac/browser/trunk/LICENSE</a></td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="core.static_file.GzipRequest">
+<em class="property">class </em><tt class="descclassname">core.static_file.</tt><tt class="descname">GzipRequest</tt><big>(</big><em>request</em>, <em>compressLevel=6</em><big>)</big><a class="reference internal" href="../_modules/core/static_file.html#GzipRequest"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.static_file.GzipRequest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>Wrapper for a request that applies a gzip content encoding</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="core.static_file.StaticFile">
+<em class="property">class </em><tt class="descclassname">core.static_file.</tt><tt class="descname">StaticFile</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/core/static_file.html#StaticFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.static_file.StaticFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">twisted.web.static.File</span></tt></p>
+<p>Modified static file resource with gzip support</p>
+</dd></dl>
+
+</div>
+<span class="target" id="module-core.tools"></span><div class="section" id="core-tools">
+<h3>core.tools<a class="headerlink" href="#core-tools" title="Permalink to this headline">¶</a></h3>
+<p>Defines some handy functions that are used throughout hwios, making it easier to swap out components.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">copyright:</th><td class="field-body">Copyright 2011-2012 OS-Networks</td>
+</tr>
+<tr class="field"><th class="field-name">license:</th><td class="field-body">LGPL, See LICENSE for details.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="core.tools.Tools">
+<em class="property">class </em><tt class="descclassname">core.tools.</tt><tt class="descname">Tools</tt><a class="reference internal" href="../_modules/core/tools.html#Tools"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.tools.Tools" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>The Tool class is added to the HWIOS namespace for easy inclusion in other parts</p>
+<dl class="method">
+<dt id="core.tools.Tools.is_long">
+<tt class="descname">is_long</tt><big>(</big><em>s</em><big>)</big><a class="reference internal" href="../_modules/core/tools.html#Tools.is_long"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.tools.Tools.is_long" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if a variable is a long.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>s</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The int to test</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">long or False</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.tools.Tools.json_decode">
+<tt class="descname">json_decode</tt><big>(</big><em>some_dict</em><big>)</big><a class="reference internal" href="../_modules/core/tools.html#Tools.json_decode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.tools.Tools.json_decode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decodes some dict
+:param dict some_dict: Decodes some dict (as utf-8)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.tools.Tools.json_encode">
+<tt class="descname">json_encode</tt><big>(</big><em>some_dict</em><big>)</big><a class="reference internal" href="../_modules/core/tools.html#Tools.json_encode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.tools.Tools.json_encode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Encodes some dict
+:param dict some_dict: Encodes some dict (as utf-8)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Application</a><ul>
+<li><a class="reference internal" href="#module-core.tac">Code References</a><ul>
+<li><a class="reference internal" href="#core-tac">core.tac</a></li>
+<li><a class="reference internal" href="#core-application">core.application</a></li>
+<li><a class="reference internal" href="#services-loader">services.loader</a></li>
+<li><a class="reference internal" href="#core-autoreload">core.autoreload</a></li>
+<li><a class="reference internal" href="#core-connection">core.connection</a></li>
+<li><a class="reference internal" href="#core-static-file">core.static_file</a></li>
+<li><a class="reference internal" href="#core-tools">core.tools</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../narratives/writing_modules.html"
+                        title="previous chapter">Writing modules</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="services.html"
+                        title="next chapter">Services</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/core/application.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="services.html" title="Services"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../narratives/writing_modules.html" title="Writing modules"
+             >previous</a> |</li>
+        <li><a href="../index.html">HWIOS v0.6 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, OS-Networks.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.8.
+    </div>
+  </body>
+</html>

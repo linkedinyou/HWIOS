@@ -1,0 +1,184 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>services.dsm.service &mdash; HWIOS v0.6 documentation</title>
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="HWIOS v0.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">HWIOS v0.6 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for services.dsm.service</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    services.dsm.service</span>
+<span class="sd">    ~~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">    The twisted service that takes care of the distributed service management daemon pool</span>
+
+<span class="sd">    :copyright: Copyright 2011-2012 OS-Networks</span>
+<span class="sd">    :license: LGPL, See LICENSE for details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">twisted.spread.pb</span> <span class="kn">import</span> <span class="n">PBServerFactory</span>
+<span class="kn">from</span> <span class="nn">twisted.cred</span> <span class="kn">import</span> <span class="n">portal</span>
+<span class="kn">from</span> <span class="nn">twisted.application</span> <span class="kn">import</span> <span class="n">internet</span>
+<span class="kn">from</span> <span class="nn">twisted.internet</span> <span class="kn">import</span> <span class="n">defer</span>
+<span class="kn">from</span> <span class="nn">twisted.python</span> <span class="kn">import</span> <span class="n">failure</span><span class="p">,</span> <span class="n">log</span>
+
+<span class="kn">from</span> <span class="nn">core.application</span> <span class="kn">import</span> <span class="n">HWIOS</span>
+<span class="kn">from</span> <span class="nn">dsm_server</span> <span class="kn">import</span> <span class="n">DSMServer</span><span class="p">,</span><span class="n">DSMRealm</span><span class="p">,</span><span class="n">DSMCredChecker</span><span class="p">,</span><span class="n">DSMPortalRoot</span>
+
+
+<span class="k">class</span> <span class="nc">DsmService</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span> 
+<div class="viewcode-block" id="DsmService"><a class="viewcode-back" href="../../../modules/teknon.html#services.dsm.service.DsmService">[docs]</a>    <span class="sd">&quot;&quot;&quot;Twisted Perspective Broker service for remote service management&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">service_config</span><span class="p">,</span> <span class="n">hwios_config</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hwios_config</span> <span class="o">=</span> <span class="n">hwios_config</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">service_config</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">realm</span> <span class="o">=</span> <span class="n">DSMRealm</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">realm</span><span class="o">.</span><span class="n">server</span> <span class="o">=</span> <span class="n">DSMServer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">django_checker</span> <span class="o">=</span> <span class="n">DSMCredChecker</span><span class="p">()</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">portal</span><span class="o">.</span><span class="n">Portal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">realm</span><span class="p">)</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">registerChecker</span><span class="p">(</span><span class="n">django_checker</span><span class="p">)</span>
+        <span class="n">pr</span> <span class="o">=</span> <span class="n">DSMPortalRoot</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hwios_config</span><span class="o">.</span><span class="n">has_option</span><span class="p">(</span><span class="s">&#39;general&#39;</span><span class="p">,</span><span class="s">&#39;ssl&#39;</span><span class="p">):</span>
+            <span class="kn">from</span> <span class="nn">twisted.internet</span> <span class="kn">import</span> <span class="n">ssl</span>
+            <span class="kn">from</span> <span class="nn">hwios.core.connection</span> <span class="kn">import</span> <span class="n">ServerContextFactory</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__service</span> <span class="o">=</span> <span class="n">internet</span><span class="o">.</span><span class="n">SSLServer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span><span class="s">&#39;service&#39;</span><span class="p">,</span><span class="s">&#39;port&#39;</span><span class="p">),</span><span class="n">PBServerFactory</span><span class="p">(</span><span class="n">pr</span><span class="p">),</span><span class="n">ServerContextFactory</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>            
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span><span class="s">&#39;service&#39;</span><span class="p">,</span><span class="s">&#39;ssl&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
+                <span class="kn">from</span> <span class="nn">twisted.internet</span> <span class="kn">import</span> <span class="n">ssl</span>
+                <span class="kn">from</span> <span class="nn">hwios.core.connection</span> <span class="kn">import</span> <span class="n">ServerContextFactory</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__service</span> <span class="o">=</span> <span class="n">internet</span><span class="o">.</span><span class="n">SSLServer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span><span class="s">&#39;service&#39;</span><span class="p">,</span><span class="s">&#39;port&#39;</span><span class="p">),</span><span class="n">PBServerFactory</span><span class="p">(</span><span class="n">pr</span><span class="p">),</span><span class="n">ServerContextFactory</span><span class="p">())</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__service</span> <span class="o">=</span> <span class="n">internet</span><span class="o">.</span><span class="n">TCPServer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span><span class="s">&#39;service&#39;</span><span class="p">,</span><span class="s">&#39;port&#39;</span><span class="p">),</span><span class="n">PBServerFactory</span><span class="p">(</span><span class="n">pr</span><span class="p">))</span>
+
+    
+    <span class="k">def</span> <span class="nf">get_service</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="DsmService.get_service"><a class="viewcode-back" href="../../../modules/teknon.html#services.dsm.service.DsmService.get_service">[docs]</a>        <span class="sd">&quot;&quot;&quot;Get a reference to the actual twisted service</span>
+
+<span class="sd">        :return: TCPServer or SSLServer</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__service</span>
+        
+        
+    <span class="k">def</span> <span class="nf">register_server</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">pb_server</span><span class="p">):</span></div>
+<div class="viewcode-block" id="DsmService.register_server"><a class="viewcode-back" href="../../../modules/teknon.html#services.dsm.service.DsmService.register_server">[docs]</a>        <span class="sd">&quot;&quot;&quot;Initialize the pb_server in the HWIOS namespace after initializing</span>
+
+<span class="sd">        :param DSMServer pb_server: The DSMServer that&#39;s registered</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">HWIOS</span><span class="o">.</span><span class="n">pb_server</span> <span class="o">=</span> <span class="n">pb_server</span>
+        
+    
+    <span class="k">def</span> <span class="nf">update_pb_pool</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">pb_clients</span><span class="p">):</span></div>
+<div class="viewcode-block" id="DsmService.update_pb_pool"><a class="viewcode-back" href="../../../modules/teknon.html#services.dsm.service.DsmService.update_pb_pool">[docs]</a>        <span class="sd">&quot;&quot;&quot;Update the pb_pool variable in the HWIOS namespace when necessary</span>
+
+<span class="sd">        :param list pb_clients: A list of connected pb clients</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">HWIOS</span><span class="o">.</span><span class="n">pb_pool</span> <span class="o">=</span> <span class="n">pb_clients</span>
+        
+    
+    <span class="k">def</span> <span class="nf">dispatch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span></div>
+<div class="viewcode-block" id="DsmService.dispatch"><a class="viewcode-back" href="../../../modules/teknon.html#services.dsm.service.DsmService.dispatch">[docs]</a>        <span class="sd">&quot;&quot;&quot;Dispatch a pb call to the matching websocket function</span>
+
+
+<span class="sd">        :param str url: The url to route to</span>
+<span class="sd">        :param dict params: The parameters to add to the function</span>
+<span class="sd">        :return: None or Exception</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">method</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">dispatcher</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">method</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">raise</span> <span class="n">MethodNotFound</span><span class="p">()</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">t</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
+                <span class="c">#mix client and list params in</span>
+                <span class="n">method</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="s">&#39;params&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span>
+                <span class="n">res</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">method</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">method</span><span class="p">[</span><span class="mi">1</span><span class="p">])(</span><span class="o">**</span><span class="n">method</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">t</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">:</span> 
+                <span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">method</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+                <span class="n">res</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">method</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">method</span><span class="p">[</span><span class="mi">1</span><span class="p">])(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span> <span class="k">raise</span> <span class="n">InvalidParams</span><span class="p">()</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">defer</span><span class="o">.</span><span class="n">Deferred</span><span class="p">):</span>
+                <span class="n">res</span><span class="o">.</span><span class="n">addBoth</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">respAny</span><span class="p">)</span>
+                <span class="k">return</span>            
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">e</span>
+</pre></div></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">HWIOS v0.6 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, OS-Networks.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.8.
+    </div>
+  </body>
+</html>

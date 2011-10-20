@@ -1,0 +1,343 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Blog Module &mdash; HWIOS v0.6 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="HWIOS v0.6 documentation" href="../index.html" />
+    <link rel="next" title="Wiki Module" href="wiki.html" />
+    <link rel="prev" title="Profiles Module" href="profiles.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="wiki.html" title="Wiki Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="profiles.html" title="Profiles Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">HWIOS v0.6 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="blog-module">
+<h1>Blog Module<a class="headerlink" href="#blog-module" title="Permalink to this headline">¶</a></h1>
+<p>The blog module is a simple blogging engine with support for comments, view-notification and image-uploads through the elFinder file manager.</p>
+<div class="section" id="module-services.web_ui.models.blog">
+<span id="code-references"></span><h2>Code References<a class="headerlink" href="#module-services.web_ui.models.blog" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="services-web-ui-models-blog">
+<h3>services.web_ui.models.blog<a class="headerlink" href="#services-web-ui-models-blog" title="Permalink to this headline">¶</a></h3>
+<p>The model description for the blogging module</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">copyright:</th><td class="field-body">Copyright 2011-2012 OS-Networks</td>
+</tr>
+<tr class="field"><th class="field-name">license:</th><td class="field-body">LGPL, See LICENSE for details.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<span class="target" id="module-services.web_ui.controllers.ws.blog"></span><div class="section" id="services-web-ui-controllers-ws-blog">
+<h3>services.web_ui.controllers.ws.blog<a class="headerlink" href="#services-web-ui-controllers-ws-blog" title="Permalink to this headline">¶</a></h3>
+<p>The websocket controller for the blog module</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">copyright:</th><td class="field-body">Copyright 2011-2012 OS-Networks</td>
+</tr>
+<tr class="field"><th class="field-name">license:</th><td class="field-body">LGPL, See LICENSE for details.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="services.web_ui.controllers.ws.blog.WS_Blog">
+<em class="property">class </em><tt class="descclassname">services.web_ui.controllers.ws.blog.</tt><tt class="descname">WS_Blog</tt><big>(</big><em>dispatcher</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/blog.html#WS_Blog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.blog.WS_Blog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>Websocket controller class for the blog module</p>
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.blog.WS_Blog.create_article_comment">
+<tt class="descname">create_article_comment</tt><big>(</big><em>client</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/blog.html#WS_Blog.create_article_comment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.blog.WS_Blog.create_article_comment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes care of all related actions that are involved in saving a new article</p>
+<p>Saves the ORM-entry, notifies other users of the event as well as generating an action-entry</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>slug</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The article slug reference</li>
+<li><strong>params</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Contains the form parameters</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">dict - Status and html-layout data response</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.blog.WS_Blog.create_blog_article">
+<tt class="descname">create_blog_article</tt><big>(</big><em>client</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/blog.html#WS_Blog.create_blog_article"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.blog.WS_Blog.create_blog_article" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handles creation of a new blog article, and notification to other watching clients</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>params</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Contains the form parameters</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">dict - Status and html-layout data response</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.blog.WS_Blog.delete_article_comment">
+<tt class="descname">delete_article_comment</tt><big>(</big><em>client</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/blog.html#WS_Blog.delete_article_comment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.blog.WS_Blog.delete_article_comment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes care of all related actions that are involved in deleting an article</p>
+<p>Deletes the ORM-entry, notifies other users of the event as well as generating an action-entry</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>slug</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The article slug reference</li>
+<li><strong>uuid</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The article comment uuid to delete</li>
+<li><strong>params</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Optional; acts like a switch to either return a confirmation view or hand it over to the actual deletion part</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">dict - Status and html-layout data response</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.blog.WS_Blog.delete_blog_article">
+<tt class="descname">delete_blog_article</tt><big>(</big><em>client</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/blog.html#WS_Blog.delete_blog_article"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.blog.WS_Blog.delete_blog_article" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns delete-confirmation layout when there are no parameters, otherwise try to delete the related article and
+render the general article view.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>slug</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The article slug reference</li>
+<li><strong>params</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Optional; contains the form parameters</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">dict - Status and html-layout data response</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.blog.WS_Blog.edit_blog_article">
+<tt class="descname">edit_blog_article</tt><big>(</big><em>client</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/blog.html#WS_Blog.edit_blog_article"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.blog.WS_Blog.edit_blog_article" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shows edit-view when there are no parameters, otherwise try to save the related article</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>slug</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The article slug reference</li>
+<li><strong>params</strong> (<a class="reference external" href="http://docs.python.org/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; Optional; contains the form parameters</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">dict - Status and html-layout data response</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.blog.WS_Blog.view_blog">
+<tt class="descname">view_blog</tt><big>(</big><em>client</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/blog.html#WS_Blog.view_blog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.blog.WS_Blog.view_blog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Renders the blog articles view</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body">dict - html-layout data response</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="services.web_ui.controllers.ws.blog.WS_Blog.view_blog_article">
+<tt class="descname">view_blog_article</tt><big>(</big><em>client</em>, <em>slug</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/controllers/ws/blog.html#WS_Blog.view_blog_article"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.controllers.ws.blog.WS_Blog.view_blog_article" title="Permalink to this definition">¶</a></dt>
+<dd><p>Renders the blog article view</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>client</strong> (<em>Client</em>) &#8211; The requesting client</li>
+<li><strong>slug</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The article slug reference</li>
+</ul>
+</td>
+</tr>
+<tr class="field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">dict - html-layout data response</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<span class="target" id="module-services.web_ui.models.elFinder"></span><div class="section" id="services-web-ui-models-elfinder">
+<h3>services.web_ui.models.elFinder<a class="headerlink" href="#services-web-ui-models-elfinder" title="Permalink to this headline">¶</a></h3>
+<p>Connector for elFinder File Manager</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">copyright:</th><td class="field-body">Troex Nevelin &lt;<a class="reference external" href="mailto:troex&#37;&#52;&#48;fury&#46;scancode&#46;ru">troex<span>&#64;</span>fury<span>&#46;</span>scancode<span>&#46;</span>ru</a>&gt;, django patches Dmitry Shapoval &lt;<a class="reference external" href="mailto:dmitry&#37;&#52;&#48;0fe&#46;ru">dmitry<span>&#64;</span>0fe<span>&#46;</span>ru</a>&gt;</td>
+</tr>
+<tr class="field"><th class="field-name">license:</th><td class="field-body">LGPL Version 3</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="services.web_ui.models.elFinder.connector">
+<em class="property">class </em><tt class="descclassname">services.web_ui.models.elFinder.</tt><tt class="descname">connector</tt><big>(</big><em>opts</em><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/elFinder.html#connector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.elFinder.connector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Connector for elFinder File Manager</p>
+<dl class="method">
+<dt id="services.web_ui.models.elFinder.connector.run">
+<tt class="descname">run</tt><big>(</big><em>httpRequest=</em><span class="optional">[</span><span class="optional">]</span><big>)</big><a class="reference internal" href="../_modules/services/web_ui/models/elFinder.html#connector.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#services.web_ui.models.elFinder.connector.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>main function</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Blog Module</a><ul>
+<li><a class="reference internal" href="#module-services.web_ui.models.blog">Code References</a><ul>
+<li><a class="reference internal" href="#services-web-ui-models-blog">services.web_ui.models.blog</a></li>
+<li><a class="reference internal" href="#services-web-ui-controllers-ws-blog">services.web_ui.controllers.ws.blog</a></li>
+<li><a class="reference internal" href="#services-web-ui-models-elfinder">services.web_ui.models.elFinder</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="profiles.html"
+                        title="previous chapter">Profiles Module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="wiki.html"
+                        title="next chapter">Wiki Module</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/modules/blog.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="wiki.html" title="Wiki Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="profiles.html" title="Profiles Module"
+             >previous</a> |</li>
+        <li><a href="../index.html">HWIOS v0.6 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, OS-Networks.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.8.
+    </div>
+  </body>
+</html>

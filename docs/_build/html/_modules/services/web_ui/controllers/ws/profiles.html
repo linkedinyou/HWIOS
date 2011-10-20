@@ -1,0 +1,560 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>services.web_ui.controllers.ws.profiles &mdash; HWIOS v0.6 documentation</title>
+    <link rel="stylesheet" href="../../../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '0.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="HWIOS v0.6 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">HWIOS v0.6 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for services.web_ui.controllers.ws.profiles</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    services.web_ui.controllers.ws.profiles</span>
+<span class="sd">    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">    The websocket controller for the profiles module</span>
+
+<span class="sd">    :copyright: Copyright 2011-2012 OS-Networks</span>
+<span class="sd">    :license: LGPL, See LICENSE for details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span><span class="o">,</span><span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">twisted.internet</span> <span class="kn">import</span> <span class="n">defer</span><span class="p">,</span> <span class="n">reactor</span>
+
+
+<span class="kn">from</span> <span class="nn">django.template.loader</span> <span class="kn">import</span> <span class="n">render_to_string</span>
+<span class="kn">from</span> <span class="nn">django.core</span> <span class="kn">import</span> <span class="n">serializers</span>
+<span class="kn">from</span> <span class="nn">django.core.exceptions</span> <span class="kn">import</span> <span class="n">ObjectDoesNotExist</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext</span> <span class="k">as</span> <span class="n">_</span>
+
+
+<span class="kn">from</span> <span class="nn">core.application</span> <span class="kn">import</span> <span class="n">HWIOS</span>
+<span class="kn">from</span> <span class="nn">web_ui.models.ws_auth</span> <span class="kn">import</span> <span class="n">WSAuth</span>
+<span class="kn">from</span> <span class="nn">web_ui.models.profiles</span> <span class="kn">import</span> <span class="n">Profile</span>
+<span class="kn">from</span> <span class="nn">web_ui.models.notifications</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">web_ui.models.activity</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">web_ui.models.settings</span> <span class="kn">import</span> <span class="n">Settings</span>
+
+<span class="kn">from</span> <span class="nn">web_ui.forms.profiles</span> <span class="kn">import</span> <span class="o">*</span>
+
+
+<span class="k">class</span> <span class="nc">WS_Profiles</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_Profiles"><a class="viewcode-back" href="../../../../../modules/profiles.html#services.web_ui.controllers.ws.profiles.WS_Profiles">[docs]</a>    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Websocket controller class for the profiles module</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dispatcher</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+
+    <span class="k">def</span> <span class="nf">get_context</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;profiles/context_menu.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;profile&#39;</span><span class="p">:</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">})</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;context&#39;</span><span class="p">:</span><span class="n">context</span><span class="p">}}}</span>
+        
+    
+    <span class="nd">@WSAuth.is_staff</span>
+    <span class="k">def</span> <span class="nf">manage_profiles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_Profiles.manage_profiles"><a class="viewcode-back" href="../../../../../modules/profiles.html#services.web_ui.controllers.ws.profiles.WS_Profiles.manage_profiles">[docs]</a>        <span class="sd">&quot;&quot;&quot;Renders the manage profiles view</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :return: dict - html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">profiles</span> <span class="o">=</span> <span class="n">Profile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;profiles/manage_profiles.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;profiles&#39;</span><span class="p">:</span><span class="n">Profile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()})</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">}}}</span>
+        
+        
+    <span class="nd">@WSAuth.is_staff</span></div>
+    <span class="k">def</span> <span class="nf">create_profile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_Profiles.create_profile"><a class="viewcode-back" href="../../../../../modules/profiles.html#services.web_ui.controllers.ws.profiles.WS_Profiles.create_profile">[docs]</a>        <span class="sd">&quot;&quot;&quot;Either renders the create-profiles view or handle the creation of a new profile</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param dict params: Optional; contains the form parameters</span>
+<span class="sd">        :return: dict - html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">params</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;profiles/create_profile.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;form&#39;</span><span class="p">:</span><span class="n">NewProfileForm</span><span class="p">()})</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">}}}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">form</span> <span class="o">=</span> <span class="n">NewProfileForm</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+                <span class="n">profile_data</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;first_name&#39;</span><span class="p">:</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s">&#39;first_name&#39;</span><span class="p">],</span> 
+                                <span class="s">&#39;last_name&#39;</span><span class="p">:</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s">&#39;last_name&#39;</span><span class="p">],</span> 
+                                <span class="s">&#39;email&#39;</span><span class="p">:</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s">&#39;email&#39;</span><span class="p">],</span> 
+                                <span class="s">&#39;password&#39;</span><span class="p">:</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s">&#39;password&#39;</span><span class="p">],</span> 
+                                <span class="s">&#39;is_staff&#39;</span><span class="p">:</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s">&#39;is_staff&#39;</span><span class="p">],</span> 
+                                <span class="s">&#39;is_active&#39;</span><span class="p">:</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s">&#39;is_active&#39;</span><span class="p">],</span> 
+                                <span class="s">&#39;is_superuser&#39;</span><span class="p">:</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s">&#39;is_superuser&#39;</span><span class="p">],</span> 
+                                <span class="s">&#39;organisation&#39;</span><span class="p">:</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s">&#39;organisation&#39;</span><span class="p">],</span> 
+                                <span class="s">&#39;timezone&#39;</span><span class="p">:</span> <span class="s">&#39;Europe/Amsterdam&#39;</span><span class="p">,</span> 
+                                <span class="s">&#39;karma&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> 
+                                <span class="s">&#39;ip&#39;</span><span class="p">:</span> <span class="n">client</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">getPeer</span><span class="p">()</span><span class="o">.</span><span class="n">host</span>
+                                <span class="p">}</span>
+                <span class="n">profile</span> <span class="o">=</span> <span class="n">Profile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create_profile</span><span class="p">(</span><span class="n">profile_data</span><span class="p">,</span> <span class="n">acp</span> <span class="o">=</span> <span class="bp">True</span><span class="p">,</span> <span class="n">client</span> <span class="o">=</span> <span class="n">client</span><span class="p">)</span>
+                <span class="n">client_response</span><span class="p">,</span> <span class="n">tpl_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_manage_profiles</span><span class="p">()</span>
+                <span class="n">client_response</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                    <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                        <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;PROFILE_CREATE_OK&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;New user created!&#39;</span><span class="p">),</span>
+                        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">],</span>
+                        <span class="s">&#39;state&#39;</span><span class="p">:</span> <span class="s">&#39;/profiles/manage/&#39;</span><span class="p">,</span>
+                    <span class="p">}</span>
+                <span class="p">})</span>
+                <span class="n">notify_others</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">client_response</span><span class="p">,</span><span class="s">&#39;/profiles/manage/modified/&#39;</span><span class="p">,</span> <span class="s">&#39;/profiles/manage/&#39;</span><span class="p">,</span> <span class="n">tpl_params</span><span class="p">)</span>
+                <span class="n">publish_activity</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Profile created&#39;</span><span class="p">),</span><span class="s">&#39;/profiles/manage/&#39;</span><span class="p">,[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+                <span class="k">return</span> <span class="n">client_response</span>                
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&#39;profiles/create_profile.html&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;form&#39;</span><span class="p">:</span> <span class="n">form</span><span class="p">})</span>
+                <span class="k">return</span> <span class="p">{</span>
+                    <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                        <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;FORM_INVALID&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Please pay attention to the profile details...&#39;</span><span class="p">),</span>
+                        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-warning&#39;</span><span class="p">]</span>
+                    <span class="p">},</span>
+                    <span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">}}</span>
+                <span class="p">}</span>
+                
+
+    <span class="k">def</span> <span class="nf">follow_profile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">username</span><span class="p">):</span></div>
+<div class="viewcode-block" id="WS_Profiles.follow_profile"><a class="viewcode-back" href="../../../../../modules/profiles.html#services.web_ui.controllers.ws.profiles.WS_Profiles.follow_profile">[docs]</a>        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Requests a profile to follow to this client&#39;s current view</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">target_client</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">get_client</span><span class="p">(</span><span class="n">username</span> <span class="o">=</span> <span class="n">username</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">target_client</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">target_client</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">view_history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">client</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">view_history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="k">return</span> <span class="p">{</span>
+                    <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                        <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;PROFILE_FOLLOW_SAME_PAGE&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Profile is already on the same page!&#39;</span><span class="p">),</span>
+                        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">],</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            
+            <span class="n">dialog</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&#39;profiles/request_follow.html&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s">&#39;target_profile&#39;</span><span class="p">:</span> <span class="n">target_client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span>
+                <span class="s">&#39;view&#39;</span><span class="p">:</span><span class="n">client</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">view_history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="p">})</span>
+            <span class="c">#send follow request to target client</span>
+            <span class="n">target_client</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="s">&#39;/data/messenger/profiles/</span><span class="si">%s</span><span class="s">/follow/&#39;</span> <span class="o">%</span> <span class="n">target_client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">username</span><span class="p">,{</span>
+                <span class="s">&#39;data&#39;</span><span class="p">:{</span>
+                    <span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;dialog&#39;</span><span class="p">:</span><span class="n">dialog</span><span class="p">},</span>
+                    <span class="s">&#39;inviter&#39;</span><span class="p">:</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">username</span><span class="p">,</span>
+                    <span class="s">&#39;view&#39;</span><span class="p">:</span><span class="n">client</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">view_history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="p">},</span>
+            <span class="p">})</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                    <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;PROFILE_FOLLOW_REQUESTED&#39;</span><span class="p">,</span>
+                    <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Follow request has been made...&#39;</span><span class="p">),</span>
+                    <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">],</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                    <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;PROFILE_FOLLOW_INVALID_CLIENT&#39;</span><span class="p">,</span>
+                    <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Invalid client requested!&#39;</span><span class="p">),</span>
+                    <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-warning&#39;</span><span class="p">],</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+
+
+    <span class="nd">@defer.inlineCallbacks</span></div>
+    <span class="k">def</span> <span class="nf">whois_profile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">username</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_Profiles.whois_profile"><a class="viewcode-back" href="../../../../../modules/profiles.html#services.web_ui.controllers.ws.profiles.WS_Profiles.whois_profile">[docs]</a>        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Lookup info about a client</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">target_client</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">get_client</span><span class="p">(</span><span class="n">username</span> <span class="o">=</span> <span class="n">username</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">target_client</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">ip</span> <span class="o">=</span> <span class="n">target_client</span><span class="o">.</span><span class="n">get_ip</span><span class="p">()</span>
+            <span class="n">hostname</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">target_client</span><span class="o">.</span><span class="n">get_hostname</span><span class="p">()</span>
+            <span class="n">geoip</span> <span class="o">=</span> <span class="n">target_client</span><span class="o">.</span><span class="n">get_geoip</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_ip</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Unknown&#39;</span><span class="p">)</span>
+        <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&#39;profiles/whois_profile.html&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;ip&#39;</span><span class="p">:</span> <span class="n">ip</span><span class="p">,</span><span class="s">&#39;hostname&#39;</span><span class="p">:</span><span class="n">hostname</span><span class="p">,</span><span class="s">&#39;geoip&#39;</span><span class="p">:</span><span class="n">geoip</span><span class="p">,</span><span class="s">&#39;target_profile&#39;</span><span class="p">:</span><span class="n">target_client</span><span class="o">.</span><span class="n">profile</span><span class="p">})</span>
+        <span class="n">defer</span><span class="o">.</span><span class="n">returnValue</span><span class="p">({</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">}}})</span>
+    
+
+    <span class="nd">@WSAuth.is_authenticated</span></div>
+    <span class="k">def</span> <span class="nf">edit_profile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_Profiles.edit_profile"><a class="viewcode-back" href="../../../../../modules/profiles.html#services.web_ui.controllers.ws.profiles.WS_Profiles.edit_profile">[docs]</a>        <span class="sd">&quot;&quot;&quot;Either renders the edit-profiles view or handle the update to an existing profile</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param str profile_name: The profile to change, based on firstname and lastname</span>
+<span class="sd">        :param dict params: Optional; contains the form parameters</span>
+<span class="sd">        :return: dict - Status and html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">profile</span> <span class="o">=</span> <span class="n">Profile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">username</span> <span class="o">=</span> <span class="n">username</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">params</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="c">#users own profile         </span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;first_name&#39;</span><span class="p">:</span><span class="n">profile</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span> 
+                    <span class="s">&#39;last_name&#39;</span><span class="p">:</span><span class="n">profile</span><span class="o">.</span><span class="n">last_name</span><span class="p">,</span>
+                    <span class="s">&#39;username&#39;</span><span class="p">:</span><span class="n">profile</span><span class="o">.</span><span class="n">username</span><span class="p">,</span>
+                    <span class="s">&#39;email&#39;</span><span class="p">:</span><span class="n">profile</span><span class="o">.</span><span class="n">email</span><span class="p">,</span>
+                    <span class="s">&#39;is_active&#39;</span><span class="p">:</span><span class="n">profile</span><span class="o">.</span><span class="n">is_active</span><span class="p">,</span>
+                    <span class="s">&#39;is_staff&#39;</span><span class="p">:</span><span class="n">profile</span><span class="o">.</span><span class="n">is_staff</span><span class="p">,</span>
+                    <span class="s">&#39;is_superuser&#39;</span><span class="p">:</span><span class="n">profile</span><span class="o">.</span><span class="n">is_superuser</span><span class="p">,</span>
+                <span class="p">}</span>
+            <span class="k">if</span> <span class="n">client</span><span class="o">.</span><span class="n">profile</span> <span class="o">==</span> <span class="n">profile</span><span class="p">:</span>
+                <span class="n">form</span> <span class="o">=</span> <span class="n">EditMyProfileForm</span><span class="p">(</span><span class="n">initial</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;email&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="o">.</span><span class="n">email</span><span class="p">,</span><span class="s">&#39;about&#39;</span><span class="p">:</span><span class="n">profile</span><span class="o">.</span><span class="n">about</span><span class="p">})</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">form</span> <span class="o">=</span> <span class="n">EditProfileForm</span><span class="p">(</span><span class="n">initial</span><span class="o">=</span><span class="n">data</span><span class="p">)</span> 
+            <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&#39;profiles/edit_profile.html&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;form&#39;</span><span class="p">:</span> <span class="n">form</span><span class="p">,</span> <span class="s">&#39;profile&#39;</span><span class="p">:</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span> <span class="s">&#39;target_profile&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="p">})</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">}}}</span> 
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">client</span><span class="o">.</span><span class="n">profile</span> <span class="o">==</span> <span class="n">profile</span><span class="p">:</span>
+                <span class="n">form</span> <span class="o">=</span> <span class="n">EditMyProfileForm</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">form</span> <span class="o">=</span> <span class="n">EditProfileForm</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+            <span class="c">#our user sends in an avatar update</span>
+            <span class="k">if</span> <span class="s">&#39;avatar&#39;</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+                <span class="n">profile</span> <span class="o">=</span> <span class="n">Profile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">update_profile</span><span class="p">(</span><span class="n">profile</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">client</span><span class="p">)</span>                     
+                <span class="n">response</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                        <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;AVATAR_UPDATE_OK&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Avatar succesfully updated&#39;</span><span class="p">),</span>
+                        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">],</span>
+                    <span class="p">},</span>
+                    <span class="s">&#39;data&#39;</span><span class="p">:{</span>
+                        <span class="s">&#39;avatar&#39;</span><span class="p">:</span><span class="n">profile</span><span class="o">.</span><span class="n">photo</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+                <span class="k">return</span> <span class="n">response</span>
+            <span class="k">if</span> <span class="n">form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+                <span class="c">#try to get client instance for modified profile</span>
+                
+                <span class="n">_client</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">get_client</span><span class="p">(</span><span class="n">profile</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+                <span class="n">profile</span> <span class="o">=</span> <span class="n">Profile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">update_profile</span><span class="p">(</span><span class="n">profile</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span><span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">,</span> <span class="n">client</span><span class="p">)</span>
+                <span class="c">#update client profile *if* online</span>
+                <span class="k">if</span> <span class="n">_client</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="n">_client</span><span class="o">.</span><span class="n">profile</span> <span class="o">=</span> <span class="n">profile</span>
+                
+                <span class="c">#we have a two-fold audience: overview =&gt; /profiles/manage and edit =&gt; /profiles/&lt;some_profile&gt;/edit/                    </span>
+                <span class="n">client_edit_response</span><span class="p">,</span> <span class="n">__tpl_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_profile</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">profile</span><span class="p">)</span>
+                <span class="c">#profile overview update</span>
+                <span class="n">client_overview_response</span><span class="p">,</span> <span class="n">_tpl_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_manage_profiles</span><span class="p">()</span>
+                <span class="n">_status</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                        <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;PROFILE_EDIT_OK&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Profile succesfully updated&#39;</span><span class="p">),</span>
+                        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">],</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+                <span class="n">client_edit_response</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_status</span><span class="p">)</span>
+                <span class="n">client_overview_response</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_status</span><span class="p">)</span>                
+                <span class="c">#notify edit this profile viewer</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;first_name&#39;</span><span class="p">:</span><span class="n">profile</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span>
+                        <span class="s">&#39;last_name&#39;</span><span class="p">:</span><span class="n">profile</span><span class="o">.</span><span class="n">last_name</span><span class="p">,</span>
+                        <span class="s">&#39;username&#39;</span><span class="p">:</span><span class="n">profile</span><span class="o">.</span><span class="n">username</span><span class="p">,</span>
+                        <span class="s">&#39;email&#39;</span><span class="p">:</span><span class="n">profile</span><span class="o">.</span><span class="n">email</span><span class="p">,</span>
+                        <span class="s">&#39;is_active&#39;</span><span class="p">:</span><span class="n">profile</span><span class="o">.</span><span class="n">is_active</span><span class="p">,</span>
+                        <span class="s">&#39;is_staff&#39;</span><span class="p">:</span><span class="n">profile</span><span class="o">.</span><span class="n">is_staff</span><span class="p">,</span>
+                        <span class="s">&#39;is_superuser&#39;</span><span class="p">:</span><span class="n">profile</span><span class="o">.</span><span class="n">is_superuser</span><span class="p">,</span>
+                    <span class="p">}</span>
+                <span class="k">if</span> <span class="n">client</span><span class="o">.</span><span class="n">profile</span> <span class="o">==</span> <span class="n">profile</span><span class="p">:</span>
+                    <span class="n">form</span> <span class="o">=</span> <span class="n">EditMyProfileForm</span><span class="p">(</span><span class="n">initial</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">form</span> <span class="o">=</span> <span class="n">EditProfileForm</span><span class="p">(</span><span class="n">initial</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+                <span class="c">#notify other editors</span>
+                <span class="n">_target_state</span> <span class="o">=</span> <span class="s">&#39;/profiles/</span><span class="si">%s</span><span class="s">/edit/&#39;</span> <span class="o">%</span> <span class="n">username</span>
+                <span class="n">client_edit_response</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">][</span><span class="s">&#39;state&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_target_state</span>
+                <span class="n">notify_others</span><span class="p">(</span>
+                    <span class="n">client</span><span class="p">,</span> <span class="n">client_edit_response</span><span class="p">,</span>
+                    <span class="s">&#39;/profiles/manage/modified/&#39;</span><span class="p">,</span>
+                    <span class="s">r&#39;^/profiles/</span><span class="si">%s</span><span class="s">/edit/$&#39;</span> <span class="o">%</span> <span class="n">username</span><span class="p">,</span>
+                    <span class="p">{</span><span class="s">&#39;main&#39;</span><span class="p">:{</span><span class="s">&#39;tpl&#39;</span><span class="p">:</span><span class="s">&#39;profiles/edit_profile.html&#39;</span><span class="p">,</span><span class="s">&#39;params&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;form&#39;</span><span class="p">:</span><span class="n">form</span><span class="p">,</span><span class="s">&#39;profile&#39;</span><span class="p">:</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span><span class="s">&#39;target_profile&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="p">}}},</span>
+                    <span class="n">_target_state</span>
+                <span class="p">)</span>
+                <span class="c">#notify manage profile viewers</span>
+                <span class="n">_target_state</span> <span class="o">=</span> <span class="s">&#39;/profiles/manage/&#39;</span>
+                <span class="n">client_overview_response</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">][</span><span class="s">&#39;state&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_target_state</span>
+                <span class="n">notify_others</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">client_overview_response</span><span class="p">,</span><span class="s">&#39;/profiles/manage/modified/&#39;</span><span class="p">,</span> <span class="s">r&#39;^/profiles/manage/$&#39;</span><span class="p">,</span> <span class="n">_tpl_params</span><span class="p">,</span> <span class="n">_target_state</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">client</span><span class="o">.</span><span class="n">profile</span> <span class="o">==</span> <span class="n">profile</span><span class="p">:</span>
+                    <span class="n">publish_activity</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Profile own user change&#39;</span><span class="p">),</span><span class="s">&#39;/profiles/manage/&#39;</span><span class="p">,[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">publish_activity</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Profile moderator change&#39;</span><span class="p">),</span><span class="s">&#39;/profiles/manage/&#39;</span><span class="p">,[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+                <span class="k">return</span> <span class="n">client_overview_response</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;profiles/edit_profile.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;form&#39;</span><span class="p">:</span><span class="n">form</span><span class="p">,</span><span class="s">&#39;profile&#39;</span><span class="p">:</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span> <span class="s">&#39;target_profile&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="p">})</span>
+                <span class="k">return</span> <span class="p">{</span>
+                    <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                        <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;FORM_INVALID&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Invalid Form!&#39;</span><span class="p">),</span>
+                        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+                    <span class="p">},</span>
+                    <span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">}}</span>
+                <span class="p">}</span>                    
+
+    
+    <span class="nd">@WSAuth.is_staff</span></div>
+    <span class="k">def</span> <span class="nf">delete_profiles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_Profiles.delete_profiles"><a class="viewcode-back" href="../../../../../modules/profiles.html#services.web_ui.controllers.ws.profiles.WS_Profiles.delete_profiles">[docs]</a>        <span class="sd">&quot;&quot;&quot;Either renders the delete-profiles confirmation view or handle the deletion of one or more profiles</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param dict params: Optional; contains the form parameters</span>
+<span class="sd">        :return: dict - Status and html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">params</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">dialog</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;profiles/delete_profile_confirmation.html&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;dialog&#39;</span><span class="p">:</span><span class="n">dialog</span><span class="p">}}}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">deleted_list</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">profile_collide</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="n">uuids</span> <span class="o">=</span> <span class="n">params</span>
+            <span class="n">regex_modifier</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+            <span class="k">for</span> <span class="n">uuid</span> <span class="ow">in</span> <span class="n">uuids</span><span class="p">:</span>
+                <span class="c">#Prevent removal of user&#39;s own profile                </span>
+                <span class="k">if</span> <span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">uuid</span> <span class="o">!=</span> <span class="n">uuid</span><span class="p">:</span>
+                    <span class="n">deleted_profile</span> <span class="o">=</span> <span class="n">Profile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">delete_profile</span><span class="p">(</span><span class="n">uuid</span><span class="p">,</span> <span class="n">client</span> <span class="o">=</span> <span class="n">client</span><span class="p">)</span>
+                    <span class="n">deleted_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="n">deleted_profile</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]:</span><span class="n">deleted_profile</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">]})</span>
+                    <span class="n">_profile_name</span> <span class="o">=</span> <span class="n">deleted_profile</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">,</span> <span class="s">&#39;_&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">regex_modifier</span> <span class="o">!=</span> <span class="s">&#39;&#39;</span><span class="p">:</span>
+                        <span class="n">regex_modifier</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">|</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">regex_modifier</span><span class="p">,</span> <span class="n">_profile_name</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">regex_modifier</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">_profile_name</span>
+                    <span class="n">deleted_profile</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">profile_collide</span> <span class="o">=</span> <span class="bp">True</span>       
+            <span class="n">client_response</span><span class="p">,</span> <span class="n">tpl_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_manage_profiles</span><span class="p">()</span>
+            <span class="n">_target_state</span> <span class="o">=</span> <span class="s">&#39;/profiles/manage/&#39;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">profile_collide</span><span class="p">:</span>
+                <span class="n">client_response</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                    <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                        <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;PROFILE_DELETE_OK&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Succesfully removed </span><span class="si">%(profiles)s</span><span class="s"> profile(s)!&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;profiles&#39;</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">deleted_list</span><span class="p">)},</span>
+                        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">],</span>
+                        <span class="s">&#39;state&#39;</span><span class="p">:</span> <span class="n">_target_state</span><span class="p">,</span>
+                    <span class="p">}</span>
+                <span class="p">})</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">client_response</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                    <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                        <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;PROFILE_DELETE_OK&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%(profiles)s</span><span class="s"> profile(s) removed succesfully; you can</span><span class="se">\&#39;</span><span class="s">t remove your own profile!&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;profiles&#39;</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">deleted_list</span><span class="p">)},</span>
+                        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">],</span>
+                        <span class="s">&#39;state&#39;</span><span class="p">:</span> <span class="n">_target_state</span><span class="p">,</span>
+                    <span class="p">}</span>
+                <span class="p">})</span>
+            <span class="n">notify_others</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">client_response</span><span class="p">,</span><span class="s">&#39;/profiles/manage/modified/&#39;</span><span class="p">,</span> <span class="s">&#39;^/profiles/(</span><span class="si">%s</span><span class="s">)/edit/$&#39;</span> <span class="o">%</span> <span class="n">regex_modifier</span><span class="p">,</span> <span class="n">tpl_params</span><span class="p">,</span> <span class="n">_target_state</span><span class="p">)</span>
+            <span class="n">notify_others</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">client_response</span><span class="p">,</span><span class="s">&#39;/profiles/manage/modified/&#39;</span><span class="p">,</span> <span class="s">&#39;^/profiles/manage/$&#39;</span><span class="p">,</span> <span class="n">tpl_params</span><span class="p">,</span> <span class="n">_target_state</span><span class="p">)</span>
+            <span class="n">publish_activity</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Profile deleted&#39;</span><span class="p">),</span><span class="s">&#39;/profiles/manage/&#39;</span><span class="p">,[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">client_response</span>
+
+
+    <span class="k">def</span> <span class="nf">login_profile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span></div>
+<div class="viewcode-block" id="WS_Profiles.login_profile"><a class="viewcode-back" href="../../../../../modules/profiles.html#services.web_ui.controllers.ws.profiles.WS_Profiles.login_profile">[docs]</a>        <span class="sd">&quot;&quot;&quot;Renders the login dialog template</span>
+<span class="sd">        TODO: Currently we only supply the form layout here. Actual login could be done through websockets as well though, but that</span>
+<span class="sd">        requires manupilation of the django session object, and clientside cookie handling.</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        &quot;&quot;&quot;</span>        
+        <span class="n">form</span> <span class="o">=</span> <span class="n">LoginForm</span><span class="p">()</span>
+        <span class="n">dialog</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&#39;profiles/login.html&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;form&#39;</span><span class="p">:</span> <span class="n">form</span><span class="p">})</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;dialog&#39;</span><span class="p">:</span><span class="n">dialog</span><span class="p">}}}</span>
+        <span class="k">return</span> <span class="n">response</span>
+        
+        
+    <span class="k">def</span> <span class="nf">register_profile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span></div>
+<div class="viewcode-block" id="WS_Profiles.register_profile"><a class="viewcode-back" href="../../../../../modules/profiles.html#services.web_ui.controllers.ws.profiles.WS_Profiles.register_profile">[docs]</a>        <span class="sd">&quot;&quot;&quot;Either renders the register-dialog view or handle the registration form-request</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param dict params: Optional; contains the form parameters</span>
+<span class="sd">        :return: dict - Status and html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">params</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">form</span> <span class="o">=</span> <span class="n">RegisterProfileForm</span><span class="p">()</span>
+            <span class="n">dialog</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&#39;profiles/register.html&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;form&#39;</span><span class="p">:</span> <span class="n">form</span><span class="p">})</span>
+            <span class="n">client_response</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;dialog&#39;</span><span class="p">:</span><span class="n">dialog</span><span class="p">}}}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">form</span> <span class="o">=</span> <span class="n">RegisterProfileForm</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+                <span class="n">profile_data</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;username&#39;</span><span class="p">:</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s">&#39;username&#39;</span><span class="p">],</span>
+                                <span class="s">&#39;email&#39;</span><span class="p">:</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s">&#39;email&#39;</span><span class="p">],</span> 
+                                <span class="s">&#39;password&#39;</span><span class="p">:</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s">&#39;password&#39;</span><span class="p">],</span> 
+                                <span class="s">&#39;is_staff&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> 
+                                <span class="s">&#39;is_active&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> 
+                                <span class="s">&#39;timezone&#39;</span><span class="p">:</span> <span class="s">&#39;Europe/Amsterdam&#39;</span><span class="p">,</span> 
+                                <span class="s">&#39;karma&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> 
+                                <span class="s">&#39;ip&#39;</span><span class="p">:</span> <span class="n">client</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">getPeer</span><span class="p">()</span><span class="o">.</span><span class="n">host</span>
+                                <span class="p">}</span>
+                <span class="n">profile</span> <span class="o">=</span> <span class="n">Profile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create_profile</span><span class="p">(</span><span class="n">profile_data</span><span class="p">,</span> <span class="n">client</span> <span class="o">=</span> <span class="n">client</span><span class="p">)</span>
+                <span class="n">acp_settings</span> <span class="o">=</span> <span class="n">Settings</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="c">#general return template within the webinterface</span>
+                <span class="n">dialog</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&#39;profiles/registration_complete.html&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;profile&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="p">,</span> <span class="s">&#39;activation_type&#39;</span><span class="p">:</span> <span class="n">acp_settings</span><span class="o">.</span><span class="n">activation_type</span><span class="p">})</span>
+                <span class="n">client_response</span><span class="p">,</span> <span class="n">tpl_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_manage_profiles</span><span class="p">()</span>
+                <span class="n">client_response</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                    <span class="s">&#39;status&#39;</span><span class="p">:{</span><span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;REGISTER_OK&#39;</span><span class="p">,</span>
+                    <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;New account registered&#39;</span><span class="p">),</span>
+                    <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+                    <span class="p">}</span>
+                <span class="p">})</span>
+                <span class="n">notify_others</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">client_response</span><span class="p">,</span><span class="s">&#39;/profiles/manage/modified/&#39;</span><span class="p">,</span> <span class="s">&#39;/profiles/manage/&#39;</span><span class="p">,</span> <span class="n">tpl_params</span><span class="p">)</span>
+                <span class="n">publish_activity</span><span class="p">(</span><span class="n">profile</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Profile registered&#39;</span><span class="p">),</span><span class="s">&#39;/profiles/manage/&#39;</span><span class="p">,[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">client_response</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;dialog&#39;</span><span class="p">:</span><span class="n">dialog</span><span class="p">}}})</span>
+            <span class="k">else</span><span class="p">:</span>                
+                <span class="n">feedback</span> <span class="o">=</span> <span class="s">&#39;Invalid form. Please check your credentials...&#39;</span>
+                <span class="n">dialog</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&#39;profiles/register.html&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;form&#39;</span><span class="p">:</span> <span class="n">form</span><span class="p">})</span>
+                <span class="n">client_response</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                        <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;FORM_INVALID&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Invalid form. Please check your credentials...&#39;</span><span class="p">),</span>
+                        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-warning&#39;</span><span class="p">]</span>
+                    <span class="p">},</span>
+                    <span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;dialog&#39;</span><span class="p">:</span><span class="n">dialog</span><span class="p">}}</span>
+                <span class="p">}</span>
+        <span class="k">return</span> <span class="n">client_response</span>
+
+
+    <span class="k">def</span> <span class="nf">activate_profile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">profile_uuid</span><span class="p">):</span></div>
+<div class="viewcode-block" id="WS_Profiles.activate_profile"><a class="viewcode-back" href="../../../../../modules/profiles.html#services.web_ui.controllers.ws.profiles.WS_Profiles.activate_profile">[docs]</a>        <span class="sd">&quot;&quot;&quot;Try to set the profile to active, or return a notification that the profile is already active</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param str profile_uuid: The profile&#39;s uuid to use</span>
+<span class="sd">        :return: dict - Status and html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">activated_profile</span> <span class="o">=</span> <span class="n">Profile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">activate_profile</span><span class="p">(</span><span class="n">profile_uuid</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">activated_profile</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">web_ui.models.settings</span> <span class="kn">import</span> <span class="n">Settings</span>
+            <span class="kn">from</span> <span class="nn">django.core</span> <span class="kn">import</span> <span class="n">mail</span>
+            <span class="n">acp_settings</span> <span class="o">=</span> <span class="n">Settings</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">dialog</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&#39;profiles/registration_user_approved.html&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;profile&#39;</span><span class="p">:</span> <span class="n">activated_profile</span><span class="p">,</span> <span class="s">&#39;host&#39;</span><span class="p">:</span> <span class="n">client</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">getPeer</span><span class="p">()</span><span class="o">.</span><span class="n">host</span><span class="p">})</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                    <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;PROFILE_ACTIVATED&#39;</span><span class="p">,</span>
+                    <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;Your account has been activated...&#39;</span><span class="p">),</span>
+                    <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+                <span class="p">},</span>
+                <span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;dialog&#39;</span><span class="p">:</span><span class="n">dialog</span><span class="p">}}</span>
+            <span class="p">}</span>
+            <span class="n">publish_activity</span><span class="p">(</span><span class="n">activated_profile</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Profile activated&#39;</span><span class="p">),</span><span class="s">&#39;/profiles/manage/&#39;</span><span class="p">,[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                    <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;PROFILE_ALREADY_ACTIVATED&#39;</span><span class="p">,</span>
+                    <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;This account is already active...&#39;</span><span class="p">),</span>
+                    <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="k">return</span> <span class="n">response</span>
+    
+    
+    <span class="k">def</span> <span class="nf">view_profile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">username</span><span class="p">):</span></div>
+<div class="viewcode-block" id="WS_Profiles.view_profile"><a class="viewcode-back" href="../../../../../modules/profiles.html#services.web_ui.controllers.ws.profiles.WS_Profiles.view_profile">[docs]</a>        <span class="sd">&quot;&quot;&quot;View a profile&#39;s details, whether it&#39;s our own profile or another profile is determined in the template</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param str profile_name: The profile&#39;s username to use</span>
+<span class="sd">        :return: dict - Status and html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">profile</span> <span class="o">=</span> <span class="n">Profile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">username</span> <span class="o">=</span> <span class="n">username</span><span class="p">)</span>
+        <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&#39;profiles/view_profile.html&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;target_profile&#39;</span><span class="p">:</span> <span class="n">profile</span><span class="p">,</span><span class="s">&#39;profile&#39;</span><span class="p">:</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">})</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">}}}</span>
+            
+        
+    <span class="k">def</span> <span class="nf">_get_manage_profiles</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Small helper function that returns template and html-layout references of all profiles,</span>
+<span class="sd">        that work well with the notify-others action</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">profiles</span> <span class="o">=</span> <span class="n">Profile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;profiles/manage_profiles.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;profiles&#39;</span><span class="p">:</span><span class="n">profiles</span><span class="p">})</span>
+        <span class="n">tpl_params</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;profiles&#39;</span><span class="p">:</span><span class="n">profiles</span><span class="p">}</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">}}},</span>
+            <span class="p">{</span><span class="s">&#39;main&#39;</span><span class="p">:{</span><span class="s">&#39;tpl&#39;</span><span class="p">:</span><span class="s">&#39;profiles/manage_profiles.html&#39;</span><span class="p">,</span><span class="s">&#39;params&#39;</span><span class="p">:</span><span class="n">tpl_params</span><span class="p">}}</span>
+        <span class="p">]</span>
+        
+        
+    <span class="k">def</span> <span class="nf">_get_profile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">profile</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Small helper function that returns template and html-layout references to a profile,</span>
+<span class="sd">        that work well with the notify-others action</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tpl_params</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;profile&#39;</span><span class="p">:</span><span class="n">profile</span><span class="p">}</span>
+        <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&#39;profiles/view_profile.html&#39;</span><span class="p">,</span> <span class="n">tpl_params</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">}}},</span>
+            <span class="p">{</span><span class="s">&#39;main&#39;</span><span class="p">:{</span><span class="s">&#39;tpl&#39;</span><span class="p">:</span><span class="s">&#39;profiles/view_profile.html&#39;</span><span class="p">,</span><span class="s">&#39;params&#39;</span><span class="p">:</span><span class="n">tpl_params</span><span class="p">}}</span>
+        <span class="p">]</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">HWIOS v0.6 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, OS-Networks.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.8.
+    </div>
+  </body>
+</html>

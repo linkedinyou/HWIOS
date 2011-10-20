@@ -22,7 +22,13 @@ from twisted.internet import reactor
 
 #Set our environment, so the hwios namespace can be found
 os.environ['DJANGO_SETTINGS_MODULE'] = 'web_ui.settings'
-HWIOS_ROOT = os.getcwd()
+if 'HWIOS_ROOT' in os.environ:
+    HWIOS_ROOT = os.environ['HWIOS_ROOT']
+else:
+    HWIOS_ROOT = os.getcwd()
+    if 'services/web_ui' in HWIOS_ROOT:
+        HWIOS_ROOT = HWIOS_ROOT[:-15]
+    os.putenv('HWIOS_ROOT', HWIOS_ROOT)
 sys.path.append(os.path.join(HWIOS_ROOT,'./'))
 sys.path.append(os.path.join(HWIOS_ROOT,'services'))
 
@@ -31,6 +37,7 @@ from services.loader import ServiceLoader
 
 application = service.Application('HWIOS')
 HWIOS.application = application
+print HWIOS_ROOT
 HWIOS.config = ConfigParser()
 HWIOS.config.read(os.path.join(HWIOS_ROOT,'hwios.ini'))
 if 'autoreload-twistd.py' not in sys.argv[0]:

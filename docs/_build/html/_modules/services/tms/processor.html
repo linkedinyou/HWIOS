@@ -1,0 +1,271 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>services.tms.processor &mdash; HWIOS v0.6 documentation</title>
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="HWIOS v0.6 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">HWIOS v0.6 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for services.tms.processor</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    services.tms.processor</span>
+<span class="sd">    ~~~~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">    The Processor takes care of manipulating the image-data for each zoom-level, like scaling and combining tiles. It&#39;s written</span>
+<span class="sd">    as a wrapper class, in order to be able to use different image processors, however PIL is by far the fastest processor, compared</span>
+<span class="sd">    to imagemagick. Maybe someone cares to write a cairo processor some day...</span>
+
+<span class="sd">    :copyright: Copyright 2011-2012 OS-Networks</span>
+<span class="sd">    :license: LGPL, See LICENSE for details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">StringIO</span>
+<span class="kn">import</span> <span class="nn">math</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">PythonMagick</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">pass</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">PIL</span>
+    <span class="kn">import</span> <span class="nn">Image</span><span class="o">,</span><span class="nn">ImageDraw</span><span class="o">,</span><span class="nn">ImageFont</span><span class="o">,</span><span class="nn">ImageChops</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">pass</span>
+
+
+<span class="k">class</span> <span class="nc">Processor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Processor"><a class="viewcode-back" href="../../../core/gis.html#services.tms.processor.Processor">[docs]</a>    <span class="sd">&quot;&quot;&quot;The processor wrapper class&quot;&quot;&quot;</span>
+    <span class="n">valid</span> <span class="o">=</span> <span class="bp">True</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">config</span><span class="p">):</span>
+        <span class="n">processors</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;PythonMagick&#39;</span><span class="p">:</span> <span class="n">_PythonMagickProcessor</span><span class="p">,</span> <span class="s">&#39;PIL&#39;</span><span class="p">:</span> <span class="n">_PILProcessor</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;map&#39;</span><span class="p">,</span><span class="s">&#39;processor&#39;</span><span class="p">)</span> <span class="ow">in</span> <span class="n">processors</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="nb">__import__</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;map&#39;</span><span class="p">,</span><span class="s">&#39;processor&#39;</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">processor</span> <span class="o">=</span> <span class="n">processors</span><span class="p">[</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;map&#39;</span><span class="p">,</span><span class="s">&#39;processor&#39;</span><span class="p">)](</span><span class="n">config</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">offline_image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">processor</span><span class="o">.</span><span class="n">offline_image</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">notfound_image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">processor</span><span class="o">.</span><span class="n">notfound_image</span>
+            <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">valid</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">valid</span> <span class="o">=</span> <span class="bp">False</span>
+
+
+    <span class="k">def</span> <span class="nf">get_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="Processor.get_image"><a class="viewcode-back" href="../../../core/gis.html#services.tms.processor.Processor.get_image">[docs]</a>        <span class="sd">&quot;&quot;&quot;Wrapper function to get the image&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">processor</span><span class="o">.</span><span class="n">_get_image</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">resize_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span></div>
+<div class="viewcode-block" id="Processor.resize_image"><a class="viewcode-back" href="../../../core/gis.html#services.tms.processor.Processor.resize_image">[docs]</a>        <span class="sd">&quot;&quot;&quot;Wrapper function to resize the image&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">processor</span><span class="o">.</span><span class="n">_resize_image</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">compose_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span></div>
+<div class="viewcode-block" id="Processor.compose_image"><a class="viewcode-back" href="../../../core/gis.html#services.tms.processor.Processor.compose_image">[docs]</a>        <span class="sd">&quot;&quot;&quot;Wrapper function to compose the image&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">processor</span><span class="o">.</span><span class="n">_compose_image</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">write_tile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">):</span></div>
+<div class="viewcode-block" id="Processor.write_tile"><a class="viewcode-back" href="../../../core/gis.html#services.tms.processor.Processor.write_tile">[docs]</a>        <span class="sd">&quot;&quot;&quot;Wrapper function to write the tile to disk&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">processor</span><span class="o">.</span><span class="n">_write_tile</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">write_helpers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">):</span></div>
+<div class="viewcode-block" id="Processor.write_helpers"><a class="viewcode-back" href="../../../core/gis.html#services.tms.processor.Processor.write_helpers">[docs]</a>        <span class="sd">&quot;&quot;&quot;Wrapper function to write image helpers like the opaque 404.png&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">processor</span><span class="o">.</span><span class="n">_write_helpers</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+        
+        
+<span class="k">class</span> <span class="nc">_PythonMagickProcessor</span><span class="p">:</span></div></div>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    this only serves as an example how to use the processor wrapper class. PIL is the only maintained implementation currently.</span>
+<span class="sd">    PythonMagick proved to be about 50% slower than PIL during tests.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">config</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">notfound_image</span> <span class="o">=</span> <span class="n">PythonMagick</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="s">&quot;256x256&quot;</span><span class="p">,</span><span class="s">&quot;#F0000000&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">offline_image</span> <span class="o">=</span> <span class="n">PythonMagick</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="s">&quot;256x256&quot;</span><span class="p">,</span> <span class="s">&quot;#363636&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">offline_image</span><span class="o">.</span><span class="n">magick</span><span class="p">(</span><span class="s">&#39;RGBA&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">offline_image</span><span class="o">.</span><span class="n">font</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">location</span><span class="p">,</span><span class="s">&#39;media/bitstream-vera/VeraBd.ttf&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">offline_image</span><span class="o">.</span><span class="n">fillColor</span><span class="p">(</span><span class="s">&#39;#494949&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">offline_image</span><span class="o">.</span><span class="n">fontPointsize</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">offline_image</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s">&quot;not available&quot;</span><span class="p">,</span> <span class="n">PythonMagick</span><span class="o">.</span><span class="n">_PythonMagick</span><span class="o">.</span><span class="n">GravityType</span><span class="o">.</span><span class="n">CenterGravity</span><span class="p">)</span>
+        
+    <span class="k">def</span> <span class="nf">_get_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="nb">file</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Open the image from the local path, used by the grabber&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">file</span><span class="p">:</span>
+            <span class="nb">file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">.</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">tilepath</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="nb">file</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="nb">file</span><span class="p">[</span><span class="mi">1</span><span class="p">])),</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="nb">file</span><span class="p">[</span><span class="mi">2</span><span class="p">]))),</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;map&#39;</span><span class="p">,</span><span class="s">&#39;format&#39;</span><span class="p">)),</span><span class="s">&#39;r&#39;</span><span class="p">)</span>
+            <span class="n">blob</span> <span class="o">=</span> <span class="n">PythonMagick</span><span class="o">.</span><span class="n">Blob</span><span class="p">(</span><span class="nb">file</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+            <span class="k">return</span> <span class="n">PythonMagick</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="n">blob</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">blob</span> <span class="o">=</span> <span class="n">PythonMagick</span><span class="o">.</span><span class="n">Blob</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+                <span class="n">image</span> <span class="o">=</span> <span class="n">PythonMagick</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="n">blob</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">image</span>
+            <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">offline_image</span>
+            <span class="k">return</span> <span class="n">image</span>
+        <span class="k">else</span><span class="p">:</span> 
+            <span class="k">return</span> <span class="n">PythonMagick</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="s">&quot;256x256&quot;</span><span class="p">,</span><span class="s">&quot;#F0000000&quot;</span><span class="p">)</span>
+            
+    <span class="k">def</span> <span class="nf">_resize_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">size_x</span><span class="p">,</span> <span class="n">size_y</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Resizes the image to a certain size&quot;&quot;&quot;</span>
+        <span class="n">image</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">PythonMagick</span><span class="o">.</span><span class="n">_PythonMagick</span><span class="o">.</span><span class="n">Geometry</span><span class="p">(</span><span class="n">size_x</span><span class="p">,</span> <span class="n">size_y</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">image</span>
+        
+    <span class="k">def</span> <span class="nf">_compose_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">canvas</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">pos_x</span><span class="p">,</span> <span class="n">pos_y</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compose a tile by combining it with another&quot;&quot;&quot;</span>
+        <span class="n">canvas</span><span class="o">.</span><span class="n">composite</span><span class="p">(</span><span class="n">image</span><span class="p">,</span><span class="n">pos_x</span><span class="p">,</span><span class="n">pos_y</span><span class="p">,</span><span class="n">PythonMagick</span><span class="o">.</span><span class="n">_PythonMagick</span><span class="o">.</span><span class="n">CompositeOperator</span><span class="o">.</span><span class="n">OverCompositeOp</span><span class="p">)</span>
+        
+    <span class="k">def</span> <span class="nf">_write_tile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">image</span><span class="p">,</span><span class="n">tile</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Writes the actual tile configuration to disk&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">tilepath</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">tile</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span><span class="nb">str</span><span class="p">(</span><span class="n">tile</span><span class="p">[</span><span class="mi">1</span><span class="p">])))</span>
+        <span class="k">except</span> <span class="n">os</span><span class="o">.</span><span class="n">error</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="n">image</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">tilepath</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">tile</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span><span class="nb">str</span><span class="p">(</span><span class="n">tile</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span><span class="nb">str</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">.</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">tile</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;map&#39;</span><span class="p">,</span><span class="s">&#39;format&#39;</span><span class="p">)))))</span>
+        
+    <span class="k">def</span> <span class="nf">_write_helpers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Helpers like the 404 image&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">notfound_image</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">tilepath</span><span class="p">,</span><span class="s">&#39;404.png&#39;</span><span class="p">))</span>
+
+
+<span class="k">class</span> <span class="nc">_PILProcessor</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;The default image processor uses PIL. Quite ok results with it so far&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">config</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">notfound_image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s">&quot;RGBA&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">offline_image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s">&#39;RGBA&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">),</span> <span class="s">&#39;#363636&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ll_background</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s">&quot;RGBA&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">),</span> <span class="s">&#39;#1d475f&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">draw</span> <span class="o">=</span> <span class="n">ImageDraw</span><span class="o">.</span><span class="n">Draw</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">offline_image</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">font</span> <span class="o">=</span> <span class="n">ImageFont</span><span class="o">.</span><span class="n">truetype</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">location</span><span class="p">,</span><span class="s">&#39;media/bitstream-vera/VeraBd.ttf&#39;</span><span class="p">),</span> <span class="mi">30</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">draw</span><span class="o">.</span><span class="n">text</span><span class="p">((</span><span class="mi">17</span><span class="p">,</span><span class="mi">108</span><span class="p">),</span> <span class="s">&quot;not available&quot;</span><span class="p">,</span><span class="n">fill</span><span class="o">=</span><span class="s">&#39;#494949&#39;</span><span class="p">,</span><span class="n">font</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">font</span><span class="p">)</span>
+        
+    <span class="k">def</span> <span class="nf">_get_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="nb">file</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Open the image from the local path, used by the grabber&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">file</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">tilepath</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="nb">file</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="nb">file</span><span class="p">[</span><span class="mi">1</span><span class="p">])),</span><span class="nb">str</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">.</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="nb">file</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;map&#39;</span><span class="p">,</span><span class="s">&#39;format&#39;</span><span class="p">)))))</span>
+        <span class="k">elif</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">StringIO</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+                <span class="k">return</span> <span class="n">image</span>
+            <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">offline_image</span>
+            <span class="k">return</span> <span class="n">image</span>
+        <span class="k">else</span><span class="p">:</span> 
+            <span class="k">return</span> <span class="n">Image</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s">&quot;RGBA&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            
+    <span class="k">def</span> <span class="nf">_resize_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">size_x</span><span class="p">,</span> <span class="n">size_y</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Resizes the image to a certain size&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">image</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="n">size_x</span><span class="p">,</span><span class="n">size_y</span><span class="p">))</span>
+        
+    <span class="k">def</span> <span class="nf">_compose_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">canvas</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">pos_x</span><span class="p">,</span> <span class="n">pos_y</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compose a tile by combining it with another&quot;&quot;&quot;</span>
+        <span class="n">canvas</span><span class="o">.</span><span class="n">paste</span><span class="p">(</span><span class="n">image</span><span class="p">,(</span><span class="n">pos_x</span><span class="p">,</span><span class="n">pos_y</span><span class="p">))</span>
+        
+    <span class="k">def</span> <span class="nf">_write_tile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">image</span><span class="p">,</span><span class="n">z</span><span class="p">,</span><span class="n">cell</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Writes the actual tile configuration to disk&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">tilepath</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">z</span><span class="p">),</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">cell</span><span class="p">[</span><span class="s">&#39;z&#39;</span><span class="p">][</span><span class="n">z</span><span class="p">][</span><span class="s">&#39;x&#39;</span><span class="p">])))</span>
+            <span class="k">print</span> <span class="n">path</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">tilepath</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">z</span><span class="p">),</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">cell</span><span class="p">[</span><span class="s">&#39;z&#39;</span><span class="p">][</span><span class="n">z</span><span class="p">][</span><span class="s">&#39;x&#39;</span><span class="p">]))))</span>
+        <span class="k">except</span> <span class="n">os</span><span class="o">.</span><span class="n">error</span><span class="p">:</span> <span class="k">pass</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">tilepath</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">z</span><span class="p">),</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">cell</span><span class="p">[</span><span class="s">&#39;z&#39;</span><span class="p">][</span><span class="n">z</span><span class="p">][</span><span class="s">&#39;x&#39;</span><span class="p">])),</span><span class="nb">str</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">.</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">cell</span><span class="p">[</span><span class="s">&#39;z&#39;</span><span class="p">][</span><span class="n">z</span><span class="p">][</span><span class="s">&#39;y&#39;</span><span class="p">]),</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;map&#39;</span><span class="p">,</span><span class="s">&#39;format&#39;</span><span class="p">))))</span>
+        <span class="k">try</span><span class="p">:</span> 
+            <span class="n">image</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">target</span><span class="p">,</span><span class="s">&#39;PNG&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">offline_image</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">target</span><span class="p">,</span><span class="s">&#39;PNG&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span><span class="s">&#39;service&#39;</span><span class="p">,</span><span class="s">&#39;ll_support&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">z</span> <span class="o">&gt;=</span> <span class="mi">11</span><span class="p">:</span>
+            <span class="n">regions_per_tile</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="nb">abs</span><span class="p">(</span><span class="n">z</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span><span class="s">&#39;map&#39;</span><span class="p">,</span><span class="s">&#39;raw_ztop&#39;</span><span class="p">)))</span>
+            <span class="n">regions_from_top</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">regions_per_tile</span> <span class="o">*</span> <span class="p">(</span><span class="n">cell</span><span class="p">[</span><span class="s">&#39;z&#39;</span><span class="p">][</span><span class="n">z</span><span class="p">][</span><span class="s">&#39;x&#39;</span><span class="p">]</span><span class="o">%</span><span class="mi">1</span><span class="p">))</span>
+            <span class="n">regions_from_left</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">regions_per_tile</span> <span class="o">*</span> <span class="p">(</span><span class="n">cell</span><span class="p">[</span><span class="s">&#39;z&#39;</span><span class="p">][</span><span class="n">z</span><span class="p">][</span><span class="s">&#39;y&#39;</span><span class="p">]</span><span class="o">%</span><span class="mi">1</span><span class="p">))</span>
+            <span class="n">tile_name_x</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cell</span><span class="p">[</span><span class="s">&#39;z&#39;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span><span class="s">&#39;map&#39;</span><span class="p">,</span><span class="s">&#39;raw_ztop&#39;</span><span class="p">)][</span><span class="s">&#39;x&#39;</span><span class="p">])</span> <span class="o">-</span> <span class="n">regions_from_top</span>
+            <span class="n">tile_name_y</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cell</span><span class="p">[</span><span class="s">&#39;z&#39;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span><span class="s">&#39;map&#39;</span><span class="p">,</span><span class="s">&#39;raw_ztop&#39;</span><span class="p">)][</span><span class="s">&#39;y&#39;</span><span class="p">])</span> <span class="o">-</span> <span class="n">regions_from_left</span>
+            <span class="c">#print &#39;%s,%s (%s:%s,%s)&#39; % (tile_name_x,tile_name_y,z,regions_from_top,regions_from_left)</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">/ll/map-</span><span class="si">%s</span><span class="s">-</span><span class="si">%s</span><span class="s">-</span><span class="si">%s</span><span class="s">-objects.jpg&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">tilepath</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="nb">abs</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span><span class="s">&#39;map&#39;</span><span class="p">,</span><span class="s">&#39;raw_ztop&#39;</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">z</span><span class="p">)),</span><span class="nb">str</span><span class="p">(</span><span class="n">tile_name_x</span><span class="p">),</span><span class="nb">str</span><span class="p">(</span><span class="n">tile_name_y</span><span class="p">))</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">split</span><span class="p">())</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+                <span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">Image</span><span class="o">.</span><span class="n">FLIP_TOP_BOTTOM</span><span class="p">)</span>
+                <span class="n">r</span><span class="p">,</span><span class="n">g</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">a</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                <span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">composite</span><span class="p">(</span><span class="n">image</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">ll_background</span><span class="p">,</span><span class="n">a</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span> <span class="n">image</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">target</span><span class="p">,</span><span class="s">&#39;JPEG&#39;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">offline_image</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">target</span><span class="p">,</span><span class="s">&#39;JPEG&#39;</span><span class="p">)</span>
+                
+    <span class="k">def</span> <span class="nf">_write_helpers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Helpers like the 404 image&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">notfound_image</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">tilepath</span><span class="p">,</span><span class="s">&#39;404.png&#39;</span><span class="p">),</span> <span class="s">&#39;PNG&#39;</span><span class="p">)</span>    
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">HWIOS v0.6 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, OS-Networks.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.8.
+    </div>
+  </body>
+</html>

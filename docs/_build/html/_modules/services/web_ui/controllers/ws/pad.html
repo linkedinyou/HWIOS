@@ -1,0 +1,385 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>services.web_ui.controllers.ws.pad &mdash; HWIOS v0.6 documentation</title>
+    <link rel="stylesheet" href="../../../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '0.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="HWIOS v0.6 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">HWIOS v0.6 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for services.web_ui.controllers.ws.pad</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    services.web_ui.controllers.ws.pad</span>
+<span class="sd">    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">    Websocket handling for the pad module</span>
+
+<span class="sd">    :copyright: Copyright 2011-2012 OS-Networks</span>
+<span class="sd">    :license: LGPL, See LICENSE for details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span><span class="o">,</span><span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">twisted.internet</span> <span class="kn">import</span> <span class="n">defer</span>
+<span class="kn">from</span> <span class="nn">django.template.loader</span> <span class="kn">import</span> <span class="n">render_to_string</span>
+<span class="kn">from</span> <span class="nn">django.core</span> <span class="kn">import</span> <span class="n">serializers</span>
+<span class="kn">from</span> <span class="nn">django.core.exceptions</span> <span class="kn">import</span> <span class="n">ObjectDoesNotExist</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="kn">from</span> <span class="nn">core.application</span> <span class="kn">import</span> <span class="n">HWIOS</span>
+<span class="kn">from</span> <span class="nn">web_ui.models.pad</span> <span class="kn">import</span> <span class="n">Pad</span>
+<span class="kn">from</span> <span class="nn">web_ui.models.ws_auth</span> <span class="kn">import</span> <span class="n">WSAuth</span>
+<span class="kn">from</span> <span class="nn">web_ui.models.profiles</span> <span class="kn">import</span> <span class="n">Profile</span>
+<span class="kn">from</span> <span class="nn">web_ui.models.infinote</span> <span class="kn">import</span> <span class="n">InfinoteEditor</span>
+<span class="kn">from</span> <span class="nn">web_ui.forms.profiles</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="kn">from</span> <span class="nn">web_ui.models.activity</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="k">class</span> <span class="nc">WS_Pad</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_Pad"><a class="viewcode-back" href="../../../../../modules/pad.html#services.web_ui.controllers.ws.pad.WS_Pad">[docs]</a>    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Websocket controller class for the pad module</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dispatcher</span><span class="p">):</span>
+        <span class="c">#dispatcher.signals.subscribe(&#39;ws_disconnect&#39;, self.leave_mouse)</span>
+        <span class="n">dispatcher</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="s">&#39;ws_disconnect&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unsubscribe_client</span><span class="p">)</span>
+        <span class="n">dispatcher</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="s">&#39;view_changed&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unsubscribe_client</span><span class="p">,</span> <span class="n">filters</span> <span class="o">=</span> <span class="p">[(</span><span class="s">r&#39;/views/pad/(?P&lt;pad_id&gt;[^/]+)/&#39;</span><span class="p">,</span><span class="bp">True</span><span class="p">),(</span><span class="s">r&#39;/views/pad/(?P&lt;pad_id&gt;[^/]+)/&#39;</span><span class="p">,</span><span class="bp">False</span><span class="p">)])</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="mi">1</span>  
+
+
+    <span class="k">def</span> <span class="nf">get_context</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;pad/context_menu.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;profile&#39;</span><span class="p">:</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">})</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;context&#39;</span><span class="p">:</span><span class="n">context</span><span class="p">}}}</span>
+    
+
+    <span class="k">def</span> <span class="nf">sync_pad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">pad_id</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_Pad.sync_pad"><a class="viewcode-back" href="../../../../../modules/pad.html#services.web_ui.controllers.ws.pad.WS_Pad.sync_pad">[docs]</a>        <span class="sd">&quot;&quot;&quot;Gets the current pad drawing state and renders the pad view</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param int pad_id: The pad_id of the pad to modify</span>
+<span class="sd">        :return: dict - data and html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_subscribe_client</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">pad_id</span><span class="p">)</span>
+        <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&#39;pad/read_pad.html&#39;</span><span class="p">)</span>
+        <span class="n">left_widget</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&#39;pad/layers.html&#39;</span><span class="p">)</span>
+        <span class="k">return</span>  <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">,</span><span class="s">&#39;left&#39;</span><span class="p">:</span><span class="n">left_widget</span><span class="p">},</span>
+                <span class="s">&#39;layers&#39;</span><span class="p">:</span><span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;pad&#39;</span><span class="p">][</span><span class="n">pad_id</span><span class="p">][</span><span class="s">&#39;layers&#39;</span><span class="p">]}</span>
+                <span class="p">}</span>       
+        
+        
+    <span class="k">def</span> <span class="nf">_subscribe_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">pad_id</span><span class="p">):</span></div>
+        <span class="sd">&quot;&quot;&quot;Helper function to subscribe to a pad pool.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s">&#39;pad&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">:</span>
+            <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;pad&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">pad_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;pad&#39;</span><span class="p">]:</span>
+            <span class="k">try</span><span class="p">:</span>      
+                <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;pad&#39;</span><span class="p">][</span><span class="n">pad_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">json_decode</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">Pad</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">slug</span> <span class="o">=</span> <span class="n">pad_id</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>     
+                <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;pad&#39;</span><span class="p">][</span><span class="n">pad_id</span><span class="p">][</span><span class="s">&#39;clients&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">except</span> <span class="n">Pad</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">:</span>
+                <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;pad&#39;</span><span class="p">][</span><span class="n">pad_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;clients&#39;</span><span class="p">:[],</span><span class="s">&#39;layers&#39;</span><span class="p">:[{</span><span class="s">&#39;id&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span><span class="s">&#39;name&#39;</span><span class="p">:</span><span class="s">&#39;Unnamed&#39;</span><span class="p">,</span><span class="s">&#39;log&#39;</span><span class="p">:[]}]}</span>
+        <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;pad&#39;</span><span class="p">][</span><span class="n">pad_id</span><span class="p">][</span><span class="s">&#39;clients&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">client</span><span class="p">)</span> 
+        
+        
+    <span class="k">def</span> <span class="nf">_unsubscribe_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Helper function to unsubscribe from a pad pool&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s">&#39;pad&#39;</span> <span class="ow">in</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">_pad</span> <span class="ow">in</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;pad&#39;</span><span class="p">]:</span>
+                <span class="k">for</span> <span class="n">_client</span> <span class="ow">in</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;pad&#39;</span><span class="p">][</span><span class="n">_pad</span><span class="p">][</span><span class="s">&#39;clients&#39;</span><span class="p">]:</span> 
+                    <span class="k">if</span> <span class="n">_client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">uuid</span> <span class="o">==</span> <span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">uuid</span><span class="p">:</span>
+                        <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;pad&#39;</span><span class="p">][</span><span class="n">_pad</span><span class="p">][</span><span class="s">&#39;clients&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">_client</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">_client</span> <span class="ow">in</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;pad&#39;</span><span class="p">][</span><span class="n">_pad</span><span class="p">][</span><span class="s">&#39;clients&#39;</span><span class="p">]:</span>
+                            <span class="n">_client</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="s">&#39;/data/pad/&#39;</span><span class="o">+</span><span class="n">_pad</span><span class="o">+</span><span class="s">&#39;/mouse/leave/&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">username</span><span class="p">])</span>
+        
+
+    <span class="k">def</span> <span class="nf">save_pad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">pad_id</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_Pad.save_pad"><a class="viewcode-back" href="../../../../../modules/pad.html#services.web_ui.controllers.ws.pad.WS_Pad.save_pad">[docs]</a>        <span class="sd">&quot;&quot;&quot;Saves a pad and notify others of this event</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param int pad_id: The pad_id of the pad to modify</span>
+<span class="sd">        :return: dict - Status and html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">pad</span> <span class="o">=</span> <span class="n">Pad</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">slug</span> <span class="o">=</span> <span class="n">pad_id</span><span class="p">)</span>
+            <span class="n">operation_data</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;pad&#39;</span><span class="p">][</span><span class="n">pad_id</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">del</span><span class="p">(</span><span class="n">operation_data</span><span class="p">[</span><span class="s">&#39;clients&#39;</span><span class="p">])</span>
+            <span class="n">pad</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">json_encode</span><span class="p">(</span><span class="n">operation_data</span><span class="p">)</span>
+            <span class="n">pad</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+            <span class="n">publish_activity</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Pad drawing saved&#39;</span><span class="p">),</span><span class="s">&#39;/pad/</span><span class="si">%s</span><span class="s">/&#39;</span> <span class="o">%</span> <span class="n">pad_id</span><span class="p">,[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">except</span> <span class="n">Pad</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">:</span>   
+            <span class="n">pad</span> <span class="o">=</span> <span class="n">Pad</span><span class="p">()</span>
+            <span class="n">pad</span><span class="o">.</span><span class="n">slug</span> <span class="o">=</span> <span class="n">pad_id</span>
+            <span class="n">operation_data</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;pad&#39;</span><span class="p">][</span><span class="n">pad_id</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">del</span><span class="p">(</span><span class="n">operation_data</span><span class="p">[</span><span class="s">&#39;clients&#39;</span><span class="p">])</span>
+            <span class="n">pad</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">json_encode</span><span class="p">(</span><span class="n">operation_data</span><span class="p">)</span>
+            <span class="n">pad</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+            <span class="n">publish_activity</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Pad drawing created&#39;</span><span class="p">),</span><span class="s">&#39;/pad/</span><span class="si">%s</span><span class="s">/&#39;</span> <span class="o">%</span> <span class="n">pad_id</span><span class="p">,[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">_client</span> <span class="ow">in</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;pad&#39;</span><span class="p">][</span><span class="n">pad_id</span><span class="p">][</span><span class="s">&#39;clients&#39;</span><span class="p">]:</span>
+            <span class="c">#this client is watching our attempt to create a new article. Send it a request to resubscribe to the article                      </span>
+            <span class="n">_client</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="s">&#39;/views/pad/</span><span class="si">%s</span><span class="s">/&#39;</span> <span class="o">%</span> <span class="n">pad_id</span><span class="p">,{</span>
+                <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                    <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;PAD_SAVED&#39;</span><span class="p">,</span>
+                    <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%(first_name)s</span><span class="s"> </span><span class="si">%(last_name)s</span><span class="s"> just saved pad </span><span class="si">%(pad_id)s</span><span class="s">!&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;first_name&#39;</span><span class="p">:</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span><span class="s">&#39;last_name&#39;</span><span class="p">:</span> <span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">last_name</span><span class="p">,</span><span class="s">&#39;pad_id&#39;</span><span class="p">:</span><span class="n">pad_id</span><span class="p">},</span>
+                    <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+                <span class="p">}</span>
+            <span class="p">})</span>
+        
+    <span class="k">def</span> <span class="nf">bc_mouse_position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">pad_id</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span></div>
+<div class="viewcode-block" id="WS_Pad.bc_mouse_position"><a class="viewcode-back" href="../../../../../modules/pad.html#services.web_ui.controllers.ws.pad.WS_Pad.bc_mouse_position">[docs]</a>        <span class="sd">&quot;&quot;&quot;Broadcast a client&#39;s mouse location to other connected clients</span>
+<span class="sd">        </span>
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param int pad_id: The pad_id to specify the broadcast pool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">username</span><span class="p">)</span>
+        <span class="n">clients</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">get_clients</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">_client</span> <span class="ow">in</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;pad&#39;</span><span class="p">][</span><span class="n">pad_id</span><span class="p">][</span><span class="s">&#39;clients&#39;</span><span class="p">]:</span> 
+            <span class="k">if</span> <span class="n">_client</span> <span class="o">!=</span> <span class="n">client</span><span class="p">:</span>                
+                <span class="n">_client</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="s">&#39;/data/pad/&#39;</span><span class="o">+</span><span class="n">pad_id</span><span class="o">+</span><span class="s">&#39;/mouse/receive/&#39;</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">leave_mouse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">pad_id</span><span class="p">):</span></div>
+<div class="viewcode-block" id="WS_Pad.leave_mouse"><a class="viewcode-back" href="../../../../../modules/pad.html#services.web_ui.controllers.ws.pad.WS_Pad.leave_mouse">[docs]</a>        <span class="sd">&quot;&quot;&quot;Flag other clients to hide this client&#39;s mouse position, because it&#39;s out of bounds</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param int pad_id: The pad_id to specify the broadcast pool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">clients</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">get_clients</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">_client</span> <span class="ow">in</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;pad&#39;</span><span class="p">][</span><span class="n">pad_id</span><span class="p">][</span><span class="s">&#39;clients&#39;</span><span class="p">]:</span> 
+            <span class="k">if</span> <span class="n">_client</span> <span class="o">!=</span> <span class="n">client</span><span class="p">:</span>                
+                <span class="n">_client</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="s">&#39;/data/pad/&#39;</span><span class="o">+</span><span class="n">pad_id</span><span class="o">+</span><span class="s">&#39;/mouse/leave/&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">username</span><span class="p">])</span>
+                
+                
+    <span class="k">def</span> <span class="nf">draw_brush</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">pad_id</span><span class="p">,</span> <span class="n">layer_id</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span></div>
+<div class="viewcode-block" id="WS_Pad.draw_brush"><a class="viewcode-back" href="../../../../../modules/pad.html#services.web_ui.controllers.ws.pad.WS_Pad.draw_brush">[docs]</a>        <span class="sd">&quot;&quot;&quot;Broadcast that the client is drawing a brush. Params looks like:</span>
+<span class="sd">        [x,y,color,dragging,size,brush_type,delta_time]</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param int pad_id: The pad_id to specify the broadcast pool</span>
+<span class="sd">        :param str layer_id: The id of the layer to draw on</span>
+<span class="sd">        :param dict params: The parameters that come with drawing a brush.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">username</span><span class="p">)</span>
+        <span class="n">clients</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">get_clients</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">_client</span> <span class="ow">in</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;pad&#39;</span><span class="p">][</span><span class="n">pad_id</span><span class="p">][</span><span class="s">&#39;clients&#39;</span><span class="p">]:</span>  
+            <span class="k">if</span> <span class="n">_client</span> <span class="o">!=</span> <span class="n">client</span><span class="p">:</span>                
+                <span class="n">_client</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="s">&#39;/data/pad/&#39;</span><span class="o">+</span><span class="n">pad_id</span><span class="o">+</span><span class="s">&#39;/layers/&#39;</span><span class="o">+</span><span class="n">layer_id</span><span class="o">+</span><span class="s">&#39;/draw/brush/&#39;</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>  
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log2layer</span><span class="p">(</span><span class="n">pad_id</span><span class="p">,</span> <span class="n">layer_id</span><span class="p">,[</span><span class="s">&#39;brush&#39;</span><span class="p">,</span> <span class="n">params</span><span class="p">])</span>
+        
+        
+    <span class="k">def</span> <span class="nf">draw_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">pad_id</span><span class="p">,</span> <span class="n">layer_id</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span></div>
+<div class="viewcode-block" id="WS_Pad.draw_shape"><a class="viewcode-back" href="../../../../../modules/pad.html#services.web_ui.controllers.ws.pad.WS_Pad.draw_shape">[docs]</a>        <span class="sd">&quot;&quot;&quot;Broadcast that the client is drawing a shape. Params looks like:</span>
+<span class="sd">        [x[],y[],color[],border,type,layer]</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param int pad_id: The pad_id to specify the broadcast pool</span>
+<span class="sd">        :param str layer_id: The id of the layer to draw on</span>
+<span class="sd">        :param dict params: The parameters that come with drawing a shape.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">username</span><span class="p">)</span>
+        <span class="n">clients</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">get_clients</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">_client</span> <span class="ow">in</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;pad&#39;</span><span class="p">][</span><span class="n">pad_id</span><span class="p">][</span><span class="s">&#39;clients&#39;</span><span class="p">]:</span> 
+            <span class="k">if</span> <span class="n">_client</span> <span class="o">!=</span> <span class="n">client</span><span class="p">:</span>                
+                <span class="n">_client</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="s">&#39;/data/pad/&#39;</span><span class="o">+</span><span class="n">pad_id</span><span class="o">+</span><span class="s">&#39;/layers/&#39;</span><span class="o">+</span><span class="n">layer_id</span><span class="o">+</span><span class="s">&#39;/draw/shape/&#39;</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log2layer</span><span class="p">(</span><span class="n">pad_id</span><span class="p">,</span> <span class="n">layer_id</span><span class="p">,[</span><span class="s">&#39;shape&#39;</span><span class="p">,</span> <span class="n">params</span><span class="p">])</span>
+        
+        
+    <span class="k">def</span> <span class="nf">draw_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">pad_id</span><span class="p">,</span> <span class="n">layer_id</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span></div>
+<div class="viewcode-block" id="WS_Pad.draw_text"><a class="viewcode-back" href="../../../../../modules/pad.html#services.web_ui.controllers.ws.pad.WS_Pad.draw_text">[docs]</a>        <span class="sd">&quot;&quot;&quot;Broadcast that the client is drawing text. Params looks like:</span>
+<span class="sd">        [x,y,color[],border,font,text,layer]</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param int pad_id: The pad_id to specify the broadcast pool</span>
+<span class="sd">        :param str layer_id: The id of the layer to draw on</span>
+<span class="sd">        :param dict params: The parameters that come with drawing text.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">username</span><span class="p">)</span>
+        <span class="n">clients</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">get_clients</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">_client</span> <span class="ow">in</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;pad&#39;</span><span class="p">][</span><span class="n">pad_id</span><span class="p">][</span><span class="s">&#39;clients&#39;</span><span class="p">]:</span>  
+            <span class="k">if</span> <span class="n">_client</span> <span class="o">!=</span> <span class="n">client</span><span class="p">:</span>                
+                <span class="n">_client</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="s">&#39;/data/pad/&#39;</span><span class="o">+</span><span class="n">pad_id</span><span class="o">+</span><span class="s">&#39;/layers/&#39;</span><span class="o">+</span><span class="n">layer_id</span><span class="o">+</span><span class="s">&#39;/draw/text/&#39;</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+        <span class="k">print</span> <span class="n">params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log2layer</span><span class="p">(</span><span class="n">pad_id</span><span class="p">,</span> <span class="n">layer_id</span><span class="p">,[</span><span class="s">&#39;text&#39;</span><span class="p">,</span> <span class="n">params</span><span class="p">])</span>
+        
+        
+    <span class="k">def</span> <span class="nf">draw_fill</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">pad_id</span><span class="p">,</span> <span class="n">layer_id</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span></div>
+<div class="viewcode-block" id="WS_Pad.draw_fill"><a class="viewcode-back" href="../../../../../modules/pad.html#services.web_ui.controllers.ws.pad.WS_Pad.draw_fill">[docs]</a>        <span class="sd">&quot;&quot;&quot;Broadcast that the client is drawing a fill. Params looks like:</span>
+<span class="sd">        [x,y,color[],border,font,text,layer]</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param int pad_id: The pad_id to specify the broadcast pool</span>
+<span class="sd">        :param str layer_id: The id of the layer to draw on</span>
+<span class="sd">        :param dict params: The parameters that come with drawing a fill.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">username</span><span class="p">)</span>
+        <span class="n">clients</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">get_clients</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">_client</span> <span class="ow">in</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;pad&#39;</span><span class="p">][</span><span class="n">pad_id</span><span class="p">][</span><span class="s">&#39;clients&#39;</span><span class="p">]:</span>  
+            <span class="k">if</span> <span class="n">_client</span> <span class="o">!=</span> <span class="n">client</span><span class="p">:</span>                
+                <span class="n">_client</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="s">&#39;/data/pad/&#39;</span><span class="o">+</span><span class="n">pad_id</span><span class="o">+</span><span class="s">&#39;/layers/&#39;</span><span class="o">+</span><span class="n">layer_id</span><span class="o">+</span><span class="s">&#39;/draw/fill/&#39;</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log2layer</span><span class="p">(</span><span class="n">pad_id</span><span class="p">,</span> <span class="n">layer_id</span><span class="p">,[</span><span class="s">&#39;fill&#39;</span><span class="p">,</span> <span class="n">params</span><span class="p">])</span>
+                
+                
+    <span class="k">def</span> <span class="nf">clear_pad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">pad_id</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span></div>
+<div class="viewcode-block" id="WS_Pad.clear_pad"><a class="viewcode-back" href="../../../../../modules/pad.html#services.web_ui.controllers.ws.pad.WS_Pad.clear_pad">[docs]</a>        <span class="sd">&quot;&quot;&quot;Broadcast that the client is clearing the whole pad.</span>
+<span class="sd">        TODO: make it only clear a layer instead</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param int pad_id: The pad_id to specify the broadcast pool</span>
+<span class="sd">        :param dict params: The parameters that come with clearing the pad.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">_layer</span> <span class="ow">in</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;pad&#39;</span><span class="p">][</span><span class="n">pad_id</span><span class="p">][</span><span class="s">&#39;layers&#39;</span><span class="p">]:</span>
+            <span class="n">_layer</span><span class="p">[</span><span class="s">&#39;log&#39;</span><span class="p">][:]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">clients</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">get_clients</span><span class="p">()</span>
+        <span class="n">publish_activity</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Pad drawing cleared&#39;</span><span class="p">),</span><span class="s">&#39;/pad/</span><span class="si">%s</span><span class="s">/&#39;</span> <span class="o">%</span> <span class="n">pad_id</span><span class="p">,[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">_client</span> <span class="ow">in</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;pad&#39;</span><span class="p">][</span><span class="n">pad_id</span><span class="p">][</span><span class="s">&#39;clients&#39;</span><span class="p">]:</span> 
+            <span class="k">if</span> <span class="n">_client</span> <span class="o">!=</span> <span class="n">client</span><span class="p">:</span>
+                <span class="n">_client</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="s">&#39;/data/pad/&#39;</span><span class="o">+</span><span class="n">pad_id</span><span class="o">+</span><span class="s">&#39;/clear/&#39;</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+                
+                
+    <span class="k">def</span> <span class="nf">create_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">pad_id</span><span class="p">,</span> <span class="n">layer_name</span><span class="p">):</span></div>
+<div class="viewcode-block" id="WS_Pad.create_layer"><a class="viewcode-back" href="../../../../../modules/pad.html#services.web_ui.controllers.ws.pad.WS_Pad.create_layer">[docs]</a>        <span class="sd">&quot;&quot;&quot;Broadcast that the client has created a new layer</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param int pad_id: The pad_id to specify the broadcast pool</span>
+<span class="sd">        :param str layer_name: Name of the layer to create</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">exists</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">for</span> <span class="n">_layer</span> <span class="ow">in</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;pad&#39;</span><span class="p">][</span><span class="n">pad_id</span><span class="p">][</span><span class="s">&#39;layers&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">_layer</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">layer_name</span><span class="p">:</span>
+                <span class="n">exists</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">exists</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;pad&#39;</span><span class="p">][</span><span class="n">pad_id</span><span class="p">][</span><span class="s">&#39;layers&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s">&#39;id&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span><span class="s">&#39;name&#39;</span><span class="p">:</span><span class="n">layer_name</span><span class="p">,</span><span class="s">&#39;log&#39;</span><span class="p">:[]})</span>
+            <span class="n">clients</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">get_clients</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">_client</span> <span class="ow">in</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;pad&#39;</span><span class="p">][</span><span class="n">pad_id</span><span class="p">][</span><span class="s">&#39;clients&#39;</span><span class="p">]:</span> 
+                <span class="n">_client</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="s">&#39;/data/pad/&#39;</span><span class="o">+</span><span class="n">pad_id</span><span class="o">+</span><span class="s">&#39;/layers/&#39;</span><span class="o">+</span><span class="n">layer_name</span><span class="o">+</span><span class="s">&#39;/create/&#39;</span><span class="p">,</span> <span class="p">{</span>
+                    <span class="s">&#39;data&#39;</span><span class="p">:{</span>
+                        <span class="s">&#39;layer&#39;</span><span class="p">:{</span>
+                            <span class="s">&#39;id&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                            <span class="s">&#39;name&#39;</span><span class="p">:</span><span class="n">layer_name</span><span class="p">,</span>
+                            <span class="s">&#39;log&#39;</span><span class="p">:[]</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+                <span class="p">})</span>
+        
+        
+    <span class="k">def</span> <span class="nf">delete_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">pad_id</span><span class="p">,</span> <span class="n">layer_name</span><span class="p">):</span></div>
+<div class="viewcode-block" id="WS_Pad.delete_layer"><a class="viewcode-back" href="../../../../../modules/pad.html#services.web_ui.controllers.ws.pad.WS_Pad.delete_layer">[docs]</a>        <span class="sd">&quot;&quot;&quot;Broadcast that the client has deleted a layer</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param int pad_id: The pad_id to specify the broadcast pool</span>
+<span class="sd">        :param str layer_name: Name of the layer to delete</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">exists</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="n">deleted</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">count</span><span class="p">,</span> <span class="n">_layer</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;pad&#39;</span><span class="p">][</span><span class="n">pad_id</span><span class="p">][</span><span class="s">&#39;layers&#39;</span><span class="p">]):</span>
+            <span class="k">if</span> <span class="n">_layer</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">layer_name</span><span class="p">:</span>
+                <span class="n">deleted</span> <span class="o">=</span> <span class="n">_layer</span>
+                <span class="k">del</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;pad&#39;</span><span class="p">][</span><span class="n">pad_id</span><span class="p">][</span><span class="s">&#39;layers&#39;</span><span class="p">][</span><span class="n">count</span><span class="p">]</span>
+        <span class="n">clients</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">get_clients</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">_client</span> <span class="ow">in</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;pad&#39;</span><span class="p">][</span><span class="n">pad_id</span><span class="p">][</span><span class="s">&#39;clients&#39;</span><span class="p">]:</span> 
+            <span class="n">_client</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="s">&#39;/data/pad/&#39;</span><span class="o">+</span><span class="n">pad_id</span><span class="o">+</span><span class="s">&#39;/layers/&#39;</span><span class="o">+</span><span class="n">layer_name</span><span class="o">+</span><span class="s">&#39;/delete/&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;layer&#39;</span><span class="p">:</span><span class="n">deleted</span><span class="p">}})</span>
+            
+            
+    <span class="k">def</span> <span class="nf">change_layer_order</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">pad_id</span><span class="p">,</span> <span class="n">layer_id</span><span class="p">,</span> <span class="n">to_position</span><span class="p">):</span></div>
+<div class="viewcode-block" id="WS_Pad.change_layer_order"><a class="viewcode-back" href="../../../../../modules/pad.html#services.web_ui.controllers.ws.pad.WS_Pad.change_layer_order">[docs]</a>        <span class="sd">&quot;&quot;&quot;Broadcast that the client has changed the ordening of layers.</span>
+<span class="sd">        HWIOS keeps a serverside mirror of these layer-ordening as well.</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param int pad_id: The pad_id to specify the broadcast pool</span>
+<span class="sd">        :param int to_position: The list-position the layer is supposed to go to</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">to_position</span> <span class="o">&gt;=</span><span class="mi">0</span> <span class="ow">and</span> <span class="n">to_position</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;pad&#39;</span><span class="p">][</span><span class="n">pad_id</span><span class="p">][</span><span class="s">&#39;layers&#39;</span><span class="p">]):</span>
+            <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">_layer</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;pad&#39;</span><span class="p">][</span><span class="n">pad_id</span><span class="p">][</span><span class="s">&#39;layers&#39;</span><span class="p">]):</span>
+                <span class="k">if</span> <span class="n">_layer</span><span class="p">[</span><span class="s">&#39;id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="nb">int</span><span class="p">(</span><span class="n">layer_id</span><span class="p">):</span>
+                    <span class="n">_tmplayer</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;pad&#39;</span><span class="p">][</span><span class="n">pad_id</span><span class="p">][</span><span class="s">&#39;layers&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+                    <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;pad&#39;</span><span class="p">][</span><span class="n">pad_id</span><span class="p">][</span><span class="s">&#39;layers&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">to_position</span><span class="p">,</span> <span class="n">_tmplayer</span><span class="p">)</span>
+        <span class="n">clients</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">get_clients</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">_client</span> <span class="ow">in</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;pad&#39;</span><span class="p">][</span><span class="n">pad_id</span><span class="p">][</span><span class="s">&#39;clients&#39;</span><span class="p">]:</span> 
+            <span class="n">_client</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="s">&#39;/data/pad/&#39;</span><span class="o">+</span><span class="n">pad_id</span><span class="o">+</span><span class="s">&#39;/layers/&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">layer_id</span><span class="p">)</span><span class="o">+</span><span class="s">&#39;/order/&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;layers&#39;</span><span class="p">:</span><span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;pad&#39;</span><span class="p">][</span><span class="n">pad_id</span><span class="p">][</span><span class="s">&#39;layers&#39;</span><span class="p">],</span><span class="s">&#39;id&#39;</span><span class="p">:</span><span class="nb">int</span><span class="p">(</span><span class="n">layer_id</span><span class="p">)}})</span>
+
+  
+    <span class="k">def</span> <span class="nf">_log2layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pad_id</span><span class="p">,</span> <span class="n">layer_id</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span></div>
+        <span class="sd">&quot;&quot;&quot;Small helper that writes the action to the log pool&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">_layer</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;pad&#39;</span><span class="p">][</span><span class="n">pad_id</span><span class="p">][</span><span class="s">&#39;layers&#39;</span><span class="p">]):</span> 
+            <span class="k">if</span> <span class="n">_layer</span><span class="p">[</span><span class="s">&#39;id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="nb">int</span><span class="p">(</span><span class="n">layer_id</span><span class="p">):</span>
+                <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">subscription</span><span class="p">[</span><span class="s">&#39;pad&#39;</span><span class="p">][</span><span class="n">pad_id</span><span class="p">][</span><span class="s">&#39;layers&#39;</span><span class="p">][</span><span class="n">idx</span><span class="p">][</span><span class="s">&#39;log&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+            
+        
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">HWIOS v0.6 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, OS-Networks.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.8.
+    </div>
+  </body>
+</html>

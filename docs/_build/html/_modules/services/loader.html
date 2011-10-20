@@ -1,0 +1,134 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>services.loader &mdash; HWIOS v0.6 documentation</title>
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="HWIOS v0.6 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">HWIOS v0.6 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for services.loader</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    services.loader</span>
+<span class="sd">    ~~~~~~~~~~~~~~~</span>
+
+<span class="sd">    Automated loader of all services in this directory. Keep the convention used by other services...</span>
+
+<span class="sd">    :copyright: Copyright 2011-2012 OS-Networks</span>
+<span class="sd">    :license: LGPL, See LICENSE for details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span><span class="o">,</span><span class="nn">sys</span>
+<span class="n">HWIOS_ROOT</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">&#39;HWIOS_ROOT&#39;</span><span class="p">]</span>
+<span class="kn">from</span> <span class="nn">ConfigParser</span> <span class="kn">import</span> <span class="n">ConfigParser</span>
+
+<span class="kn">from</span> <span class="nn">core.application</span> <span class="kn">import</span> <span class="n">HWIOS</span>
+
+<span class="k">class</span> <span class="nc">ServiceLoader</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="ServiceLoader"><a class="viewcode-back" href="../../core/application.html#services.loader.ServiceLoader">[docs]</a>    <span class="sd">&quot;&quot;&quot;Automated service loader for HWIOS&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hwios_config</span><span class="p">):</span>
+        <span class="n">service_reference</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_services</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">service</span> <span class="ow">in</span> <span class="n">service_reference</span><span class="p">:</span>
+            <span class="n">_temp</span> <span class="o">=</span> <span class="nb">__import__</span><span class="p">(</span><span class="n">service</span><span class="p">[</span><span class="s">&#39;module&#39;</span><span class="p">],</span> <span class="nb">globals</span><span class="p">(),</span> <span class="nb">locals</span><span class="p">(),</span> <span class="p">[</span><span class="n">service</span><span class="p">[</span><span class="s">&#39;class&#39;</span><span class="p">]],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">service_config</span> <span class="o">=</span> <span class="n">ConfigParser</span><span class="p">()</span>
+            <span class="n">service_config</span><span class="o">.</span><span class="n">location</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">HWIOS_ROOT</span><span class="p">,</span><span class="s">&#39;services&#39;</span><span class="p">,</span><span class="n">service</span><span class="p">[</span><span class="s">&#39;dir&#39;</span><span class="p">])</span>
+            <span class="n">service_config</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">service_config</span><span class="o">.</span><span class="n">location</span><span class="p">,</span><span class="s">&#39;service.ini&#39;</span><span class="p">))</span>
+            
+            <span class="n">HWIOS</span><span class="o">.</span><span class="n">services</span><span class="p">[</span><span class="n">service</span><span class="p">[</span><span class="s">&#39;dir&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">_temp</span><span class="p">,</span><span class="n">service</span><span class="p">[</span><span class="s">&#39;class&#39;</span><span class="p">])(</span><span class="n">service_config</span><span class="p">,</span><span class="n">hwios_config</span><span class="p">)</span>
+            <span class="n">twisted_server</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">services</span><span class="p">[</span><span class="n">service</span><span class="p">[</span><span class="s">&#39;dir&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">get_service</span><span class="p">()</span>
+            <span class="n">twisted_server</span><span class="o">.</span><span class="n">setServiceParent</span><span class="p">(</span><span class="n">HWIOS</span><span class="o">.</span><span class="n">service_collection</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">find_services</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ServiceLoader.find_services"><a class="viewcode-back" href="../../core/application.html#services.loader.ServiceLoader.find_services">[docs]</a>        <span class="sd">&quot;&quot;&quot;Search for services in the service path, and setup their classname, based on some basic conventions</span>
+
+<span class="sd">        :return: list - A list of information about services</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">services</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">HWIOS_ROOT</span><span class="p">,</span><span class="s">&#39;services/&#39;</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s">&#39;services&#39;</span><span class="p">,</span><span class="n">f</span><span class="p">)):</span>
+                <span class="n">module</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">.service&#39;</span> <span class="o">%</span> <span class="n">f</span>
+                <span class="n">class_name</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">Service&#39;</span> <span class="o">%</span> <span class="n">f</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span>
+                <span class="n">services</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s">&#39;module&#39;</span><span class="p">:</span><span class="n">module</span><span class="p">,</span><span class="s">&#39;class&#39;</span><span class="p">:</span><span class="n">class_name</span><span class="p">,</span><span class="s">&#39;dir&#39;</span><span class="p">:</span><span class="n">f</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">services</span>
+</pre></div></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">HWIOS v0.6 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, OS-Networks.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.8.
+    </div>
+  </body>
+</html>

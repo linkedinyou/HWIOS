@@ -1,0 +1,386 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>services.web_ui.controllers.ws.teknon &mdash; HWIOS v0.6 documentation</title>
+    <link rel="stylesheet" href="../../../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '0.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="HWIOS v0.6 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">HWIOS v0.6 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for services.web_ui.controllers.ws.teknon</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    services.web_ui.controllers.ws.teknon</span>
+<span class="sd">    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">    The websocket controller for the teknon service module</span>
+
+<span class="sd">    :copyright: Copyright 2011-2012 OS-Networks</span>
+<span class="sd">    :license: LGPL, See LICENSE for details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span><span class="o">,</span><span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">twisted.internet</span> <span class="kn">import</span> <span class="n">defer</span>
+
+<span class="kn">from</span> <span class="nn">django.contrib.auth.models</span> <span class="kn">import</span> <span class="n">User</span>
+<span class="kn">from</span> <span class="nn">django.core</span> <span class="kn">import</span> <span class="n">serializers</span>
+<span class="kn">from</span> <span class="nn">django.template.loader</span> <span class="kn">import</span> <span class="n">render_to_string</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="kn">from</span> <span class="nn">core.application</span> <span class="kn">import</span> <span class="n">HWIOS</span>
+<span class="kn">from</span> <span class="nn">web_ui.forms.teknon</span> <span class="kn">import</span> <span class="n">BackendOnlineServiceIniForm</span><span class="p">,</span> <span class="n">BackendOfflineServiceIniForm</span><span class="p">,</span> <span class="n">SERVICE_TYPES</span>
+<span class="kn">from</span> <span class="nn">web_ui.models.ws_auth</span> <span class="kn">import</span> <span class="n">WSAuth</span>
+<span class="kn">from</span> <span class="nn">web_ui.models.notifications</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">web_ui.models.activity</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="kn">import</span> <span class="nn">web_ui.settings</span> <span class="kn">as</span> <span class="nn">settings</span>
+
+
+<span class="k">class</span> <span class="nc">WS_Teknon</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_Teknon"><a class="viewcode-back" href="../../../../../modules/teknon.html#services.web_ui.controllers.ws.teknon.WS_Teknon">[docs]</a>    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Websocket controller class for the teknon service module</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">console_subscribers</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">service_values</span> <span class="o">=</span> <span class="p">{</span> 
+    <span class="s">&#39;SERVICE_STARTING&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Service is starting...&#39;</span><span class="p">),</span>
+    <span class="s">&#39;SERVICE_ACTIVE&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Service is already running...&#39;</span><span class="p">),</span>
+    <span class="s">&#39;SERVICE_INACTIVE&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Service is not running...&#39;</span><span class="p">),</span>
+    <span class="s">&#39;SERVICE_CLOSING&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Service is shutting down...&#39;</span><span class="p">),</span>
+    <span class="s">&#39;SERVICE_KILLING&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Service is forced to shutdown...&#39;</span><span class="p">),</span>
+    <span class="s">&#39;SERVICE_UNKNOWN&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Client doesn</span><span class="se">\&#39;</span><span class="s">t know about this service...&#39;</span><span class="p">),</span>
+    <span class="s">&#39;SERVICE_BAD_OPTION&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Invalid switch option...&#39;</span><span class="p">),</span>
+    <span class="p">}</span>    
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dispatcher</span><span class="p">):</span>
+        <span class="k">pass</span>
+    
+    
+    <span class="nd">@WSAuth.is_staff</span>
+    <span class="k">def</span> <span class="nf">view_pool</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_Teknon.view_pool"><a class="viewcode-back" href="../../../../../modules/teknon.html#services.web_ui.controllers.ws.teknon.WS_Teknon.view_pool">[docs]</a>        <span class="sd">&quot;&quot;&quot;Renders the service pool view</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :return: dict - html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">clients</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">pb_server</span><span class="o">.</span><span class="n">get_clients</span><span class="p">()</span>
+        <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;teknon/read_pool.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;clients&#39;</span><span class="p">:</span><span class="n">clients</span><span class="p">,</span> <span class="s">&#39;service_types&#39;</span><span class="p">:</span><span class="n">SERVICE_TYPES</span><span class="p">})</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">}}}</span>
+        
+        
+    <span class="nd">@WSAuth.is_staff</span></div>
+    <span class="k">def</span> <span class="nf">confirm_start_services</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_Teknon.confirm_start_services"><a class="viewcode-back" href="../../../../../modules/teknon.html#services.web_ui.controllers.ws.teknon.WS_Teknon.confirm_start_services">[docs]</a>        <span class="sd">&quot;&quot;&quot;Renders confirmation of starting services dialog view</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :return: dict - html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dialog</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;teknon/start_services_confirmation.html&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;dialog&#39;</span><span class="p">:</span><span class="n">dialog</span><span class="p">}}}</span>
+
+
+    <span class="nd">@WSAuth.is_staff</span></div>
+    <span class="k">def</span> <span class="nf">confirm_stop_services</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_Teknon.confirm_stop_services"><a class="viewcode-back" href="../../../../../modules/teknon.html#services.web_ui.controllers.ws.teknon.WS_Teknon.confirm_stop_services">[docs]</a>        <span class="sd">&quot;&quot;&quot;Renders confirmation of stopping services dialog view</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :return: dict - html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dialog</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;teknon/stop_services_confirmation.html&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;dialog&#39;</span><span class="p">:</span><span class="n">dialog</span><span class="p">}}}</span>
+        
+
+    <span class="nd">@WSAuth.is_staff</span></div>
+    <span class="k">def</span> <span class="nf">confirm_kill_services</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_Teknon.confirm_kill_services"><a class="viewcode-back" href="../../../../../modules/teknon.html#services.web_ui.controllers.ws.teknon.WS_Teknon.confirm_kill_services">[docs]</a>        <span class="sd">&quot;&quot;&quot;Renders confirmation of killing services dialog view</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :return: dict - html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dialog</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;teknon/kill_services_confirmation.html&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;dialog&#39;</span><span class="p">:</span><span class="n">dialog</span><span class="p">}}}</span>
+        
+
+    <span class="n">service_values</span> <span class="o">=</span> <span class="p">{</span> </div>
+    <span class="s">&#39;SERVICE_STARTING&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Service is starting...&#39;</span><span class="p">),</span>
+    <span class="s">&#39;SERVICE_ACTIVE&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Service is already running...&#39;</span><span class="p">),</span>
+    <span class="s">&#39;SERVICE_INACTIVE&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Service is not running...&#39;</span><span class="p">),</span>
+    <span class="s">&#39;SERVICE_CLOSING&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Service is shutting down...&#39;</span><span class="p">),</span>
+    <span class="s">&#39;SERVICE_KILLING&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Service is forced to shutdown...&#39;</span><span class="p">),</span>
+    <span class="s">&#39;SERVICE_UNKNOWN&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Client doesn</span><span class="se">\&#39;</span><span class="s">t know about this service...&#39;</span><span class="p">),</span>
+    <span class="s">&#39;SERVICE_BAD_OPTION&#39;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Invalid switch option...&#39;</span><span class="p">),</span>
+    <span class="p">}</span>    
+
+
+    <span class="nd">@defer.inlineCallbacks</span>
+    <span class="k">def</span> <span class="nf">switch_services</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">services</span><span class="p">,</span> <span class="n">to_state</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_Teknon.switch_services"><a class="viewcode-back" href="../../../../../modules/teknon.html#services.web_ui.controllers.ws.teknon.WS_Teknon.switch_services">[docs]</a>        <span class="sd">&quot;&quot;&quot;Handle request to switch services on or off</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param list services: A list of service uuid&#39;s to process</span>
+<span class="sd">        :param str to_state: The state to switch the service to (ON,OFF,KILL)</span>
+<span class="sd">        :return: dict - html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;status&#39;</span><span class="p">:{},</span> <span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;start&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span><span class="s">&#39;stop&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="s">&#39;kill&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">}}</span>
+        <span class="k">for</span> <span class="n">count</span><span class="p">,</span><span class="n">service_uuid</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">services</span><span class="p">):</span>
+            <span class="n">pb_client</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">pb_server</span><span class="o">.</span><span class="n">search_client</span><span class="p">(</span><span class="n">service_uuid</span><span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">pb_client</span><span class="o">.</span><span class="n">switch_service</span><span class="p">(</span><span class="n">service_uuid</span><span class="p">,</span><span class="n">to_state</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">][</span><span class="s">&#39;code&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;SERVICE_STARTING&#39;</span><span class="p">:</span> <span class="n">response</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">][</span><span class="s">&#39;start&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">elif</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">][</span><span class="s">&#39;code&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;SERVICE_CLOSING&#39;</span><span class="p">:</span> <span class="n">response</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">][</span><span class="s">&#39;stop&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">elif</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">][</span><span class="s">&#39;code&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;SERVICE_KILLING&#39;</span><span class="p">:</span> <span class="n">response</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">][</span><span class="s">&#39;kill&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>    
+        <span class="n">response</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">][</span><span class="s">&#39;i18n&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Service status:&lt;br/&gt;Started:</span><span class="si">%s</span><span class="s">, Stopped:</span><span class="si">%s</span><span class="s">, Killed:</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">response</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">][</span><span class="s">&#39;start&#39;</span><span class="p">],</span><span class="n">response</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">][</span><span class="s">&#39;stop&#39;</span><span class="p">],</span><span class="n">response</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">][</span><span class="s">&#39;kill&#39;</span><span class="p">])</span>
+        <span class="n">result</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">][</span><span class="s">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+        <span class="k">print</span> <span class="n">response</span>
+        <span class="n">defer</span><span class="o">.</span><span class="n">returnValue</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        
+        
+    <span class="nd">@defer.inlineCallbacks</span></div>
+    <span class="k">def</span> <span class="nf">switch_watchdog</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">services</span><span class="p">,</span> <span class="n">status</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_Teknon.switch_watchdog"><a class="viewcode-back" href="../../../../../modules/teknon.html#services.web_ui.controllers.ws.teknon.WS_Teknon.switch_watchdog">[docs]</a>        <span class="sd">&quot;&quot;&quot;Handle request to switch service watchdog on or off</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param list services: A list of service uuid&#39;s to process</span>
+<span class="sd">        :param str status: The status to switch the service watchdog to (ON,OFF,TRIGGER)</span>
+<span class="sd">        :return: dict - html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">count</span><span class="p">,</span><span class="n">service_uuid</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">services</span><span class="p">):</span>
+            <span class="n">pb_client</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">pb_server</span><span class="o">.</span><span class="n">search_client</span><span class="p">(</span><span class="n">service_uuid</span><span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">pb_client</span><span class="o">.</span><span class="n">switch_watchdog</span><span class="p">(</span><span class="n">service_uuid</span><span class="p">,</span><span class="n">status</span><span class="p">)</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">services</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span> 
+            <span class="n">defer</span><span class="o">.</span><span class="n">returnValue</span><span class="p">(</span><span class="n">response</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span> <span class="n">defer</span><span class="o">.</span><span class="n">returnValue</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">subscribe_console</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span><span class="n">services</span><span class="p">):</span></div>
+<div class="viewcode-block" id="WS_Teknon.subscribe_console"><a class="viewcode-back" href="../../../../../modules/teknon.html#services.web_ui.controllers.ws.teknon.WS_Teknon.subscribe_console">[docs]</a>        <span class="sd">&quot;&quot;&quot;Add client to the pb-client-service subscriber pool</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param list services: A list of service uuid&#39;s to process</span>
+<span class="sd">        :return: dict - html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">count</span><span class="p">,</span><span class="n">service_uuid</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">services</span><span class="p">):</span>
+            <span class="n">pb_client</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">pb_server</span><span class="o">.</span><span class="n">search_client</span><span class="p">(</span><span class="n">service_uuid</span><span class="p">)</span>
+            <span class="n">service</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">pb_server</span><span class="o">.</span><span class="n">search_service</span><span class="p">(</span><span class="n">service_uuid</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">service_uuid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">console_subscribers</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">console_subscribers</span><span class="p">[</span><span class="n">service_uuid</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">console_subscribers</span><span class="p">[</span><span class="n">service_uuid</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;client&#39;</span><span class="p">:</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">:</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">service</span><span class="p">[</span><span class="s">&#39;client&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">peer</span><span class="o">.</span><span class="n">host</span><span class="p">,</span><span class="n">service</span><span class="p">[</span><span class="s">&#39;client&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">peer</span><span class="o">.</span><span class="n">port</span><span class="p">),</span><span class="s">&#39;service&#39;</span><span class="p">:</span><span class="n">service</span><span class="p">[</span><span class="s">&#39;service&#39;</span><span class="p">]}})</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">services</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span> <span class="k">return</span> <span class="n">response</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span> <span class="k">return</span> <span class="n">response</span>
+
+
+    <span class="k">def</span> <span class="nf">unsubscribe_console</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span><span class="n">services</span><span class="p">):</span></div>
+<div class="viewcode-block" id="WS_Teknon.unsubscribe_console"><a class="viewcode-back" href="../../../../../modules/teknon.html#services.web_ui.controllers.ws.teknon.WS_Teknon.unsubscribe_console">[docs]</a>        <span class="sd">&quot;&quot;&quot;Removes client from the pb-client-service subscriber pool</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param list services: A list of service uuid&#39;s to process</span>
+<span class="sd">        :return: dict - data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">count</span><span class="p">,</span><span class="n">service_uuid</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">services</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">count</span><span class="p">,</span> <span class="n">subscribed_client</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">console_subscribers</span><span class="p">[</span><span class="n">service_uuid</span><span class="p">]):</span>
+                <span class="k">if</span> <span class="n">subscribed_client</span> <span class="o">==</span> <span class="n">client</span><span class="p">:</span>
+                    <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">console_subscribers</span><span class="p">[</span><span class="n">service_uuid</span><span class="p">][</span><span class="n">count</span><span class="p">]</span>
+                    <span class="n">service</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">pb_server</span><span class="o">.</span><span class="n">search_service</span><span class="p">(</span><span class="n">service_uuid</span><span class="p">)</span>
+                    <span class="n">response</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;client&#39;</span><span class="p">:</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">:</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">service</span><span class="p">[</span><span class="s">&#39;client&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">peer</span><span class="o">.</span><span class="n">host</span><span class="p">,</span><span class="n">service</span><span class="p">[</span><span class="s">&#39;client&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">peer</span><span class="o">.</span><span class="n">port</span><span class="p">),</span><span class="s">&#39;service&#39;</span><span class="p">:</span><span class="n">service</span><span class="p">[</span><span class="s">&#39;service&#39;</span><span class="p">]}})</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">services</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span> <span class="k">return</span> <span class="n">response</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span> <span class="k">return</span> <span class="n">response</span>
+        
+        
+    <span class="nd">@defer.inlineCallbacks</span></div>
+    <span class="k">def</span> <span class="nf">send_service_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">service_uuid</span><span class="p">,</span> <span class="n">command</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_Teknon.send_service_command"><a class="viewcode-back" href="../../../../../modules/teknon.html#services.web_ui.controllers.ws.teknon.WS_Teknon.send_service_command">[docs]</a>        <span class="sd">&quot;&quot;&quot;Sends a console command to the appropriate service</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param str service_uuid: The uuid of the service to target</span>
+<span class="sd">        :param str command: The command to send to the service&#39;s stdin</span>
+<span class="sd">        :return: dict - data response from teknon service</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">pb_client</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">pb_server</span><span class="o">.</span><span class="n">search_client</span><span class="p">(</span><span class="n">service_uuid</span><span class="p">)</span>
+        <span class="k">print</span> <span class="nb">type</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">pb_client</span><span class="o">.</span><span class="n">command_service</span><span class="p">(</span><span class="n">service_uuid</span><span class="p">,</span> <span class="n">command</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">][</span><span class="s">&#39;code&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s">&quot;COMMAND_OK&quot;</span><span class="p">:</span>
+            <span class="n">result</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">][</span><span class="s">&#39;i18n&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;An error occured!&#39;</span><span class="p">)</span>
+            <span class="n">result</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">][</span><span class="s">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-error&#39;</span><span class="p">]</span>
+        <span class="n">defer</span><span class="o">.</span><span class="n">returnValue</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        
+        
+    <span class="nd">@defer.inlineCallbacks</span></div>
+    <span class="k">def</span> <span class="nf">edit_sim_slave_ini</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">service_uuid</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_Teknon.edit_sim_slave_ini"><a class="viewcode-back" href="../../../../../modules/teknon.html#services.web_ui.controllers.ws.teknon.WS_Teknon.edit_sim_slave_ini">[docs]</a>        <span class="sd">&quot;&quot;&quot;Renders the opensim&#39;s simulator ini view</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param str service_uuid: The uuid of the service to target</span>
+<span class="sd">        :return: dict - html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">count</span><span class="p">,</span><span class="n">service_uuid</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">services</span><span class="p">):</span>
+            <span class="n">pb_client</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">pb_server</span><span class="o">.</span><span class="n">search_client</span><span class="p">(</span><span class="n">service_uuid</span><span class="p">)</span>
+            <span class="n">user_settings</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">pb_client</span><span class="o">.</span><span class="n">get_sim_slave_ini</span><span class="p">(</span><span class="n">service_uuid</span><span class="p">)</span>
+            <span class="n">service</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">pb_server</span><span class="o">.</span><span class="n">search_service</span><span class="p">(</span><span class="n">service_uuid</span><span class="p">)[</span><span class="s">&#39;service&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">service</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;OFF&#39;</span><span class="p">:</span>
+                <span class="n">user_settings_form</span> <span class="o">=</span> <span class="n">OfflineServiceIniForm</span><span class="p">(</span><span class="n">initial</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;user_settings&#39;</span><span class="p">:</span> <span class="n">user_settings</span><span class="p">})</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">user_settings_form</span> <span class="o">=</span> <span class="n">OnlineServiceIniForm</span><span class="p">(</span><span class="n">initial</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;user_settings&#39;</span><span class="p">:</span> <span class="n">user_settings</span><span class="p">})</span>
+        
+        <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;teknon/slave_ini.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;service&#39;</span><span class="p">:</span> <span class="n">service</span><span class="p">,</span><span class="s">&#39;form&#39;</span><span class="p">:</span><span class="n">user_settings_form</span><span class="p">})</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">}})</span>
+        <span class="n">defer</span><span class="o">.</span><span class="n">returnValue</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+
+    <span class="nd">@defer.inlineCallbacks</span></div>
+    <span class="k">def</span> <span class="nf">save_sim_slave_ini</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">service_uuid</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_Teknon.save_sim_slave_ini"><a class="viewcode-back" href="../../../../../modules/teknon.html#services.web_ui.controllers.ws.teknon.WS_Teknon.save_sim_slave_ini">[docs]</a>        <span class="sd">&quot;&quot;&quot;Save the changes to the opensim&#39;s simulator ini and render the general service pool</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param str service_uuid: The uuid of the service to target</span>
+<span class="sd">        :return: dict - Status and html-layout data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;status&#39;</span><span class="p">:{}}</span>
+        <span class="k">for</span> <span class="n">count</span><span class="p">,</span><span class="n">service_uuid</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">services</span><span class="p">):</span>
+            <span class="n">pb_client</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">pb_server</span><span class="o">.</span><span class="n">search_client</span><span class="p">(</span><span class="n">service_uuid</span><span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="k">yield</span> <span class="n">pb_client</span><span class="o">.</span><span class="n">save_slave_sim_ini</span><span class="p">(</span><span class="n">service_uuid</span><span class="p">,</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">response</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">][</span><span class="s">&#39;code&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;CONFIG_SAVED&#39;</span><span class="p">:</span>
+                <span class="n">response</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">][</span><span class="s">&#39;i18n&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Succesfully modified service configuration. Restart the service in order to test your custom settings...&#39;</span><span class="p">)</span>
+                <span class="n">response</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">][</span><span class="s">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">response</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">][</span><span class="s">&#39;code&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;CONFIG_SAVED_OFFLINE&#39;</span><span class="p">:</span>
+                <span class="n">response</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">][</span><span class="s">&#39;i18n&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Succesfully modified service configuration. Start the service in order to test your custom settings...&#39;</span><span class="p">)</span>
+                <span class="n">response</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">][</span><span class="s">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">response</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">][</span><span class="s">&#39;code&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;CONFIG_SAVED_RESTARTING&#39;</span><span class="p">:</span>
+                <span class="n">response</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">][</span><span class="s">&#39;i18n&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Succesfully modified online service configuration. The service will now be restarted...&#39;</span><span class="p">)</span>
+                <span class="n">response</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">][</span><span class="s">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span> 
+                <span class="n">response</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">][</span><span class="s">&#39;i18n&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Failed to modify configuration...&#39;</span><span class="p">)</span>
+                <span class="n">response</span><span class="p">[</span><span class="s">&#39;status&#39;</span><span class="p">][</span><span class="s">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-error&#39;</span><span class="p">]</span>
+        <span class="n">clients</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">pb_server</span><span class="o">.</span><span class="n">get_clients</span><span class="p">()</span>
+        <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;teknon/read_pool.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;clients&#39;</span><span class="p">:</span><span class="n">clients</span><span class="p">,</span> <span class="s">&#39;service_types&#39;</span><span class="p">:</span><span class="n">settings</span><span class="o">.</span><span class="n">SERVICE_TYPES</span><span class="p">})</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">}})</span>
+        <span class="n">defer</span><span class="o">.</span><span class="n">returnValue</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        
+            
+    <span class="k">def</span> <span class="nf">proxy_service_stdout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service_uuid</span><span class="p">,</span> <span class="n">output</span><span class="p">):</span></div>
+<div class="viewcode-block" id="WS_Teknon.proxy_service_stdout"><a class="viewcode-back" href="../../../../../modules/teknon.html#services.web_ui.controllers.ws.teknon.WS_Teknon.proxy_service_stdout">[docs]</a>        <span class="sd">&quot;&quot;&quot;Send the dsm-server dispatched stdout from teknon service-consoles to all subscribed ws-clients</span>
+
+<span class="sd">        :param str service_uuid: The uuid of the service to target</span>
+<span class="sd">        :param str output: The stdout from the service</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">service_uuid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">console_subscribers</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">client</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">console_subscribers</span><span class="p">[</span><span class="n">service_uuid</span><span class="p">]:</span>
+                <span class="n">client</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="s">&#39;/data/teknon/services/</span><span class="si">%s</span><span class="s">/console/update/&#39;</span> <span class="o">%</span> <span class="n">service_uuid</span><span class="p">,{</span><span class="s">&#39;output&#39;</span><span class="p">:</span><span class="n">output</span><span class="p">})</span>
+                
+
+    <span class="k">def</span> <span class="nf">update_service_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">services</span><span class="p">):</span></div>
+<div class="viewcode-block" id="WS_Teknon.update_service_state"><a class="viewcode-back" href="../../../../../modules/teknon.html#services.web_ui.controllers.ws.teknon.WS_Teknon.update_service_state">[docs]</a>        <span class="sd">&quot;&quot;&quot;Push a notification to ws-clients when a teknon-controlled service changes it status</span>
+
+<span class="sd">        :param dict services: A collection of the services that have changed</span>
+<span class="sd">        :return: dict - Status and data response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">clients</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">get_clients</span><span class="p">(</span><span class="s">&#39;moderators&#39;</span><span class="p">)</span>        
+        <span class="n">publish_activity</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Service status changed&#39;</span><span class="p">),</span><span class="s">&#39;/teknon/&#39;</span><span class="p">,[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">_client</span> <span class="ow">in</span> <span class="n">clients</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s">&#39;/teknon/&#39;</span> <span class="ow">in</span> <span class="n">_client</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">view_history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">_client</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="s">&#39;/data/teknon/services/state/update/&#39;</span><span class="p">,{</span>
+                    <span class="s">&#39;status&#39;</span><span class="p">:{</span>
+                        <span class="s">&#39;code&#39;</span><span class="p">:</span><span class="s">&#39;SERVICE_STATUS_UPDATE&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;i18n&#39;</span><span class="p">:</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;A service changed it</span><span class="se">\&#39;</span><span class="s">s status&#39;</span><span class="p">),</span>
+                        <span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s">&#39;notify-info&#39;</span><span class="p">]</span>
+                    <span class="p">},</span>
+                    <span class="s">&#39;services&#39;</span><span class="p">:</span><span class="n">services</span>
+                <span class="p">})</span>
+
+    
+    <span class="k">def</span> <span class="nf">update_view</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+<div class="viewcode-block" id="WS_Teknon.update_view"><a class="viewcode-back" href="../../../../../modules/teknon.html#services.web_ui.controllers.ws.teknon.WS_Teknon.update_view">[docs]</a>        <span class="sd">&quot;&quot;&quot;Routes an update of the service pool view from the dsm-server, when a service state-change has been detected</span>
+<span class="sd">        TODO: Move to notify_others</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">clients</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">get_clients</span><span class="p">(</span><span class="s">&#39;moderators&#39;</span><span class="p">)</span>
+        <span class="n">pb_clients</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">pb_server</span><span class="o">.</span><span class="n">get_clients</span><span class="p">()</span>
+        <span class="n">main</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;teknon/read_pool.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;clients&#39;</span><span class="p">:</span><span class="n">pb_clients</span><span class="p">,</span> <span class="s">&#39;service_types&#39;</span><span class="p">:</span><span class="n">SERVICE_TYPES</span><span class="p">})</span>
+        <span class="n">publish_activity</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Service pool changed&#39;</span><span class="p">),</span><span class="s">&#39;/teknon/&#39;</span><span class="p">,[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">_client</span> <span class="ow">in</span> <span class="n">clients</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s">&#39;/teknon/&#39;</span> <span class="ow">in</span> <span class="n">_client</span><span class="o">.</span><span class="n">transport</span><span class="o">.</span><span class="n">view_history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>                
+                <span class="n">_client</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="s">&#39;/data/teknon/&#39;</span><span class="p">,{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;dom&#39;</span><span class="p">:{</span><span class="s">&#39;main&#39;</span><span class="p">:</span><span class="n">main</span><span class="p">}}})</span>
+        
+</pre></div></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">HWIOS v0.6 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, OS-Networks.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.8.
+    </div>
+  </body>
+</html>

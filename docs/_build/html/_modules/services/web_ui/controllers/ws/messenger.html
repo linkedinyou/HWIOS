@@ -1,0 +1,189 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>services.web_ui.controllers.ws.messenger &mdash; HWIOS v0.6 documentation</title>
+    <link rel="stylesheet" href="../../../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '0.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="HWIOS v0.6 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">HWIOS v0.6 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for services.web_ui.controllers.ws.messenger</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    services.web_ui.controllers.ws.messenger</span>
+<span class="sd">    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+
+<span class="sd">    The messenger&#39;s module websocket routing logics</span>
+
+<span class="sd">    :copyright: Copyright 2011-2012 OS-Networks</span>
+<span class="sd">    :license: LGPL, See LICENSE for details.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span><span class="o">,</span><span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">twisted.internet</span> <span class="kn">import</span> <span class="n">defer</span>
+<span class="kn">from</span> <span class="nn">django.template.loader</span> <span class="kn">import</span> <span class="n">render_to_string</span>
+<span class="kn">from</span> <span class="nn">django.core</span> <span class="kn">import</span> <span class="n">serializers</span>
+<span class="kn">from</span> <span class="nn">django.core.exceptions</span> <span class="kn">import</span> <span class="n">ObjectDoesNotExist</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="kn">from</span> <span class="nn">core.application</span> <span class="kn">import</span> <span class="n">HWIOS</span>
+<span class="kn">from</span> <span class="nn">web_ui.models.ws_auth</span> <span class="kn">import</span> <span class="n">WSAuth</span>
+<span class="kn">from</span> <span class="nn">web_ui.models.profiles</span> <span class="kn">import</span> <span class="n">Profile</span>
+
+
+<span class="k">class</span> <span class="nc">WS_Messenger</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>    
+<div class="viewcode-block" id="WS_Messenger"><a class="viewcode-back" href="../../../../../modules/messenger.html#services.web_ui.controllers.ws.messenger.WS_Messenger">[docs]</a>    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Websocket controller class for the messenger module</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dispatcher</span><span class="p">):</span>
+        <span class="n">dispatcher</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="s">&#39;ws_connect&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">update_online</span><span class="p">)</span>
+        <span class="n">dispatcher</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="s">&#39;ws_disconnect&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">update_online</span><span class="p">)</span>
+        
+
+    <span class="k">def</span> <span class="nf">init_messenger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
+<div class="viewcode-block" id="WS_Messenger.init_messenger"><a class="viewcode-back" href="../../../../../modules/messenger.html#services.web_ui.controllers.ws.messenger.WS_Messenger.init_messenger">[docs]</a>        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        When websocket client connects, it will get it&#39;s online list from here</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="n">render_to_string</span><span class="p">(</span><span class="s">&quot;messenger/context_menu.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;profile&#39;</span><span class="p">:</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="p">})</span>
+        <span class="n">_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_online</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
+        <span class="n">_data</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">][</span><span class="s">&#39;dom&#39;</span><span class="p">]</span><span class="o">=</span> <span class="p">{</span><span class="s">&#39;context&#39;</span><span class="p">:</span><span class="n">context</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">_data</span>
+
+        
+    <span class="k">def</span> <span class="nf">read_online</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span></div>
+<div class="viewcode-block" id="WS_Messenger.read_online"><a class="viewcode-back" href="../../../../../modules/messenger.html#services.web_ui.controllers.ws.messenger.WS_Messenger.read_online">[docs]</a>        <span class="sd">&quot;&quot;&quot;Return an online list to all connected clients after one connects/disconnects</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :return: dict - Data response containing the userlist            </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">user_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">clients</span> <span class="o">=</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">get_clients</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">_client</span> <span class="ow">in</span> <span class="n">clients</span><span class="p">:</span>
+            <span class="n">user_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                <span class="s">&#39;id&#39;</span><span class="p">:</span><span class="n">_client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                <span class="s">&#39;name&#39;</span><span class="p">:</span><span class="n">_client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">username</span><span class="p">,</span>
+                <span class="s">&#39;avatar&#39;</span><span class="p">:</span><span class="n">_client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">photo</span>
+            <span class="p">})</span>
+        <span class="k">for</span> <span class="n">_client</span> <span class="ow">in</span> <span class="n">clients</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">_client</span> <span class="o">!=</span> <span class="n">client</span><span class="p">:</span>
+                <span class="n">_client</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="s">&#39;/data/messenger/online/update/&#39;</span><span class="p">,{</span><span class="s">&#39;online&#39;</span><span class="p">:</span><span class="n">user_list</span><span class="p">})</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;online&#39;</span><span class="p">:</span><span class="n">user_list</span><span class="p">}}</span>
+
+
+    <span class="k">def</span> <span class="nf">update_online</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span></div>
+<div class="viewcode-block" id="WS_Messenger.update_online"><a class="viewcode-back" href="../../../../../modules/messenger.html#services.web_ui.controllers.ws.messenger.WS_Messenger.update_online">[docs]</a>        <span class="sd">&quot;&quot;&quot;Return an online list to all connected clients after one connects/disconnects,</span>
+<span class="sd">        and also return the context to the disconnecting/connecting user</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :return: dict - Data response containing the userlist</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_online</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
+        <span class="n">_data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">init_messenger</span><span class="p">(</span><span class="n">client</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">_data</span>
+
+            
+    <span class="k">def</span> <span class="nf">send_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span></div>
+<div class="viewcode-block" id="WS_Messenger.send_message"><a class="viewcode-back" href="../../../../../modules/messenger.html#services.web_ui.controllers.ws.messenger.WS_Messenger.send_message">[docs]</a>        <span class="sd">&quot;&quot;&quot;Core business of the messenger. Sending messages to other clients</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param str message: Message that the client wants to send to other clients</span>
+<span class="sd">        :return: dict - Data response containing the message and the client who sent the message</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%H:%M&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">localtime</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">aclient</span> <span class="ow">in</span> <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">get_clients</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">aclient</span> <span class="o">!=</span> <span class="n">client</span><span class="p">:</span>             
+                <span class="n">aclient</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="s">&#39;/data/messenger/messages/receive/&#39;</span><span class="p">,{</span><span class="s">&#39;message&#39;</span><span class="p">:</span><span class="n">message</span><span class="p">,</span><span class="s">&#39;from&#39;</span><span class="p">:</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">username</span><span class="p">,</span><span class="s">&#39;time&#39;</span><span class="p">:</span><span class="n">_time</span><span class="p">})</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s">&#39;data&#39;</span><span class="p">:{</span><span class="s">&#39;message&#39;</span><span class="p">:</span><span class="n">message</span><span class="p">,</span><span class="s">&#39;from&#39;</span><span class="p">:</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">username</span><span class="p">,</span><span class="s">&#39;time&#39;</span><span class="p">:</span><span class="n">_time</span><span class="p">}}</span>
+        
+
+    <span class="k">def</span> <span class="nf">send_private_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">to_client_uuid</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span></div>
+<div class="viewcode-block" id="WS_Messenger.send_private_message"><a class="viewcode-back" href="../../../../../modules/messenger.html#services.web_ui.controllers.ws.messenger.WS_Messenger.send_private_message">[docs]</a>        <span class="sd">&quot;&quot;&quot;Sends a message only to a specified client. Not in use currently</span>
+
+<span class="sd">        :param Client client: The requesting client</span>
+<span class="sd">        :param str to_client_uuid: The uuid of the client to which send the message</span>
+<span class="sd">        :param str message: Message that the client wants to send</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">target_message</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;/</span><span class="si">%s</span><span class="s">/frontend/personal/pm/pm/&#39;</span> <span class="o">%</span> <span class="n">to_client_uuid</span><span class="p">,{</span><span class="s">&#39;from&#39;</span><span class="p">:{</span><span class="s">&#39;name&#39;</span><span class="p">:</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span><span class="n">client</span><span class="o">.</span><span class="n">profile</span><span class="o">.</span><span class="n">last_name</span><span class="p">)},</span> <span class="s">&#39;message&#39;</span><span class="p">:</span><span class="n">message</span><span class="p">}]</span>
+        <span class="n">HWIOS</span><span class="o">.</span><span class="n">ws_realm</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">target_message</span><span class="p">)</span>        
+        
+</pre></div></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../../index.html">HWIOS v0.6 documentation</a> &raquo;</li>
+          <li><a href="../../../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, OS-Networks.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.8.
+    </div>
+  </body>
+</html>
