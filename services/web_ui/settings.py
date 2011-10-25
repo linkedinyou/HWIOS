@@ -23,7 +23,9 @@ else:
     if 'services/web_ui' in HWIOS_ROOT:
         HWIOS_ROOT = HWIOS_ROOT[:-15]
     os.putenv('HWIOS_ROOT', HWIOS_ROOT)
-sys.path.append(os.path.join(HWIOS_ROOT,'../'))
+
+sys.path.append(HWIOS_ROOT)
+
 service_config = ConfigParser()
 service_config.read(os.path.join(SERVICE_ROOT,'service.ini'))
 hwios_config = ConfigParser()

@@ -10,7 +10,7 @@
 """
 
 import settings
-import plasmoids
+import pages
 import pad
 import wiki
 import menu

@@ -1,23 +1,23 @@
 {% load i18n %}
 <div class='hwios-widget'>
     <div class='ui-widget-header'>
-        <span>{{page.slug}}</span>
+        <span>{{article.slug}}</span>
         <span id='wiki-fullscreen-button' class='header-option btn ui-icon ui-icon-arrow-4-diag' data-function='wiki.edit_fullscreen'></span>
         <span>{%trans 'Edit document'%}</span>
     </div>
     <div class='ui-widget-content'>
-        <div class='edit-wiki-page'>
+        <div class='edit-wiki-article'>
             <div id='wiki-markdown'></div>
             <div id='wiki-editor' class='infinote-editor'></div>            
         </div>
-        <form method='post' action='/wiki/{{page.slug}}/save/'>{{form.as_p}}</form>
+        <form method='post' action='/wiki/{{article.slug}}/save/'>{{form.as_p}}</form>
     </div>
     <div class='btn-bar'>
         <div class='btn-set btn-set-single'>
-            <button data-uri='/wiki/{{page.slug}}/' data-id='{{page.slug}}' class='btn ui-state-default ui-corner-left'>
+            <button data-uri='/wiki/{{article.slug}}/' data-id='{{article.slug}}' class='btn ui-state-default ui-corner-left'>
                 <span class='ui-icon ui-icon-cancel'></span><span class='btn-txt'>{%trans 'Cancel'%}</span>
             </button>
-            <button data-function='wiki.save_edit_article' data-id='{{page.slug}}' class='btn ui-state-default ui-corner-right'>
+            <button data-function='wiki.save_edit_article' data-id='{{article.slug}}' class='btn ui-state-default ui-corner-right'>
                 <span class='ui-icon ui-icon-transfer-e-w'></span><span class='btn-txt'>{%trans 'Submit'%}</span>
             </button>
         </div>

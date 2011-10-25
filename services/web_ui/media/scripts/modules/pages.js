@@ -25,7 +25,7 @@
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.'''
 */
 
-require.def('modules/plasmoids',[],
+require.def('modules/pages',[],
             
 function(){
     var editor;
@@ -96,21 +96,21 @@ function initEditor(plasmoid_uuid, override_layout) {
     
     
 function bind_functions(){
-    application.functions.plasmoids = {
+    application.functions.pages = {
         route: function(uri, push_history) {
             if(urls == undefined) {
                 urls = [
-                    [XRegExp('^/plasmoids/$'),this.view_plasmoids],
-                    [XRegExp('^/plasmoids/new/$'), this.create_plasmoid],
-                    [XRegExp('^/plasmoids/(?<uuid>[^/]+)/edit/$'), this.edit_plasmoid],
+                    [XRegExp('^/pages/$'),this.view_pages],
+                    [XRegExp('^/pages/new/$'), this.create_page],
+                    [XRegExp('^/pages/(?<uuid>[^/]+)/edit/$'), this.edit_page],
                 ];
             }
             application.route_uri_to_mod_function(uri, urls, push_history);
         },
         
-        view_plasmoids: function(kwargs, update) {
+        view_pages: function(kwargs, update) {
             if(update == undefined){
-                application.ws.remote('/plasmoids/',{},function(response){
+                application.ws.remote('/pages/',{},function(response){
                     application.functions.ui.transition(response.data.dom.main, $('.main'));
                 });
             }
@@ -148,15 +148,15 @@ function bind_functions(){
             });        
         },
         
-        create_plasmoid: function() {
-            application.ws.remote('/plasmoids/new/',{},function(response){
+        create_page: function() {
+            application.ws.remote('/pages/new/',{},function(response){
                 //application.functions.ui.transition(response.data.dom.main, $('.main'));
                 initEditor(response.data.plasmoid.uuid, response.data.dom.main);
             });
             
         },
         
-        edit_plasmoid: function(kwargs) {
+        edit_page: function(kwargs) {
             initEditor(kwargs.uuid);            
         },
         
@@ -164,10 +164,10 @@ function bind_functions(){
             listPlasmoids();            
         },
         
-        save_plasmoid: function(kwargs) {
+        save_page: function(kwargs) {
             var form_data = $("form:visible").serializeObject();
             form_data.content = editor._state.buffer.toString();
-            application.ws.remote('/data/plasmoids/'+kwargs.uuid+'/save/',{form:form_data},function(response){
+            application.ws.remote('/data/pages/'+kwargs.uuid+'/save/',{form:form_data},function(response){
                 switch(response.status.code) {
                     case "PLASMOID_EDIT_OK":
                         application.functions.plasmoids.view_plasmoids();
@@ -243,12 +243,12 @@ return {
         bind_functions();
         bind_ws();
         bind_events();
-        application.functions.plasmoids.route(uri, push_history);        
-        return 'plasmoids';
+        application.functions.pages.route(uri, push_history);
+        return 'pages';
     },
     load:function(uri, push_history){
         bind_events();
-        application.functions.plasmoids.route(uri, push_history);
+        application.functions.pages.route(uri, push_history);
     },
     clean_up: function() {
         unbind_events();

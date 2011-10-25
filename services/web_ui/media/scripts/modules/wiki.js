@@ -43,7 +43,7 @@ function(){
             init: 
                 function(data) {
                     layout = data.dom.main;
-                    page = data.page;
+                    page = data.article;
                     if (typeof(override_layout) == 'undefined') {
                         application.functions.ui.transition(data.dom.main, $('.main'));
                     }
@@ -53,10 +53,10 @@ function(){
                         $(this).next().prepend('<span class="ui-icon ui-icon-info"></span>');
                         });   
                     }
-                    if(data.page.revisions < 2) {
+                    if(data.article.revisions < 2) {
                         $('#wiki-edit-history').addClass('ui-state-disabled');
                     }
-                    apply_markdown($('#wiki-markdown'),data.page.state[1]);
+                    apply_markdown($('#wiki-markdown'),data.article.state[1]);
                     if(add_text !==undefined){
                         return {editor_element:'#wiki-editor',add_text: add_text}
                     }
@@ -82,10 +82,10 @@ function(){
             cb_caret:'^/data/wiki/(?<id>[^/]+)/caret/$',
             editor:'listen',
             init: 
-                function(data) {
+                function(data) {                    
                     application.functions.ui.transition(data.dom.main, $('.main'),'');
-                    if(data.page.state !==false) {
-                        apply_markdown($('#wiki-markdown'),data.page.state[1]);
+                    if(data.article.state !==false) {
+                        apply_markdown($('#wiki-markdown'),data.article.state[1]);
                     }                    
                     return {editor_element:'#wiki-editor'}
                 },
@@ -133,7 +133,7 @@ function bind_functions() {
         },
 
         edit_fullscreen: function(kwargs) {
-            var _parent = $('.edit-wiki-page');
+            var _parent = $('.edit-wiki-article');
             //already in fullscreen mode
             console.log('blaa');
             if($(_parent).hasClass('wiki-fullscreen')){
@@ -176,10 +176,10 @@ function bind_functions() {
                 }
                 
                 application.ws.remote('/wiki/'+kwargs.id+'/edit/history/',{},function(response){
-                    page_revisions = response.page.revisions;
+                    page_revisions = response.article.revisions;
                     application.functions.ui.transition(response.data.dom.main, $('.main'));
-                    $.data($('#wiki-restore-button')[0],'revision',response.page.revisions.length);
-                        var _history_slider = $('#undo_slider').slider({ animate:true,min:1, max: response.page.revisions.length,value: response.page.revisions.length,
+                    $.data($('#wiki-restore-button')[0],'revision',response.article.revisions.length);
+                        var _history_slider = $('#undo_slider').slider({ animate:true,min:1, max: response.article.revisions.length,value: response.article.revisions.length,
                             change: function(event, ui) {
                                 var _value = $('#undo_slider').slider('option','value');
                                 $('#undo_slider_value').html('@ '+_value);                                

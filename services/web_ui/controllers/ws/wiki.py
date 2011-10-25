@@ -61,11 +61,11 @@ class WS_Wiki(object):
             revisions = len(WikiRevision.objects.filter(article = article))
             client.role = 'view'
             subscriber = self.infinote_pool.subscribe(client, slug, article_text, 'wiki', self._signal_presence, 'view')
-            main = render_to_string("wiki/read_article.html", {"profile":client.profile,'page':article})
+            main = render_to_string("wiki/read_article.html", {"profile":client.profile,'article':article})
             return {
                 'data':{
                     'dom':{'main':main},
-                    'page':{
+                    'article':{
                         'title':article.slug,
                         'state':subscriber['state'],
                         'log':subscriber['log'],
@@ -76,8 +76,8 @@ class WS_Wiki(object):
                 }
             }
         except ObjectDoesNotExist:
-            main = render_to_string("wiki/create_article.html", {"profile":client.profile,"page":{'slug':slug}})
-            return {'data':{'dom':{'main':main},'page':{'title':slug, 'state':False}}}
+            main = render_to_string("wiki/create_article.html", {"profile":client.profile,"article":{'slug':slug}})
+            return {'data':{'dom':{'main':main},'article':{'title':slug, 'state':False}}}
             
 
     @WSAuth.is_authenticated
@@ -96,7 +96,7 @@ class WS_Wiki(object):
             client.role = 'edit'
             subscriber = self.infinote_pool.subscribe(client, slug, article_text, 'wiki', self._signal_presence,'edit')
             form = EditArticleForm(initial={'id':article.pk, 'slug':slug})
-            main = render_to_string('wiki/edit_article.html',  {'form': form,"page":article})
+            main = render_to_string('wiki/edit_article.html',  {'form': form,"article":article})
             if len(client.transport.view_history) > 1:
                 if '/wiki/%s/edit/' % slug not in client.transport.view_history[-2]:
                     publish_activity(client.profile, _('Wiki article editing'),'/wiki/%s/edit/' % slug,[0,2,2,0,0])
@@ -105,7 +105,7 @@ class WS_Wiki(object):
             return {
                 'data':{
                     'dom':{'main':main},
-                    'page':{
+                    'article':{
                         'title':article.slug,
                         'state':subscriber['state'],
                         'log':subscriber['log'],
@@ -116,8 +116,8 @@ class WS_Wiki(object):
                 }
             }
         except ObjectDoesNotExist:
-            main = render_to_string("wiki/create_article.html", {"profile":client.profile,"page":{'slug':slug}})
-            return {'data':{'dom':{'main':main},'page':{'title':slug, 'state':False}}}
+            main = render_to_string("wiki/create_article.html", {"profile":client.profile,"article":{'slug':slug}})
+            return {'data':{'dom':{'main':main},'article':{'title':slug, 'state':False}}}
 
 
     def _signal_presence(self, client, online, app_pool, item_id):
@@ -209,12 +209,12 @@ class WS_Wiki(object):
             'submit_profile':'%s %s' % (revision.submit_profile.first_name,revision.submit_profile.last_name)})
         rev_data.reverse()
         form = EditArticleHistoryForm(initial={'undo':len(revisions)})
-        main = render_to_string("wiki/edit_history.html", {'page':article,'form':form})
+        main = render_to_string("wiki/edit_history.html", {'article':article,'form':form})
         return {
             'data':{
                 'dom':{'main':main}
             },
-            'page':{
+            'article':{
                 'slug':article.slug,
                 'revisions':rev_data
             }

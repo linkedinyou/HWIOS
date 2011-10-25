@@ -19,14 +19,14 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from core.application import HWIOS
 from web_ui.models.ws_auth import WSAuth
-from web_ui.models.plasmoids import Plasmoid
+from web_ui.models.pages import Page
 from web_ui.models.infinote import InfinoteEditor, InfinotePool
-from web_ui.forms.plasmoids import EditPlasmoidForm
+from web_ui.forms.pages import EditScriptForm, EditPageForm
 from web_ui.models.notifications import *
 from web_ui.models.activity import *
 
 
-class WS_Plasmoids(object):
+class WS_Pages(object):
     """
     Websocket controller class for the plasmoid module
     """
@@ -38,19 +38,38 @@ class WS_Plasmoids(object):
         
 
     @WSAuth.is_staff
-    def list_plasmoids(self, client):
+    def list_pages(self, client):
         """Render the view that shows an overview of all plasmoids
 
         :param Client client: The requesting client 
         :return: dict - Html-layout data response
         """
-        plasmoids = Plasmoid.objects.all()
-        main = render_to_string("plasmoids/read_plasmoids.html", {'plasmoids':plasmoids})
+        pages = Page.objects.all()
+        main = render_to_string("pages/list_pages.html", {'pages':pages})
         return {'data':{'dom':{'main':main}}}
 
 
     @WSAuth.is_staff
-    def create_plasmoid(self, client):
+    def create_page(self, client):
+        """Render and returns the create plasmoid view
+
+        :param Client client: The requesting client
+        :return: dict - Data and html-layout response
+        """
+        form = EditPageForm()
+        page = Page()
+        page.uuid = str(uuid.uuid4())
+        main = render_to_string("pages/create_page.html",{'page':page,'form': form})
+        return {
+            'data':{
+                'dom':{'main':main},
+                'page':{'uuid':page.uuid}
+            }
+        }
+
+
+    @WSAuth.is_staff
+    def create_script(self, client):
         """Render and returns the create plasmoid view
 
         :param Client client: The requesting client
@@ -83,7 +102,7 @@ class WS_Plasmoids(object):
         except ObjectDoesNotExist:
             plasmoid = Plasmoid()
         client.role = 'edit'
-        form = EditPlasmoidForm(initial={'slug':plasmoid.slug,'type':plasmoid.type,'target':plasmoid.target,'visible':plasmoid.visible})
+        form = EditPlasmoidForm(initial={'slug':plasmoid.slug,'target':plasmoid.target,'visible':plasmoid.visible})
         main = render_to_string("plasmoids/edit_plasmoid.html",{'plasmoid':plasmoid, 'form': form})
         subscriber = self.infinote_pool.subscribe(client, plasmoid_uuid, plasmoid.script, 'plasmoids', self._signal_presence)
         publish_activity(client.profile, _('Plasmoid editing'),'/plasmoids/%s/edit/' % plasmoid_uuid,[0,0,4,0,0])

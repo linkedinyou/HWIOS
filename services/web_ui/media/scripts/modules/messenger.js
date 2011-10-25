@@ -159,7 +159,6 @@ define('modules/messenger',[
                 }
             $('#online-box').append(_user_dom);
             }
-            console.log('blaaa');
             var _draggable = $('.messenger-participant:not(.participant-you)').draggable({
                 appendTo: 'body',
                 cursor: 'move',

@@ -23,7 +23,7 @@ class WikiArticle(models.Model):
     class Meta:
         verbose_name_plural = "Articles"
         app_label = 'no_fixture'
-        db_table = 'hwios_hyki_articles'
+        db_table = 'hwios_wiki_articles'
         
         
 class WikiRevision(models.Model):
@@ -36,5 +36,5 @@ class WikiRevision(models.Model):
     class Meta:
         verbose_name_plural = 'Revisions'
         app_label = 'no_fixture'
-        db_table = 'hwios_hyki_revisions'
+        db_table = 'hwios_wiki_revisions'
         ordering = ['-submit_date']

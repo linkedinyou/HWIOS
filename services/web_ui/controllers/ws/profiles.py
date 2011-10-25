@@ -71,7 +71,8 @@ class WS_Profiles(object):
         else:
             form = NewProfileForm(params)
             if form.is_valid():
-                profile_data = {'first_name': form.cleaned_data['first_name'], 
+                profile_data = {'username': form.cleaned_data['username'],
+                                'first_name': form.cleaned_data['first_name'], 
                                 'last_name': form.cleaned_data['last_name'], 
                                 'email': form.cleaned_data['email'], 
                                 'password': form.cleaned_data['password'], 
@@ -84,6 +85,7 @@ class WS_Profiles(object):
                                 'ip': client.transport.getPeer().host
                                 }
                 profile = Profile.objects.create_profile(profile_data, acp = True, client = client)
+                print profile
                 client_response, tpl_params = self._get_manage_profiles()
                 client_response.update({
                     'status':{

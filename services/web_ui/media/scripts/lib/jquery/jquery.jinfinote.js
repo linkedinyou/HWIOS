@@ -48,22 +48,22 @@
         ce.opts['ws_handler'].remote(ce.opts['ws_connect'],{},function(response){
             if(!('data' in response)){
             return false;
-            }
-            ce._localUser = parseInt(response.data.uid);
-            $.each(response.data.online, function(idx, user){
-                if(user.id == ce._localUser){
-                ce._localColor = user.color;
-                }
-            });
+            }            
             //in some cases, only a create page is shown and none created. Do not proceed in that case.
-            if(!('log' in response.data.page)) {
+            if(!('log' in response.data.article)) {
                 ce.opts['init'](response.data, null);
                 return false;
             }
             else {
-                ce._state.buffer = new Buffer([new Segment(0, response.data.page.state[1])]); 
-                ce._state.vector = new Vector(response.data.page.state[0]);                
-                ce.sync_log(response.data.page.log[1], function(){
+                ce._localUser = parseInt(response.data.uid);
+                $.each(response.data.online, function(idx, user){
+                    if(user.id == ce._localUser){
+                    ce._localColor = user.color;
+                    }
+                });                
+                ce._state.buffer = new Buffer([new Segment(0, response.data.article.state[1])]);
+                ce._state.vector = new Vector(response.data.article.state[0]);                
+                ce.sync_log(response.data.article.log[1], function(){
                     //arbitrary init function, in which user can customize stuff
                     var init_response = ce.opts['init'](response.data);
                     if('mode' in ce.opts) {

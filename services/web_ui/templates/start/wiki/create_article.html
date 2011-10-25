@@ -1,17 +1,17 @@
 {% load i18n %}
 <div class='hwios-widget'>
     <div class='ui-widget-header'>
-        <span class='wiki-modified'>{{page.slug|escape}}</span>
+        <span class='wiki-modified'>{{article.slug|escape}}</span>
         <span>{%trans 'New document'%}</span>
     </div>
     {% if profile.is_authenticated%}
-    <div class='ui-widget-content ui-corner-bottom edit-wiki-page' id='{{page.slug|escape}}_content'>
-        <p><i>{%trans 'Document'%} {{page.slug|escape}} {% blocktrans %}doesn't exist yet. Create it below to proceed...{% endblocktrans %}</i></p>
+    <div class='ui-widget-content ui-corner-bottom edit-wiki-article' id='{{article.slug|escape}}_content'>
+        <p><i>{%trans 'Document'%} {{article.slug|escape}} {% blocktrans %}doesn't exist yet. Create it below to proceed...{% endblocktrans %}</i></p>
     </div>
 
     <div class='btn-bar'>
         <div class='btn-nset btn-set-multi'>
-            <button data-function='wiki.save_new_article' data-id='{{page.slug}}' class='btn ui-state-default ui-corner-all'>
+            <button data-function='wiki.save_new_article' data-id='{{article.slug}}' class='btn ui-state-default ui-corner-all'>
                 <span class='ui-icon ui-icon-document'></span><span class='btn-txt'>{% trans 'New' %}</span>
             </button>
         </div>

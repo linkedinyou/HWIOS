@@ -92,7 +92,7 @@ class WebSocketRouter(WebSocketHandler):
         else:
             translation.activate('en-us')
         res = {}
-        plasmoids = None
+        pages = None
         try:
             _decoded = HWIOS.tools.json_decode(frame)
             self.url = _decoded[0]
@@ -104,7 +104,7 @@ class WebSocketRouter(WebSocketHandler):
             #Data not in url means this is a view
             if 'data' not in self.url:
                 self.transport.view_history.append(self.url)
-                plasmoids = HWIOS.plasmoids.route(self.transport.view_history, self.transport._client.profile)
+                pages = HWIOS.pages.route(self.transport.view_history, self.transport._client.profile)
                 if len(self.transport.view_history) >= 2:
                     HWIOS.ws_realm.pool.signals.send('view_changed', client = self.transport._client, filters = [self.transport.view_history[-2],self.transport.view_history[-1]])
             log.msg('%s WS/76/HRM' % self.url,system='%s,IN' % self.transport.getPeer().host)
@@ -135,8 +135,8 @@ class WebSocketRouter(WebSocketHandler):
         if isinstance(result, defer.Deferred):
             result.addBoth(self.respAny)
             return
-        if plasmoids != None and result != None:
-            result['data']['plasmoids'] = plasmoids
+        if pages != None and result != None:
+            result['data']['pages'] = pages
         self.respAny(result)
 
 

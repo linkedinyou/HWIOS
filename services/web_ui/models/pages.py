@@ -16,23 +16,37 @@ from datetime import datetime
 import re
 
 
-class Plasmoid(models.Model):
-    """General plasmoid ORM-model description"""
+class Page(models.Model):
+    """Page ORM-model description"""
     connection_name="default"
     uuid = models.CharField(max_length=36,  primary_key=True, default=lambda:str(uuid.uuid4()))
     slug = models.SlugField(editable=False, blank=True, max_length=30)
-    script = models.TextField()
-    type = models.IntegerField()
     target = models.CharField(max_length=128)
+    cacheable = models.IntegerField()
+    last_modified = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Pages"
+        db_table = 'hwios_pages'
+
+
+class PageEntity(models.Model):
+    """Page entity ORM-model description"""
+    connection_name="default"
+    uuid = models.CharField(max_length=36,  primary_key=True, default=lambda:str(uuid.uuid4()))
+    slug = models.SlugField(editable=False, blank=True, max_length=30)
+    page = models.ForeignKey(Page)
+    code = models.TextField()
+    type = models.IntegerField()
     visible = models.IntegerField()
     last_modified = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
-        verbose_name_plural = "Plasmoids"
-        db_table = 'hwios_plasmoids'
+        verbose_name_plural = "Entities"
+        db_table = 'hwios_page_entities'
         
         
-class Plasmoids(object):
+class PageRouter(object):
     """Plasmoid logics mainly for routing plasmoids to the proper view"""
     
     def __init__(self):
@@ -63,21 +77,18 @@ class Plasmoids(object):
                     plasmoids.append({
                         'uuid':route[1].uuid,
                         'slug':route[1].slug,
-                        'type':route[1].type,
                         'script':route[1].script,
                     })
                 elif route[1].visible == 1 and profile.is_authenticated:
                     plasmoids.append({
                         'uuid':route[1].uuid,
                         'slug':route[1].slug,
-                        'type':route[1].type,
                         'script':route[1].script,
                     })
                 elif route[1].visible == 2 and profile.is_staff:
                     plasmoids.append({
                         'uuid':route[1].uuid,
                         'slug':route[1].slug,
-                        'type':route[1].type,
                         'script':route[1].script,
                     })
         if len(plasmoids) == 0:
@@ -89,6 +100,6 @@ class Plasmoids(object):
     def get_routes(self):
         """(Re)Compiles routes from all plasmoids"""
         self.routes = []
-        plasmoids = Plasmoid.objects.all()
-        for plasmoid in plasmoids:
-            self.routes.append([re.compile(plasmoid.target),plasmoid])      
+        pages = Page.objects.all()
+        for page in pages:
+            self.routes.append([re.compile(page.target),page])

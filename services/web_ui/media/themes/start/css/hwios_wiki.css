@@ -83,7 +83,7 @@
     box-shadow: 2px 2px 12px rgba(0,0,0,0.8);
 }
 
-.edit-wiki-page #wiki-markdown {
+.edit-wiki-article #wiki-markdown {
     width:100%;
     height:200px;
     overflow:auto;
@@ -92,7 +92,7 @@
 }
 
 /*Editor container in non-fullscreen mode*/
-.edit-wiki-page #wiki-editor {
+.edit-wiki-article #wiki-editor {
     width:100%;
     border-bottom:1px solid #ddd;
     border-top:1px solid #999;

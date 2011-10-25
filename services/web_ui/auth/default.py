@@ -30,8 +30,12 @@ from django.contrib.auth.models import User
 
 import web_ui.settings as settings
 from web_ui.models.settings import Settings
-from core.application import HWIOS
+try:
+    from core.application import HWIOS
+except ImportError:
+    print "POEP"
 from web_ui.models.signal import Signal
+
 
 class XAuth(ModelBackend):
     """
@@ -116,7 +120,6 @@ class XAuthManager(models.Manager):
         else:
             try:                
                 profile = self.model.objects.get(username=profile_data['username'])
-                print "PROFILE EXISTS!"
                 write_profile = False
             #doesnt exist. create a hwios profile
             except ObjectDoesNotExist: 

@@ -2,16 +2,16 @@
 {% autoescape off %}
 <div class='hwios-widget' id='wiki-context'>
     <div class='ui-widget-header'>
-        <span>{{page.slug|escape}}</span>
+        <span>{{article.slug|escape}}</span>
         {%if profile.is_staff%}         
-        <span class='header-option btn ui-icon ui-icon-trash' data-function='wiki.delete_article' data-id='{{page.slug}}'></span>
+        <span class='header-option btn ui-icon ui-icon-trash' data-function='wiki.delete_article' data-id='{{article.slug}}'></span>
         {%endif%}
         {%if profile.is_authenticated%}
-        <span class='header-option btn ui-icon ui-icon-pencil' data-uri='/wiki/{{page.slug}}/edit/' data-id='{{page.slug}}'></span>
+        <span class='header-option btn ui-icon ui-icon-pencil' data-uri='/wiki/{{article.slug}}/edit/' data-id='{{article.slug}}'></span>
         {%endif%}
-        <span>{{page.last_modified|date:"M d Y H:i"}}</span>        
+        <span>{{article.last_modified|date:"M d Y H:i"}}</span>        
     </div>
-    <div class='ui-widget-content' data-id='{{page.slug|escape}}' data-ctxmatch='["delete-document","edit-document","view-document-history"]'>
+    <div class='ui-widget-content' data-id='{{article.slug|escape}}' data-ctxmatch='["delete-document","edit-document","view-document-history"]'>
         <div id='wiki-markdown'></div>
         <div id='wiki-editor' class='editor-hidden'></div>
     </div>

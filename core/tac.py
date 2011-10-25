@@ -37,7 +37,6 @@ from services.loader import ServiceLoader
 
 application = service.Application('HWIOS')
 HWIOS.application = application
-print HWIOS_ROOT
 HWIOS.config = ConfigParser()
 HWIOS.config.read(os.path.join(HWIOS_ROOT,'hwios.ini'))
 if 'autoreload-twistd.py' not in sys.argv[0]:

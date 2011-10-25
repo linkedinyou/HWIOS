@@ -60,19 +60,20 @@ ws_patterns = [
     #misc uri's
     (r'^/views/misc/about/$', 'web_ui.controllers.ws.misc', 'WS_Misc', 'read_about'),    
     
-    #plasmoid uri's
-    (r'^/plasmoids/$', 'web_ui.controllers.ws.plasmoids', 'WS_Plasmoids', 'list_plasmoids'),    
-    (r'^/plasmoids/(?P<plasmoid_uuid>[^/]+)/edit/$', 'web_ui.controllers.ws.plasmoids', 'WS_Plasmoids', 'edit_plasmoid'),
-    (r'^/plasmoids/new/$', 'web_ui.controllers.ws.plasmoids', 'WS_Plasmoids', 'create_plasmoid'),
-    (r'^/data/plasmoids/delete/$', 'web_ui.controllers.ws.plasmoids', 'WS_Plasmoids', 'delete_plasmoids'),
-    (r'^/data/plasmoids/(?P<plasmoid_uuid>[^/]+)/save/$', 'web_ui.controllers.ws.plasmoids', 'WS_Plasmoids', 'save_plasmoid'),
-    (r'^/data/plasmoids/(?P<plasmoid_uuid>[^/]+)/connect/$', 'web_ui.controllers.ws.plasmoids', 'WS_Plasmoids', 'connect_plasmoid_editor'),
-    (r'^/data/plasmoids/(?P<plasmoid_uuid>[^/]+)/disconnect/$', 'web_ui.controllers.ws.plasmoids', 'WS_Plasmoids', 'disconnect_plasmoid_editor'),
-    (r'^/data/plasmoids/(?P<plasmoid_uuid>[^/]+)/insert/$', 'web_ui.controllers.ws.plasmoids', 'WS_Plasmoids', 'request_plasmoid_insert'),
-    (r'^/data/plasmoids/(?P<plasmoid_uuid>[^/]+)/remove/$', 'web_ui.controllers.ws.plasmoids', 'WS_Plasmoids', 'request_plasmoid_delete'),
-    (r'^/data/plasmoids/(?P<plasmoid_uuid>[^/]+)/undo/$', 'web_ui.controllers.ws.plasmoids', 'WS_Plasmoids', 'request_plasmoid_undo'),
-    (r'^/data/plasmoids/(?P<plasmoid_uuid>[^/]+)/caret/$', 'web_ui.controllers.ws.plasmoids', 'WS_Plasmoids', 'update_remote_caret'),
-    (r'^/data/plasmoids/(?P<plasmoid_uuid>[^/]+)/play/$', 'web_ui.controllers.ws.plasmoids', 'WS_Plasmoids', 'play_plasmoid_script'),
+    #pages uri's
+    (r'^/pages/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'list_pages'),
+    (r'^/pages/new/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'create_page'),
+    (r'^/pages/scripts/(?P<plasmoid_uuid>[^/]+)/edit/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'edit_page'),
+    (r'^/pages/scripts/new/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'create_page'),
+    (r'^/data/pages/delete/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'delete_pages'),
+    (r'^/data/pages/scripts/(?P<script_id>[^/]+)/save/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'save_page'),
+    (r'^/data/pages/scripts/(?P<script_id>[^/]+)/connect/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'connect_plasmoid_editor'),
+    (r'^/data/pages/scripts/(?P<script_id>[^/]+)/disconnect/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'disconnect_plasmoid_editor'),
+    (r'^/data/pages/scripts/(?P<script_id>[^/]+)/insert/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'request_plasmoid_insert'),
+    (r'^/data/pages/scripts/(?P<script_id>[^/]+)/remove/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'request_plasmoid_delete'),
+    (r'^/data/pages/scripts/(?P<script_id>[^/]+)/undo/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'request_plasmoid_undo'),
+    (r'^/data/pages/scripts/(?P<script_id>[^/]+)/caret/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'update_remote_caret'),
+    (r'^/data/pages/scripts/(?P<script_id>[^/]+)/play/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'play_plasmoid_script'),
     
     
     #pad uri's

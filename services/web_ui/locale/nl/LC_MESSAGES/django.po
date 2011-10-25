@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-10-19 20:14+0200\n"
+"POT-Creation-Date: 2011-10-21 17:11+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Jeroen van Veen <info@os-networks.net>\n"
 "Language-Team: HWIOS Translators <info@os-networks.net>\n"
@@ -330,7 +330,7 @@ msgstr ""
 
 #: controllers/ws/profiles.py:166
 msgid "Unknown"
-msgstr ""
+msgstr "Onvekend"
 
 #: controllers/ws/profiles.py:208
 msgid "Avatar succesfully updated"
@@ -342,11 +342,11 @@ msgstr "Profiel succesvol bijgewerkt"
 
 #: controllers/ws/profiles.py:266
 msgid "Profile own user change"
-msgstr ""
+msgstr "Profiel eigen gebruiker aangepast"
 
 #: controllers/ws/profiles.py:268
 msgid "Profile moderator change"
-msgstr ""
+msgstr "Profiel moderator aangepast"
 
 #: controllers/ws/profiles.py:317
 #, python-format
@@ -366,7 +366,7 @@ msgstr "Profiel verwijderd"
 
 #: controllers/ws/profiles.py:380
 msgid "New account registered"
-msgstr ""
+msgstr "Nieuw account geregistreerd"
 
 #: controllers/ws/profiles.py:385
 msgid "Profile registered"
@@ -478,7 +478,7 @@ msgstr ""
 
 #: controllers/ws/wiki.py:245
 msgid "Wiki article created"
-msgstr ""
+msgstr "Wiki artikel gemaakt"
 
 #: controllers/ws/wiki.py:252
 #, python-format
@@ -488,7 +488,7 @@ msgstr ""
 
 #: controllers/ws/wiki.py:278
 msgid "Wiki article saved"
-msgstr ""
+msgstr "Wiki artikel bewaard"
 
 #: controllers/ws/wiki.py:282
 #, python-format
@@ -498,6 +498,7 @@ msgstr "Wiki artikel %(slug)s opgeslagen..."
 #: controllers/ws/wiki.py:294
 msgid "No changes found in wiki article. Page was not stored..."
 msgstr ""
+"Geen veranderingen gevonden in wiki artikel. Artikel is niet opgeslagen..."
 "Geen veranderingen gevonden in wiki artikel. Pagina is niet opgeslagen..."
 
 #: controllers/ws/wiki.py:309
@@ -628,19 +629,15 @@ msgstr "Definieert het zoom niveau waarop de kaart gecentreerd is bij opening"
 msgid "Title"
 msgstr "Titel"
 
-#: forms/plasmoids.py:17 templates/start/plasmoids/read_plasmoids.html:14
-msgid "Type"
-msgstr "Type"
-
-#: forms/plasmoids.py:18
+#: forms/plasmoids.py:17
 msgid "Access Level"
 msgstr ""
 
-#: forms/plasmoids.py:19
+#: forms/plasmoids.py:18
 msgid "URL Target"
 msgstr "URL Doel"
 
-#: forms/plasmoids.py:20
+#: forms/plasmoids.py:19
 msgid "Auto Preview"
 msgstr "Auto Voorvertoning"
 
@@ -766,9 +763,17 @@ msgstr "Avatar Beheer"
 msgid "Settings"
 msgstr "Instellingen"
 
+#: models/statics.py:28
+msgid "Pages"
+msgstr "Pagina's"
+
+#: models/statics.py:29
+msgid "Manage"
+msgstr "Beheer"
+
 #: templates/start/activity/view_activities.html:18
 msgid "No entries yet..."
-msgstr ""
+msgstr "Geen invoer nog..."
 
 #: templates/start/blog/confirm_delete_article.html:3
 msgid "Please confirm that you want to delete the following article:"
@@ -1157,6 +1162,10 @@ msgstr "Bewerk Plasmoid"
 #: templates/start/plasmoids/read_plasmoids.html:4
 msgid "Plasmoids"
 msgstr "Plasmoids"
+
+#: templates/start/plasmoids/read_plasmoids.html:14
+msgid "Type"
+msgstr "Type"
 
 #: templates/start/plasmoids/read_plasmoids.html:15
 msgid "Visible"

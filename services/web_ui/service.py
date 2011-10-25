@@ -30,7 +30,7 @@ from web_ui.models.ws_realm import WSRealm
 from web_ui.models.webdav import WebDAV
 from web_ui.models.settings import Settings
 import web_ui.settings as settings
-from web_ui.models.plasmoids import Plasmoids
+from web_ui.models.pages import PageRouter
 
 
 
@@ -90,7 +90,7 @@ class Web_uiService(object):
         root.putChild("media", StaticFile(os.path.join(os.path.join(self.config.location, 'media'))))
         root.putChild("docs", StaticFile(os.path.join(os.path.join(self.config.location, '../','../','docs','_build','html'))))
         HWIOS.ws_realm = WSRealm()
-        HWIOS.plasmoids = Plasmoids()
+        HWIOS.pages = PageRouter()
         site = WebSocketSite(root)
         site.addHandler("/ws", WebSocketRouter)
         site.displayTracebacks = False        

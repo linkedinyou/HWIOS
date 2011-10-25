@@ -20,46 +20,45 @@ from django.utils.translation import ugettext_lazy as _
 
 
 class NewProfileForm(forms.Form):
-    first_name = forms.CharField(min_length = 2, max_length=16,label=_('First name'))
-    last_name = forms.CharField(min_length = 2, max_length=16,label=_('Last name'))
+    username = forms.CharField(label=_('Username'), max_length=32)
+    first_name = forms.CharField(label=_('First name'), min_length = 2, max_length=16,required=False)
+    last_name = forms.CharField(label=_('Last name'),min_length = 2, max_length=16,required=False)
     email = forms.EmailField(label=_('Email'))
-    organisation = forms.CharField(min_length = 2, max_length=36,label=_('Organisation'))
-    password = forms.CharField(min_length = 4, max_length=16, widget=forms.PasswordInput(render_value=False),label=_('Password')) 
-    is_active = forms.BooleanField(required=False, initial=1,label=_('Is active'))
-    is_staff = forms.BooleanField(required=False, label=_('Is staff'))
-    is_superuser = forms.BooleanField(required=False,label =_('Is superuser'))
+    organisation = forms.CharField(min_length = 2, max_length=36,label=_('Organisation'), required=False)
+    password = forms.CharField(label=_('Password'), min_length = 4, max_length=16, widget=forms.PasswordInput(render_value=False)) 
+    is_active = forms.BooleanField(label=_('Is active'), required=False, initial=1)
+    is_staff = forms.BooleanField(label=_('Is staff'), required=False)
+    is_superuser = forms.BooleanField(label =_('Is superuser'), required=False)
     def clean(self):
         cleaned_data = self.cleaned_data
-        if 'first_name' and 'last_name' in cleaned_data:
-            first_name = cleaned_data['first_name'].lower().replace(' ', '_')
-            last_name = cleaned_data['last_name'].lower().replace(' ', '_')
+        if 'username' in cleaned_data:
+            username = cleaned_data['username'].lower().replace(' ', '_')
             try:
-                Profile.objects.get(first_name=first_name,last_name=last_name)
+                Profile.objects.get(username=username)
             except Profile.DoesNotExist:
                 return cleaned_data
-            self._errors["first_name"] = self.error_class(['The profile name "%s %s" is not available anymore.' % (first_name,last_name)])
-            self._errors["last_name"] = self.error_class(['The profile name "%s %s" is not available anymore.' % (first_name,last_name)])
+            self._errors["username"] = self.error_class(['The profile username "%s" is not available anymore.' % username])
             del cleaned_data
         return None
 
     def clean_email(self):
-        n = self.cleaned_data['email']
+        email = self.cleaned_data['email']
         try:
-            Profile.objects.get(email=n)
+            Profile.objects.get(email=email)
         except Profile.DoesNotExist:
-            return n
-        raise forms.ValidationError('The emailaddress "%s" is already taken.' % n)
+            return email
+        raise forms.ValidationError('The emailaddress "%s" is already taken.' % email)
     
     
 class EditProfileForm(forms.Form):
     username = forms.CharField(label=_('Username'), max_length=32)
     first_name = forms.CharField(label=_('First name'), max_length=32, required=False)
-    last_name = forms.CharField(label=_('Last name'), max_length=32, required=False,)
+    last_name = forms.CharField(label=_('Last name'), max_length=32, required=False)
     email = forms.EmailField(label=_('Email'))
-    password = forms.CharField(widget=forms.PasswordInput,required=False, label=_('Password'))
-    is_active = forms.BooleanField(required=False, initial=1,label=_('Is active'))
-    is_staff = forms.BooleanField(required=False,label=_('Is staff'))
-    is_superuser = forms.BooleanField(required=False,label=_('Is superuser'))
+    password = forms.CharField(label=_('Password'), widget=forms.PasswordInput,required=False)
+    is_active = forms.BooleanField(label=_('Is active'), required=False, initial=1)
+    is_staff = forms.BooleanField(label=_('Is staff'), required=False)
+    is_superuser = forms.BooleanField(label=_('Is superuser'), required=False)
     
     
 class EditMyProfileForm(forms.Form):
@@ -86,12 +85,12 @@ class RegisterProfileForm(forms.Form):
         return cleaned_data
 
     def clean_email(self):
-        n = self.cleaned_data['email']
+        email = self.cleaned_data['email']
         try:
-            Profile.objects.get(email=n)
+            Profile.objects.get(email=email)
         except Profile.DoesNotExist:
-            return n
-        raise forms.ValidationError('The emailaddress "%s" is already taken.' % n)
+            return email
+        raise forms.ValidationError('The emailaddress "%s" is already taken.' % email)
         
 
 class LoginForm(forms.Form):
