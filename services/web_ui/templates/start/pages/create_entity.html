@@ -1,0 +1,30 @@
+{% load i18n %}
+<div class='hwios-widget'>
+    <div class='ui-widget-header'>
+        <span>{%trans 'New Entity'%}</span>
+    <span>{%trans 'Create'%}</p>
+    </div>
+    <div class='ui-widget-content'>
+        <div id='entity-editor' class='infinote-editor'></div>
+        <div id='entity-form-container'>
+            <div id='entity-form'>
+            <form>
+            <p><label>{%trans 'UUID'%}</label><input type='text' disabled='disabled' value='{{entity.uuid}}'></input></p>
+                {{ form.as_p }}
+            </form>
+            </div>
+            <div id='entity_{{entity.uuid}}' class='entity-preview'></div>
+        </div>
+        
+    </div>
+    <div class='btn-bar'>
+        <div class='btn-set btn-set-single'>
+            <button data-uri='/pages/' data-uuid='{{entity.uuid}}' class='btn ui-state-default ui-corner-left'>
+                <span class='ui-icon ui-icon-document'></span><span class='btn-txt'>{%trans 'Cancel'%}</span>
+            </button>
+            <button data-function='entitys.save_entity' data-uuid='{{entity.uuid}}' class='btn ui-state-default ui-corner-right'>
+                <span class='ui-icon ui-icon-pencil'></span><span class='btn-txt'>{%trans 'Save'%}</span>
+            </button>
+        </div>
+    </div>
+</div>

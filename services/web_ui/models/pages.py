@@ -16,18 +16,19 @@ from datetime import datetime
 import re
 
 
-class Page(models.Model):
+class PageAnchor(models.Model):
     """Page ORM-model description"""
     connection_name="default"
     uuid = models.CharField(max_length=36,  primary_key=True, default=lambda:str(uuid.uuid4()))
     slug = models.SlugField(editable=False, blank=True, max_length=30)
     target = models.CharField(max_length=128)
-    cacheable = models.IntegerField()
+    access = models.IntegerField()
+    cacheable = models.IntegerField(default=0)
     last_modified = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name_plural = "Pages"
-        db_table = 'hwios_pages'
+        db_table = 'hwios_page_anchors'
 
 
 class PageEntity(models.Model):
@@ -35,10 +36,9 @@ class PageEntity(models.Model):
     connection_name="default"
     uuid = models.CharField(max_length=36,  primary_key=True, default=lambda:str(uuid.uuid4()))
     slug = models.SlugField(editable=False, blank=True, max_length=30)
-    page = models.ForeignKey(Page)
+    anchor = models.ForeignKey(PageAnchor)
     code = models.TextField()
     type = models.IntegerField()
-    visible = models.IntegerField()
     last_modified = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -100,6 +100,6 @@ class PageRouter(object):
     def get_routes(self):
         """(Re)Compiles routes from all plasmoids"""
         self.routes = []
-        pages = Page.objects.all()
+        pages = PageAnchor.objects.all()
         for page in pages:
             self.routes.append([re.compile(page.target),page])

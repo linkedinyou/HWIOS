@@ -65,16 +65,16 @@ function init_helpers() {
     
 function initEditor(plasmoid_uuid, override_layout) {
     editor = $.jinfinote(application.ws, {
-    ws_connect:'/plasmoids/'+plasmoid_uuid+'/edit/',
-    ws_disconnect:'/data/plasmoids/'+plasmoid_uuid+'/disconnect/',
-    ws_insert:'/data/plasmoids/'+plasmoid_uuid+'/insert/',
-    ws_delete:'/data/plasmoids/'+plasmoid_uuid+'/remove/',
-    ws_undo:'/data/plasmoids/'+plasmoid_uuid+'/undo/',
-    ws_caret:'/data/plasmoids/'+plasmoid_uuid+'/caret/',
-    cb_insert:'^/data/plasmoids/(?<plasmoid_uuid>[^/]+)/insert/$',      
-    cb_delete:'^/data/plasmoids/(?<plasmoid_uuid>[^/]+)/remove/$',
-    cb_undo:'^/data/plasmoids/(?<plasmoid_uuid>[^/]+)/undo/$',
-    cb_caret:'^/data/plasmoids/(?<plasmoid_uuid>[^/]+)/caret/$',   
+    ws_connect:'/pages/'+plasmoid_uuid+'/edit/',
+    ws_disconnect:'/data/pages/'+plasmoid_uuid+'/disconnect/',
+    ws_insert:'/data/pages/'+plasmoid_uuid+'/insert/',
+    ws_delete:'/data/pages/'+plasmoid_uuid+'/remove/',
+    ws_undo:'/data/pages/'+plasmoid_uuid+'/undo/',
+    ws_caret:'/data/pages/'+plasmoid_uuid+'/caret/',
+    cb_insert:'^/data/pages/(?<plasmoid_uuid>[^/]+)/insert/$',      
+    cb_delete:'^/data/pages/(?<plasmoid_uuid>[^/]+)/remove/$',
+    cb_undo:'^/data/pages/(?<plasmoid_uuid>[^/]+)/undo/$',
+    cb_caret:'^/data/pages/(?<plasmoid_uuid>[^/]+)/caret/$',   
     mode:'javascript',
     init: 
         function(data) {
@@ -101,38 +101,62 @@ function bind_functions(){
             if(urls == undefined) {
                 urls = [
                     [XRegExp('^/pages/$'),this.view_pages],
-                    [XRegExp('^/pages/new/$'), this.create_page],
-                    [XRegExp('^/pages/(?<uuid>[^/]+)/edit/$'), this.edit_page],
+                    [XRegExp('^/pages/new/$'), this.create_anchor],            
+                    [XRegExp('^/pages/(?<uuid>[^/]+)/edit/$'), this.edit_anchor],
+                    [XRegExp('^/pages/entities/new/$'), this.create_entity],
                 ];
             }
             application.route_uri_to_mod_function(uri, urls, push_history);
         },
         
-        view_pages: function(kwargs, update) {
-            if(update == undefined){
-                application.ws.remote('/pages/',{},function(response){
-                    application.functions.ui.transition(response.data.dom.main, $('.main'));
-                });
-            }
-            else {
-                application.functions.ui.transition(kwargs.data.dom.main, $('.main'));                
-            }
-            
+        view_pages: function(kwargs) {
+            application.ws.remote('/pages/',{},function(response){
+                application.functions.ui.transition(response.data.dom.main, $('.main'));
+                $tabs = $('#pages-tabs').tabs();
+            });
+        },
+
+        create_anchor: function() {
+            application.ws.remote('/pages/new/',{},function(response){
+                application.functions.ui.transition(response.data.dom.main, $('.main'));
+                //initEditor(response.data.plasmoid.uuid, response.data.dom.main);
+            });
+
+        },        
+
+        edit_anchor: function(kwargs) {
+            console.log(kwargs);
+            application.ws.remote('/pages/'+kwargs.uuid+'/edit/',{},function(response){
+                application.functions.ui.transition(response.data.dom.main, $('.main'));
+            });
+        },
+
+        save_create_anchor: function(kwargs) {
+            var form = $("form:visible").serializeObject();
+            application.ws.remote('/pages/new/',{form:form},function(response){
+                application.functions.ui.transition(response.data.dom.main, $('.main'), response.status.code);
+                $tabs = $('#pages-tabs').tabs();
+            });
+        },
+        save_edit_anchor: function(kwargs) {
+            var form = $("form:visible").serializeObject();
+            application.ws.remote('/pages/'+kwargs.uuid+'/edit/',{form:form},function(response){
+                application.functions.ui.transition(response.data.dom.main, $('.main'), response.status.code);
+                $tabs = $('#pages-tabs').tabs();
+            });
         },
         
-        delete_plasmoids: function() {        
-            application.ws.remote('/data/plasmoids/delete/',{},function(response){  
+        delete_anchors: function() {
+            application.ws.remote('/data/pages/delete/',{},function(response){
                 i18nButtons = {}
                 i18nButtons[gettext('Cancel')] = function(){
                     $(this).dialog('close');
                 }
                 i18nButtons[gettext('Delete')] = function(){
                     var params = $(".datatable :checkbox:checked:visible").serializeObject();
-                    application.ws.remote('/data/plasmoids/delete/',{params:params},function(response){
-                        application.cb_selected = 0;
-                        application.functions.ui.transition(response.data.dom.main, $('.main'));
-                        $('.datatable').dataTable({"bJQueryUI": true,"bAutoWidth": false,"aoColumnDefs":[{"aTargets":[0],"bSearchable":false,"bSortable": false}]});
-                        $tabs = $('#simulation_tabs').tabs();
+                    application.ws.remote('/data/pages/delete/',{params:params},function(response){
+                        application.functions.ui.transition(response.data.dom.main, $('.main'));                        
+                        $tabs = $('#pages-tabs').tabs();
                     });
                     $(this).dialog('close'); 
                 }
@@ -147,25 +171,54 @@ function bind_functions(){
                 });
             });        
         },
-        
-        create_page: function() {
-            application.ws.remote('/pages/new/',{},function(response){
-                //application.functions.ui.transition(response.data.dom.main, $('.main'));
-                initEditor(response.data.plasmoid.uuid, response.data.dom.main);
+
+        create_entity: function() {
+            application.ws.remote('/pages/entities/new/',{},function(response){
+                application.functions.ui.transition(response.data.dom.main, $('.main'));
+                //initEditor(response.data.plasmoid.uuid, response.data.dom.main);
             });
-            
+
         },
         
-        edit_page: function(kwargs) {
-            initEditor(kwargs.uuid);            
-        },
+        delete_entities: function() {
+            application.ws.remote('/data/plasmoids/delete/',{},function(response){
+                i18nButtons = {}
+                i18nButtons[gettext('Cancel')] = function(){
+                    $(this).dialog('close');
+                }
+                i18nButtons[gettext('Delete')] = function(){
+                    var params = $(".datatable :checkbox:checked:visible").serializeObject();
+                    application.ws.remote('/data/plasmoids/delete/',{params:params},function(response){
+                        application.cb_selected = 0;
+                        application.functions.ui.transition(response.data.dom.main, $('.main'));
+                        $tabs = $('#pages-tabs').tabs();
+                    });
+                    $(this).dialog('close');
+                }
+
+                $deletePlasmoid = $(response.data.dom.dialog).dialog({
+                resizable: false,width:300, modal: true,
+                title: '<span class="ui-icon ui-icon-arrow-4-diag"></span><span>'+gettext('Please confirm')+'...</span>',
+                    open: function(event, ui) {
+                    $('.confirm-list').html(get_cb_names());
+                    },
+                    buttons: i18nButtons
+                });
+            });
+        },               
+
+
+        
+        
+
         
         cancel_edit_plasmoid: function() {
             listPlasmoids();            
         },
         
-        save_page: function(kwargs) {
-            var form_data = $("form:visible").serializeObject();
+
+        save_entity: function(kwargs) {
+            var form_data = $("form:visible").serializeObject();            
             form_data.content = editor._state.buffer.toString();
             application.ws.remote('/data/pages/'+kwargs.uuid+'/save/',{form:form_data},function(response){
                 switch(response.status.code) {

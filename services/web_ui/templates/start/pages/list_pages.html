@@ -4,55 +4,81 @@
         <span>{%trans 'Pages'%}</span>
         <span>{%trans 'Overview'%}</span>
     </div>
-    <div class='ui-widget-content'>
-        <table class='datatable' >
-        <thead>
-            <tr>
-            <th><input type='checkbox' id='cb-all'/></th>
-            <th>{%trans 'Title'%}</th>
-            <th>{%trans 'Size'%}</th>
-            <th>{%trans 'Type'%}</th>
-            <th>{%trans 'Visible'%}</th>
-            <th>{%trans 'Last Modified'%}</th>
-            <th>{%trans 'Options'%}</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for page in pages %}
-        <tr>
-        <td><input type='checkbox' id='{{page.pk}}' name='{{page.pk}}'/></td>
-        <td>{{page.slug}}</td>
-        <td>{{page.script|length}}</td>
-        <td>{{page.type}}</td>
-        <td>
-        {%ifequal page.visible 0 %}
-        {%trans 'All'%}
-        {%else%}
-        {%ifequal page.visible 1 %}
-        {%trans 'Users'%}
-        {%else%}            
-        {%ifequal page.visible 2 %}
-        {%trans 'Moderators'%}
-        {%endifequal%}{%endifequal%}{%endifequal%}
-        </td>
-        <td>{{page.last_modified|date:'SHORT_DATETIME_FORMAT' }}</td>
-        <td></td>
-        </tr>
-        {%endfor%}
-        </tbody>
-        </table>
-    </div>
-    <div class='btn-bar'>
-        <div class='btn-set btn-set-single'>
-            <button data-uri='/pages/new/' class='btn ui-state-default ui-corner-left'>
-                <span class='ui-icon ui-icon-document'></span><span class='btn-txt'>{%trans 'New'%}</span>
-            </button>
-            <button data-uripart='/pages/{id}/edit/' data-uriflag='cb-cid' class='btn btn-active-one ui-state-default ui-state-disabled'>
-                <span class='ui-icon ui-icon-pencil'></span><span class='btn-txt'>{%trans 'Edit'%}</span>
-            </button>
-            <button data-function='pages.delete_pages' class='btn btn-active-many ui-state-default ui-state-disabled ui-corner-right'>
-                <span class='ui-icon ui-icon-scissors'></span><span class='btn-txt'>{%trans 'Delete'%}</span>
-            </button>
+    <div id='pages-tabs'>
+        <ul>
+            <li><a href='#pages-anchors'>{%trans 'Anchors'%}</a></li>
+            <li><a href='#pages-entities'>{%trans 'Entities'%}</a></li>
+        </ul>
+        <div id='pages-anchors' class='ui-widget-content'>
+            <table class='datatable' >
+            <thead>
+                <tr>
+                <th><input type='checkbox' id='cb-all'/></th>
+                <th>{%trans 'Title'%}</th>
+                <th>{%trans 'Access Level'%}</th>
+                <th>{%trans 'Target'%}</th>
+                <th>{%trans 'Cacheable'%}</th>
+                <th>{%trans 'Last Modified'%}</th>
+                </tr>
+            </thead>
+            <tbody>
+            {%ifequal pages|length 0%}
+            <tr><td colspan='4'>{%trans 'No pages yet...'%}</td></tr>
+            {%else%}
+                {% for page in pages %}
+                <tr>
+                <td><input type='checkbox' id='{{page.pk}}' name='{{page.pk}}'/></td>
+                <td>{{page.slug}}</td>
+                <td>
+                    {%ifequal page.access 0 %}
+                    {%trans 'All'%}
+                    {%else%}
+                    {%ifequal page.access 1 %}
+                    {%trans 'Users'%}
+                    {%else%}
+                    {%ifequal page.access 2 %}
+                    {%trans 'Moderators'%}
+                    {%endifequal%}{%endifequal%}{%endifequal%}
+                </td>
+                <td>{{page.target}}</td>
+                <td>{{page.cacheable}}</td>
+                <td>{{page.last_modified|date:'SHORT_DATETIME_FORMAT' }}</td>
+                </tr>
+                {%endfor%}
+            {%endifequal%}
+            </tbody>
+            </table>
+            <div class='btn-bar'>
+                <div class='btn-set btn-set-single'>
+                    <button data-uri='/pages/new/' class='btn ui-state-default ui-corner-left'>
+                        <span class='ui-icon ui-icon-document'></span><span class='btn-txt'>{%trans 'New'%}</span>
+                    </button>
+                    <button data-uripart='/pages/{id}/edit/' data-uriflag='cb-cid' class='btn btn-active-one ui-state-default ui-state-disabled'>
+                        <span class='ui-icon ui-icon-pencil'></span><span class='btn-txt'>{%trans 'Edit'%}</span>
+                    </button>
+                    <button data-function='pages.delete_anchors' class='btn btn-active-many ui-state-default ui-state-disabled ui-corner-right'>
+                        <span class='ui-icon ui-icon-scissors'></span><span class='btn-txt'>{%trans 'Delete'%}</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+
+        <div id='pages-entities' class='ui-widget-content'>
+            <div class='btn-bar'>
+                <div class='btn-set btn-set-single'>
+                    <button data-uri='/pages/entities/new/' class='btn ui-state-default ui-corner-left'>
+                        <span class='ui-icon ui-icon-document'></span><span class='btn-txt'>{%trans 'New'%}</span>
+                    </button>
+                    <button data-uripart='/pages/entities/{id}/edit/' data-uriflag='cb-cid' class='btn btn-active-one ui-state-default ui-state-disabled'>
+                        <span class='ui-icon ui-icon-pencil'></span><span class='btn-txt'>{%trans 'Edit'%}</span>
+                    </button>
+                    <button data-function='pages.delete_entities' class='btn btn-active-many ui-state-default ui-state-disabled ui-corner-right'>
+                        <span class='ui-icon ui-icon-scissors'></span><span class='btn-txt'>{%trans 'Delete'%}</span>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </div>

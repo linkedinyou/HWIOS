@@ -1,0 +1,23 @@
+{% load i18n %}
+<div class='hwios-widget'>
+    <div class='ui-widget-header'>
+        <span>{{page.slug}}</span>
+        <span>{%trans 'Edit Anchor'%}</span>
+    </div>
+    <div class='ui-widget-content'>
+        <form>
+        <p><label>{%trans 'UUID'%}</label><input id='uuid' type='text' disabled='disabled' value='{{page.uuid}}'></input></p>
+            {{ form.as_p }}
+        </form>
+    </div>
+    <div class='btn-bar'>
+        <div class='btn-set btn-set-single'>
+            <button data-uri='/pages/' data-uuid='{{page.uuid}}' class='btn ui-state-default ui-corner-left'>
+                <span class='ui-icon ui-icon-cancel'></span><span class='btn-txt'>{%trans 'Cancel'%}</span>
+            </button>
+            <button data-function='pages.save_edit_anchor' data-uuid='{{page.uuid}}' class='btn ui-state-default ui-corner-right'>
+                <span class='ui-icon ui-icon-transfer-e-w'></span><span class='btn-txt'>{%trans 'Submit'%}</span>
+            </button>
+        </div>
+    </div>
+</div>

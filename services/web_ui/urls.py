@@ -63,8 +63,8 @@ ws_patterns = [
     #pages uri's
     (r'^/pages/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'list_pages'),
     (r'^/pages/new/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'create_page'),
-    (r'^/pages/scripts/(?P<plasmoid_uuid>[^/]+)/edit/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'edit_page'),
-    (r'^/pages/scripts/new/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'create_page'),
+    (r'^/pages/(?P<uuid>[^/]+)/edit/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'edit_page'),    
+    (r'^/pages/entities/new/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'create_entity'),
     (r'^/data/pages/delete/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'delete_pages'),
     (r'^/data/pages/scripts/(?P<script_id>[^/]+)/save/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'save_page'),
     (r'^/data/pages/scripts/(?P<script_id>[^/]+)/connect/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'connect_plasmoid_editor'),

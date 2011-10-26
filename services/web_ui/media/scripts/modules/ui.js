@@ -66,6 +66,10 @@ function bind_functions() {
                 break;
                 case 'FORM_INVALID':
                     $(target).html(content);
+                    var _selector = $('.main .errorlist');
+                    $.each(_selector, function () {
+                        $(this).next().prepend('<span class="ui-icon ui-icon-info"></span>');
+                    });  
                 break;
                 default:
                     $(target).hide().html(content).fadeIn('fast');
