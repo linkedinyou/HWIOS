@@ -102,8 +102,13 @@ function(maps){
             return mod_name;
         }
         else {
+            //clean up previous module
+            if(application.mod_execute != mod_name && application.mod_execute !== undefined) {
+                application.modules[application.mod_execute].clean_up();
+            }
             //anchor-only channel
             application.ws.remote(uri,{},function(response){
+                
                 $.each(response.data.anchors, function(idx,anchor) {
                     console.log('Loading anchor "'+anchor.slug+'"...');
                     application.load_anchor(anchor);

@@ -120,13 +120,13 @@ class WS_Profiles(object):
                 return {
                     'status':{
                         'code':'PROFILE_FOLLOW_SAME_PAGE',
-                        'i18n':_('Profile is already on the same page!'),
+                        'i18n':'Profile is already on the same page!',
                         'type': HWIOS.ws_realm._t['notify-info'],
                     }
                 }
             
             dialog = render_to_string('profiles/request_follow.html', {
-                'target_profile': target_client.profile,
+                'target_profile': client.profile,
                 'view':client.transport.view_history[-1]
             })
             #send follow request to target client
