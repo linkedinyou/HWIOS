@@ -69,5 +69,6 @@
 
 .page-widget-sidebar {
     border:1px dotted #ddd;
+    overflow:hidden;
 }
 
