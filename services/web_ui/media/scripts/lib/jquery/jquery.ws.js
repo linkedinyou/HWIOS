@@ -142,9 +142,9 @@ $.extend({
                             if(method_uuid == response[2]) {
                                 _callback(response[0]);
                                 delete(ws.remote_callback[response[1]][method_uuid]);
-                                if(response[0]['data'] != undefined) {
-                                    if('plasmoids' in response[0]['data']) {
-                                        ws._settings['message_cb']('plasmoids',response[0]['data']['plasmoids']);
+                                if(response[0]['data'] !== undefined) {
+                                    if('anchors' in response[0]['data'] && 'dom' in response[0]['data']) {
+                                        ws._settings['message_cb']('anchors',response[0]['data']['anchors']);
                                     }
                                 }
                             }                    

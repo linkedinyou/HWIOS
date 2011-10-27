@@ -64,7 +64,7 @@ class InfinotePool(object):
                 remote_callback(_client, online, app_pool, item_id)         
         state = HWIOS.ws_realm.pool.subscription[app_pool][item_id]['editor'].get_state()
         log_history = HWIOS.ws_realm.pool.subscription[app_pool][item_id]['editor'].get_log(limit=100)   
-        return {'state':state,'log':log_history,'online':online}
+        return {'state':state,'log':log_history,'online':online,'pool_id':item_id}
         
         
     def unsubscribe(self, client, app_pool, remote_callback):
@@ -81,7 +81,7 @@ class InfinotePool(object):
         for _item_id in HWIOS.ws_realm.pool.subscription[app_pool]:
             for _client in HWIOS.ws_realm.pool.subscription[app_pool][_item_id]['clients']:
                 #match found. Remove client, notify other clients 
-                if _client.profile.uuid == client.profile.uuid:
+                if _client == client:
                     HWIOS.ws_realm.pool.subscription[app_pool][_item_id]['clients'].remove(_client)
                     #notify left-over editors that this client has left the building
                 elif _client.role == 'edit':

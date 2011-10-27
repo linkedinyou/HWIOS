@@ -9,7 +9,7 @@
     :license: BSD, see LICENSE for details.
 """
 import os,sys
-import uuid
+import uuid as UUID
 from datetime import datetime
 from twisted.internet import defer
 from django.template.loader import render_to_string
@@ -21,7 +21,7 @@ from core.application import HWIOS
 from web_ui.models.ws_auth import WSAuth
 from web_ui.models.pages import PageAnchor, PageEntity
 from web_ui.models.infinote import InfinoteEditor, InfinotePool
-from web_ui.forms.pages import CreateEntityForm, EditEntityForm, CreateAnchorForm, EditAnchorForm
+from web_ui.forms.pages import EntityForm, CreateAnchorForm, EditAnchorForm
 from web_ui.models.notifications import *
 from web_ui.models.activity import *
 
@@ -33,8 +33,8 @@ class WS_Pages(object):
 
     def __init__(self, dispatcher):
         self.infinote_pool = InfinotePool(self)
-        dispatcher.signals.subscribe('ws_disconnect', self.disconnect_plasmoid_editor)
-        dispatcher.signals.subscribe('view_changed', self.disconnect_plasmoid_editor, filters = [(r'/plasmoids/(?P<plasmoid_uuid>[^/]+)/edit/',True),(r'/plasmoids/(?P<plasmoid_uuid>[^/]+)/edit/',False)])
+        dispatcher.signals.subscribe('ws_disconnect', self.disconnect_entity_editor)
+        dispatcher.signals.subscribe('view_changed', self.disconnect_entity_editor, filters = [(r'/pages/entities/(?P<uuid>[^/]+)/edit/',True),(r'/pages/entities/(?P<uuid>[^/]+)/edit/',False)])
         
 
     @WSAuth.is_staff
@@ -44,8 +44,9 @@ class WS_Pages(object):
         :param Client client: The requesting client 
         :return: dict - Html-layout data response
         """
-        pages = PageAnchor.objects.all()
-        main = render_to_string("pages/list_pages.html", {'pages':pages})
+        anchors = PageAnchor.objects.all()
+        entities = PageEntity.objects.all()
+        main = render_to_string("pages/list_pages.html", {'anchors':anchors,'entities':entities})
         return {'data':{'dom':{'main':main}}}
 
 
@@ -68,7 +69,7 @@ class WS_Pages(object):
         else:
             _uuid = str(uuid.uuid4())
             form = CreateAnchorForm(form)
-            response = self._try_save_page(client, _uuid, form)
+            response = self._try_save_anchor(client, _uuid, form)
             return response
 
 
@@ -133,7 +134,7 @@ class WS_Pages(object):
                 else:
                     regex_modifier = '%s' % slug
                 _count +=1
-            HWIOS.pages.get_routes()
+            HWIOS.anchors.get_routes()
             client_response, tpl_params = self._get_pages(client)
             _target_state = '/pages/'
             client_response.update({
@@ -206,31 +207,38 @@ class WS_Pages(object):
                 
 
     @WSAuth.is_staff
-    def create_entity(self, client, form = None):
+    def create_entity(self, client, uuid, form = None):
         """Render and returns the create plasmoid view
 
         :param Client client: The requesting client
         :return: dict - Data and html-layout response
         """
         if form == None:
-            form = CreateEntityForm()
-            page = PageEntity()
-            main = render_to_string("pages/create_entity.html",{'page':page,'form': form})
+            form = EntityForm()
+            entity = PageEntity()
+            entity.uuid = uuid
+            subscriber = self.infinote_pool.subscribe(client, uuid, '', 'entities', self._signal_presence)
+            main = render_to_string("pages/create_entity.html",{'entity':entity,'form': form})
             return {
                 'data':{
+                    'ce':subscriber,
+                    'uid': client.profile.pk,
                     'dom':{'main':main},
                 }
             }
         else:
-            _uuid = str(uuid.uuid4())
-            form = CreateAnchorForm(form)
-            response = self._try_save_page(client, _uuid, form)
+            print "PROCESS NEW!"
+            _content = form['content']
+            del form['content']
+            form = EntityForm(form)
+            form.content = _content
+            response = self._try_save_entity(client, uuid, form)
             return response
 
         
 
     @WSAuth.is_staff
-    def edit_entity(self, client, plasmoid_uuid):
+    def edit_entity(self, client, uuid, form = None):
         """
         Edit an existing or a new plasmoid. In both cases, the infinote subscription pool defines the plasmoid view, not the model. This makes it
         possible to edit a new plasmoid, that's not yet in the database.
@@ -239,27 +247,37 @@ class WS_Pages(object):
         :param str plasmoid_uuid: The uuid of the plasmoid to edit
         :return: dict - Data and html-layout response
         """
-        try:
-            plasmoid = Plasmoid.objects.get(pk = plasmoid_uuid)
-        except ObjectDoesNotExist:
-            plasmoid = Plasmoid()
-        client.role = 'edit'
-        form = EditPlasmoidForm(initial={'slug':plasmoid.slug,'target':plasmoid.target,'visible':plasmoid.visible})
-        main = render_to_string("plasmoids/edit_plasmoid.html",{'plasmoid':plasmoid, 'form': form})
-        subscriber = self.infinote_pool.subscribe(client, plasmoid_uuid, plasmoid.script, 'plasmoids', self._signal_presence)
-        publish_activity(client.profile, _('Plasmoid editing'),'/plasmoids/%s/edit/' % plasmoid_uuid,[0,0,4,0,0])
-        return {
-            'data':{
-                'page':subscriber,
-                'uid': client.profile.pk,
-                'online':subscriber['online'],
-                'dom':{'main':main}
-            }
-        }
+        if form == None:
+            try:
+                entity = PageEntity.objects.get(pk = uuid)
+            except ObjectDoesNotExist:
+                entity = PageEntity()
+                entity.code = ''
+            client.role = 'edit'
+            form = EntityForm(initial={'slug':entity.slug,'anchor':entity.anchor,'type':entity.type})
+            main = render_to_string("pages/edit_entity.html",{'entity':entity, 'form': form})
+            subscriber = self.infinote_pool.subscribe(client, uuid, entity.code, 'entities', self._signal_presence)
+            publish_activity(client.profile, _('Entity editing'),'/pages/entities/%s/edit/' % uuid,[0,0,4,0,0])
+            return {
+                'data':{
+                    'ce':subscriber,
+                    'uid': client.profile.pk,
+                    'dom':{'main':main}
+                }
+            } 
+        else:
+            print "PROCESS NEW!"
+            _content = form['content']
+            del form['content']
+            form = EntityForm(form)
+            form.content = _content
+            response = self._try_save_entity(client, uuid, form)
+            return response
+
         
 
     @WSAuth.is_staff
-    def save_entity(self, client, plasmoid_uuid, form):
+    def _try_save_entity(self, client, uuid, form):
         """
         Save an existing or a new plasmoid, render/show the general plasmoid overview and notify others.
 
@@ -267,42 +285,57 @@ class WS_Pages(object):
         :param str plasmoid_uuid: The uuid of the plasmoid to save
         :return: dict - Status and html-layout response
         """
-        _content = form['content']
-        del form['content']
-        form = EditPlasmoidForm(form)
         if form.is_valid():
             try:
-                plasmoid = Plasmoid.objects.get(pk = plasmoid_uuid)
-            except Plasmoid.DoesNotExist:
-                plasmoid = Plasmoid()
-                publish_activity(client.profile, _('Plasmoid created'),'/plasmoids/%s/edit/' % plasmoid_uuid,[0,0,4,0,0])
-            plasmoid.slug = form.cleaned_data['slug']
-            plasmoid.script = _content
-            plasmoid.type = form.cleaned_data['type']
-            plasmoid.target = form.cleaned_data['target']
-            plasmoid.visible = int(form.cleaned_data['visible'])
-            plasmoid.last_modified = datetime.now()
-            plasmoid.save()
-
-            client_response, tpl_params = self._get_plasmoids(client)
+                entity = PageEntity.objects.get(pk = uuid)
+                entity.slug = form.cleaned_data['slug']
+                entity.anchor = form.cleaned_data['anchor']
+                entity.code = form.content
+                entity.type = form.cleaned_data['type']
+                entity.last_modified = datetime.now()
+                entity.save()
+                client_response, tpl_params = self._get_pages(client)
+                client_response.update({
+                    'status':{
+                        'code':'ENTITY_EDIT_OK',
+                        'i18n':_('Page entity %(slug)s updated...') % {'slug':entity.slug},
+                        'type': HWIOS.ws_realm._t['notify-info'],
+                        'state': '/pages/',
+                    }
+                })
+            except PageEntity.DoesNotExist:
+                entity = PageEntity()
+                publish_activity(client.profile, _('Page entity created'),'/pages/entities/%s/edit/' % uuid,[0,0,4,0,0])
+                entity.slug = form.cleaned_data['slug']
+                entity.anchor = form.cleaned_data['anchor']
+                entity.code = form.content
+                entity.type = form.cleaned_data['type']
+                entity.last_modified = datetime.now()
+                entity.save()
+                client_response, tpl_params = self._get_pages(client)
+                client_response.update({
+                    'status':{
+                        'code':'ENTITY_CREATE_OK',
+                        'i18n':_('Page entity %(slug)s created...') % {'slug':entity.slug},
+                        'type': HWIOS.ws_realm._t['notify-info'],
+                        'state': '/pages/',
+                    }
+                })
+            
             #UPDATE ROUTES
-            HWIOS.plasmoids.get_routes()
-            client_response.update({
-                'status':{
-                    'code':'PLASMOID_EDIT_OK',
-                    'i18n':_('Plasmoid %(slug)s stored...') % {'slug':plasmoid.slug},
-                    'type': HWIOS.ws_realm._t['notify-info'],
-                }
-            })
-            notify_others(client, client_response,'/plasmoids/modified/', '^/plasmoids/$', tpl_params)
-            publish_activity(client.profile, _('Plasmoid saved'),'/plasmoids/%s/edit/' % plasmoid_uuid,[0,0,4,0,0])
+            HWIOS.anchors.get_routes()
+            notify_others(client, client_response,'/pages/entities/modified/', '^/pages/$', tpl_params)
+            publish_activity(client.profile, _('Page entity saved'),'/pages/entities/%s/edit/' % uuid,[0,0,4,0,0])
             return client_response
         else:
             try:
-                plasmoid = Plasmoid.objects.get(pk = plasmoid_uuid)
+                entity = PageEntity.objects.get(pk = uuid)
+                main = render_to_string("pages/edit_entity.html", {'entity':entity, "form":form})
             except ObjectDoesNotExist:
-                plasmoid = Plasmoid()
-            main = render_to_string("plasmoids/edit_plasmoid.html", {'plasmoid':plasmoid, "form":form})
+                entity = PageEntity()
+                entity.slug = _('New Entity')
+                entity.uuid = uuid
+                main = render_to_string("pages/create_entity.html", {'entity':entity, "form":form})
             response = {
                 'status':{
                     'code':'FORM_INVALID',
@@ -312,11 +345,51 @@ class WS_Pages(object):
                 'data':{'dom':{'main':main}}
             }
             return response
+
+
+    @WSAuth.is_staff
+    def delete_entities(self, client, params = None):
+        """
+        Delete an existing plasmoid from the database and subscription pool, render/show the general plasmoid overview and notify others.
+
+        :param Client client: The requesting client
+        :param str plasmoid_uuid: The uuid of the plasmoid to delete
+        :return: dict - Status and html-layout response
+        """
+        if params == None:
+            dialog = render_to_string("pages/delete_entity_confirmation.html")
+            return {'data':{'dom':{'dialog':dialog}}}
+        else:
+            _count = 0
+            regex_modifier = ''
+            for slug in params:
+                entity = PageEntity.objects.get(pk=slug)
+                entity.delete()
+                if regex_modifier != '':
+                    regex_modifier = '%s|%s' % (regex_modifier, slug)
+                else:
+                    regex_modifier = '%s' % slug
+                _count +=1
+            HWIOS.anchors.get_routes()
+            client_response, tpl_params = self._get_pages(client)
+            _target_state = '/pages/'
+            client_response.update({
+                'status':{
+                    'code':'DELETE_OK',
+                    'i18n':_('%s page(s) deleted...' % _count),
+                    'type': HWIOS.ws_realm._t['notify-info'],
+                    'state': _target_state,
+                }
+            })
+            notify_others(client, client_response,'/pages/modified/', '^/pages/entities/(%s)/edit/$' % regex_modifier, tpl_params, _target_state)
+            notify_others(client, client_response,'/pages/modified/', '^/pages/$', tpl_params, _target_state)
+            publish_activity(client.profile, _('Entities deleted'),'/pages/',[0,0,4,0,0])
+            return client_response
             
 
 
     @WSAuth.is_staff        
-    def connect_plasmoid_editor(self, client, plasmoid_uuid):
+    def connect_entity_editor(self, client, uuid):
         """
         Legacy code that's a bit redundant now. Problem was that we didn't want regular users to edit shared js-code. Will be revived
         later to add some interactivity to the pad' presentation functionality
@@ -334,72 +407,74 @@ class WS_Pages(object):
         return {'data':{'page':subscriber, 'uid': client.profile.pk,'online':subscriber['online']}}
         
         
-    def disconnect_plasmoid_editor(self, client, plasmoid_uuid = None):
+    def disconnect_entity_editor(self, client, uuid = None):
         """Unsubscribe from the infinote plasmoid pool on certain events like disconnect and view_changed
         
         :param Client client: The requesting client
         :param str plasmoid_uuid: The uuid of the plasmoid to disconnect from the infinote pool
         """
-        self.infinote_pool.unsubscribe(client, 'plasmoids', self._signal_presence)
+        self.infinote_pool.unsubscribe(client, 'entities', self._signal_presence)
 
                         
-    def request_plasmoid_insert(self, client, plasmoid_uuid, params):
+    def request_entity_insert(self, client, uuid, params):
         """Insert operation for a specific plasmoid in the infinote pool
 
         :param Client client: The requesting client
-        :param str plasmoid_uuid: The uuid of the plasmoid to operate on in the infinote pool
+        :param str uuid: The uuid of the plasmoid to operate on in the infinote pool
         :param dict params: The params that are used to succesfully perform the infinote operation
         """
-        self.infinote_pool.request_insert(client,'plasmoids', plasmoid_uuid, params, self._signal_operation)
+        self.infinote_pool.request_insert(client,'entities', uuid, params, self._signal_operation)
         
         
-    def request_plasmoid_delete(self, client, plasmoid_uuid, params):
+    def request_entity_delete(self, client, uuid, params):
         """Delete operation for a specific plasmoid in the infinote pool
 
         :param Client client: The requesting client
-        :param str plasmoid_uuid: The uuid of the plasmoid to operate on in the infinote pool
+        :param str uuid: The uuid of the plasmoid to operate on in the infinote pool
         :param dict params: The params that are used to succesfully perform the infinote operation
         """
-        self.infinote_pool.request_delete(client,'plasmoids', plasmoid_uuid, params, self._signal_operation)
+        self.infinote_pool.request_delete(client,'entities', uuid, params, self._signal_operation)
         
         
-    def request_plasmoid_undo(self, client, plasmoid_uuid, params):
+    def request_entity_undo(self, client, uuid, params):
         """Uno operation for a specific plasmoid in the infinote pool
 
         :param Client client: The requesting client
-        :param str plasmoid_uuid: The uuid of the plasmoid to operate on in the infinote pool
+        :param str uuid: The uuid of the plasmoid to operate on in the infinote pool
         :param dict params: The params that are used to succesfully perform the infinote operation
         """
-        self.infinote_pool.request_undo(client,'plasmoids', plasmoid_uuid, params, self._signal_operation)
+        self.infinote_pool.request_undo(client,'entities', uuid, params, self._signal_operation)
         
 
-    def update_remote_caret(self, client, plasmoid_uuid, params):
+    def update_remote_caret(self, client, uuid, params):
         """Move caret operation for a specific plasmoid in the infinote pool
 
         :param Client client: The requesting client
-        :param str plasmoid_uuid: The uuid of the plasmoid to operate on in the infinote pool
+        :param str uuid: The uuid of the plasmoid to operate on in the infinote pool
         :param dict params: The params that are used to succesfully perform the infinote operation
         """
-        self.infinote_pool.update_caret(client,'plasmoids', plasmoid_uuid, params, self._signal_caret)
+        self.infinote_pool.update_caret(client,'entities', uuid, params, self._signal_caret)
         
 
     def _signal_presence(self, client, online, app_pool, item_id):
-        client.remote('/data/%s/%s/online/update/' % (app_pool, item_id),{'online':online}) 
+        client.remote('/data/pages/%s/%s/online/update/' % (app_pool, item_id),{'online':online}) 
         
         
     def _signal_operation(self, client, app_pool, item_id, operation_type, params):
-        client.remote('/data/%s/%s/%s/' % (app_pool, item_id, operation_type), params)  
+        client.remote('/data/pages/%s/%s/%s/' % (app_pool, item_id, operation_type), params)  
         
         
     def _signal_caret(self, client, app_pool, item_id, params):
-        client.remote('/data/%s/%s/caret/' % (app_pool, item_id), params)    
+        client.remote('/data/pages/%s/%s/caret/' % (app_pool, item_id), params)
         
 
     def _get_pages(self, client):
         """Notify_others helper that renders and prepares the show plasmoids view"""
-        pages = PageAnchor.objects.all()
-        tpl_params = {"pages":pages}
-        main = render_to_string("pages/list_pages.html", {'pages':pages})
+        anchors = PageAnchor.objects.all()
+        entities = PageEntity.objects.all()
+        main = render_to_string("pages/list_pages.html", {'anchors':anchors,'entities':entities})
+        tpl_params = {'anchors':anchors,'entities':entities}
+        main = render_to_string("pages/list_pages.html", tpl_params)
         return [
             {'data':{'dom':{'main':main}}},
             {'main':{'tpl':'pages/list_pages.html','params':tpl_params}}

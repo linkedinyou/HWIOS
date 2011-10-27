@@ -51,7 +51,7 @@ function(backend_ui){
     }    
     
     
-function bind_ws() { 
+function bind_ws() {
 
     application.ws.method('^/data/teknon/services/state/update/$',function(params){
         $(document).trigger('SERVICE_CHANGED_STATE',[params.services]);

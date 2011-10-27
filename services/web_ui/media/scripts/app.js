@@ -25,13 +25,34 @@ define('app',[
 'lib/tools/diff_match_patch',
 'order!lib/codemirror2/mode/xml/xml',
 'order!lib/codemirror2/mode/javascript/javascript',
+'order!lib/codemirror2/mode/css/css',
+'order!lib/codemirror2/mode/htmlmixed/htmlmixed',
 'order!lib/codemirror2/mode/markdown/markdown',
 'order!lib/jinfinote/jinfinote',
 'order!lib/jquery/jquery.jinfinote',
-
 ],
 function(maps){
     application.maps = maps;
+    application.dom_buffer = {};
+    //for now hardcode the list of accessible modules, so we can savely ignore around non-routable urls
+    //pages is not routed at all, because we dont want a page prefix do we? :p
+    application.modules = {
+        blog:false,
+        teknon:false,
+        profiles:false,
+        messenger:false,
+        wiki:false,
+        slide:false,
+        ui:false,
+        opensim:false,
+        pages:false,
+        settings:false,
+        my_mod:false,
+        activity:false,
+        pad:false
+    }
+       
+       
     _modules = [];
     var offline_trigger;
     var ssl = false;
@@ -62,27 +83,39 @@ function(maps){
         }
         //check previous module
         application.params.cb_selected = 0;
-        if(application.mod_execute != mod_name && application.mod_execute !== undefined) {
-            application.modules[application.mod_execute].clean_up();
-        }
-        //already loaded
-        if(mod_name in application.modules) {
-            application.modules[mod_name].load(uri, push_history);
-            application.mod_execute = mod_name;
+        if(mod_name in application.modules){
+            if(application.mod_execute != mod_name && application.mod_execute !== undefined) {
+                application.modules[application.mod_execute].clean_up();
+            }
+            //already loaded
+            if(mod_name in application.modules && application.modules[mod_name] != false) {
+                application.modules[mod_name].load(uri, push_history);
+                application.mod_execute = mod_name;
+            }
+            else {
+                require(['modules/'+mod_name], function(module) {
+                    var mod_name = module.init(uri, push_history);
+                    application.modules[mod_name] = module;
+                    application.mod_execute = mod_name;
+                });
+            }
+            return mod_name;
         }
         else {
-            require(['modules/'+mod_name], function(module) {
-                var mod_name = module.init(uri, push_history);            
-                application.modules[mod_name] = module;
-                application.mod_execute = mod_name;
+            //anchor-only channel
+            application.ws.remote(uri,{},function(response){
+                $.each(response.data.anchors, function(idx,anchor) {
+                    console.log('Loading anchor "'+anchor.slug+'"...');
+                    application.load_anchor(anchor);
+                });
+                history.pushState({}, null, uri);
+                application.functions.ui.mark_menu();
             });
         }
-        return mod_name;
     }
     
-    //Module checks it's available url-resources against this function
-    application.route_uri_to_mod_function = function(uri, routes, push_history){
-        
+    //Module tries to find it's way from it's own submitted routes
+    application.route_uri_to_mod_function = function(uri, routes, push_history){        
         //handle possible anchor hash in the url (most notable in tabs)
         if(uri.indexOf('#') != -1) {uri = uri.split('#')[0];}
         $.each(routes,function(idx, route){
@@ -169,27 +202,22 @@ function(maps){
         }
     }
     
-    application.set_plasmoid_widget = function(container, plasmoid) {
-        if($('#widget_'+plasmoid.uuid).length == 0) {
-            $(container).append('<div id=widget_'+plasmoid.uuid+' class="hwios-widget hwios-plasmoid">\
-                                    <div class="ui-widget-header ui-corner-top"></div>\
-                                    <div id="plasmoid_'+plasmoid.uuid+'" class="ui-widget-content plasmoid-container"></div></div>');
-        }
-        return $('#widget_'+plasmoid.uuid);
-    }
-    
-    application.load_plasmoid = function(plasmoid) {
-        //Canvas processing plasmoid
-        widget = application.set_plasmoid_widget('.sidebar',plasmoid);
-        //jscanvas container
-        if (plasmoid.type == 1) {
-            try {
-                eval(plasmoid.script);
+   
+    application.load_anchor = function(anchor) {
+        //anchor is html, css or javascript
+        //store html/css first in a buffer. user is responsible for placement
+        //using the entity uuid as a reference
+        $.each(anchor.entities, function(idx, entity){
+            if(entity.type == 0 || 1) {
+                application.dom_buffer[entity.uuid] = entity.code;
             }
-            catch(error){
-            console.log(error);    
+        });        
+        $.each(anchor.entities, function(idx, entity){
+            if(entity.type == 2) {
+                try {eval(entity.code);}
+                catch(error){console.log(error);}
             }
-        }
+        });
     }
 
     application.prepare_form = function(form) {
@@ -310,10 +338,10 @@ function(maps){
                 setTimeout(function(){init_websocket()}, 500);
                 },
                 message_cb: function(type, data){
-                    if(type == 'plasmoids') {
-                        $.each(data, function(idx,plasmoid) {
-                            console.log('Loading plasmoid "'+plasmoid.slug+'"...');
-                            application.load_plasmoid(plasmoid);
+                    if(type == 'anchors') {
+                        $.each(data, function(idx,anchor) {
+                            console.log('Loading anchor "'+anchor.slug+'"...');
+                            application.load_anchor(anchor);
                         });  
                     }
                 },

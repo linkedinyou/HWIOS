@@ -92,7 +92,7 @@ class WebSocketRouter(WebSocketHandler):
         else:
             translation.activate('en-us')
         res = {}
-        pages = None
+        anchors = None
         try:
             _decoded = HWIOS.tools.json_decode(frame)
             self.url = _decoded[0]
@@ -104,7 +104,7 @@ class WebSocketRouter(WebSocketHandler):
             #Data not in url means this is a view
             if 'data' not in self.url:
                 self.transport.view_history.append(self.url)
-                pages = HWIOS.pages.route(self.transport.view_history, self.transport._client.profile)
+                anchors = HWIOS.anchors.route(self.transport.view_history, self.transport._client.profile)
                 if len(self.transport.view_history) >= 2:
                     HWIOS.ws_realm.pool.signals.send('view_changed', client = self.transport._client, filters = [self.transport.view_history[-2],self.transport.view_history[-1]])
             log.msg('%s WS/76/HRM' % self.url,system='%s,IN' % self.transport.getPeer().host)
@@ -115,28 +115,34 @@ class WebSocketRouter(WebSocketHandler):
         if self.url == None:
             raise InvalidReq()            
         method = HWIOS.ws_realm.dispatcher.route(self.url)
+        #didnt route to a module view
         if method is None:
-            _errormsg = 'Error 404 - Resource route not found!'
-            log.msg('%s WS/76/HRM' % _errormsg,system='%s,IN' % self.transport.getPeer().host)
-            return False
-        t = type(params)
-        if t is list:
-            #mix client and list params in
-            method[2]['client'] = self.transport._client
-            method[2]['params'] = params
-            #get the websocket controller's result
-            result = getattr(method[0],method[1])(**method[2])
-        elif t is dict: 
-            params.update(method[2])
-            params['client'] = self.transport._client
-            #get the websocket controller's result
-            result = getattr(method[0],method[1])(**params)
-        else: raise IOError()
+            #also no anchors?
+            if anchors == None:
+                _errormsg = 'Error 404 - Resource route not found!'
+                log.msg('%s WS/76/HRM' % _errormsg,system='%s,IN' % self.transport.getPeer().host)
+                return False
+            else:
+                result = {'data':{'anchors': anchors}}
+        else:
+            t = type(params)
+            if t is list:
+                #mix client and list params in
+                method[2]['client'] = self.transport._client
+                method[2]['params'] = params
+                #get the websocket controller's result
+                result = getattr(method[0],method[1])(**method[2])
+            elif t is dict:
+                params.update(method[2])
+                params['client'] = self.transport._client
+                #get the websocket controller's result
+                result = getattr(method[0],method[1])(**params)
+            else: raise IOError()
         if isinstance(result, defer.Deferred):
             result.addBoth(self.respAny)
             return
-        if pages != None and result != None:
-            result['data']['pages'] = pages
+        if anchors != None and result != None:
+            result['data']['anchors'] = anchors
         self.respAny(result)
 
 

@@ -90,7 +90,7 @@ class Web_uiService(object):
         root.putChild("media", StaticFile(os.path.join(os.path.join(self.config.location, 'media'))))
         root.putChild("docs", StaticFile(os.path.join(os.path.join(self.config.location, '../','../','docs','_build','html'))))
         HWIOS.ws_realm = WSRealm()
-        HWIOS.pages = PageRouter()
+        HWIOS.anchors = PageRouter()
         site = WebSocketSite(root)
         site.addHandler("/ws", WebSocketRouter)
         site.displayTracebacks = False        

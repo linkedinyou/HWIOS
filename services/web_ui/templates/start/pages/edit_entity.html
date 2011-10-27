@@ -1,28 +1,19 @@
 {% load i18n %}
 <div class='hwios-widget'>
     <div class='ui-widget-header'>
-        <span>{{plasmoid.slug}}</span>
-        <span>{%trans 'Edit Plasmoid'%}</span>
+        <span>{{entity.slug}}</span>
+        <span>{%trans 'Edit Entity'%}</span>
     </div>
     <div class='ui-widget-content'>
-        <div id='plasmoid-editor' class='infinote-editor'></div>
-        <div id='plasmoid-form-container'>
-            <div id='plasmoid-form'>            
-                <form>
-                    <p><label>{%trans 'UUID'%}</label><input id='uuid' type='text' disabled='disabled' value='{{plasmoid.uuid}}'></input></p>
-                    {{ form.as_p }}
-                </form>
-            </div>
-            <div id='plasmoid_{{plasmoid.uuid}}' class='plasmoid-preview'></div>
-        </div>
-        
+        <form>{{ form.as_p }}</form>
+        <div id='entity-editor' class='infinote-editor'></div>
     </div>
     <div class='btn-bar'>
         <div class='btn-set btn-set-single'>
-            <button data-uri='/plasmoids/' data-uuid='{{plasmoid.uuid}}' class='btn ui-state-default ui-corner-left'>
+            <button data-uri='/pages/' data-uuid='{{entity.uuid}}' class='btn ui-state-default ui-corner-left'>
                 <span class='ui-icon ui-icon-cancel'></span><span class='btn-txt'>{%trans 'Cancel'%}</span>
             </button>
-            <button data-function='plasmoids.save_plasmoid' data-uuid='{{plasmoid.uuid}}' class='btn ui-state-default ui-corner-right'>
+            <button data-function='pages.save_edit_entity' data-uuid='{{entity.uuid}}' class='btn ui-state-default ui-corner-right'>
                 <span class='ui-icon ui-icon-transfer-e-w'></span><span class='btn-txt'>{%trans 'Submit'%}</span>
             </button>
         </div>

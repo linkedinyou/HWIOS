@@ -30,6 +30,8 @@ require.def('modules/pages',[],
 function(){
     var editor;
     var plasmoid_uuid;
+    var tabs;
+    var selected_tab;
     var canvas_preview;
     var processing;
     var urls;
@@ -63,35 +65,53 @@ function init_helpers() {
 }
     
     
-function initEditor(plasmoid_uuid, override_layout) {
+function initEditor(uuid, response, ws_connect) {
     editor = $.jinfinote(application.ws, {
-    ws_connect:'/pages/'+plasmoid_uuid+'/edit/',
-    ws_disconnect:'/data/pages/'+plasmoid_uuid+'/disconnect/',
-    ws_insert:'/data/pages/'+plasmoid_uuid+'/insert/',
-    ws_delete:'/data/pages/'+plasmoid_uuid+'/remove/',
-    ws_undo:'/data/pages/'+plasmoid_uuid+'/undo/',
-    ws_caret:'/data/pages/'+plasmoid_uuid+'/caret/',
-    cb_insert:'^/data/pages/(?<plasmoid_uuid>[^/]+)/insert/$',      
-    cb_delete:'^/data/pages/(?<plasmoid_uuid>[^/]+)/remove/$',
-    cb_undo:'^/data/pages/(?<plasmoid_uuid>[^/]+)/undo/$',
-    cb_caret:'^/data/pages/(?<plasmoid_uuid>[^/]+)/caret/$',   
+    ws_connect:ws_connect,
+    ws_disconnect:'/data/pages/entities/'+uuid+'/disconnect/',
+    ws_insert:'/data/pages/entities/'+uuid+'/insert/',
+    ws_delete:'/data/pages/entities/'+uuid+'/remove/',
+    ws_undo:'/data/pages/entities/'+uuid+'/undo/',
+    ws_caret:'/data/pages/entities/'+uuid+'/caret/',
+    cb_insert:'^/data/pages/entities/(?<uuid>[^/]+)/insert/$',      
+    cb_delete:'^/data/pages/entities/(?<uuid>[^/]+)/remove/$',
+    cb_undo:'^/data/pages/entities/(?<uuid>[^/]+)/undo/$',
+    cb_caret:'^/data/pages/entities/(?<uuid>[^/]+)/caret/$',   
     mode:'javascript',
     init: 
         function(data) {
-            if (typeof(override_layout) == 'undefined') {
+            if (response === undefined) {
                 application.functions.ui.transition(data.dom.main, $('.main'));
             }
             else {
-                application.functions.ui.transition(override_layout, $('.main'));
+                application.functions.ui.transition(response.data.dom.main, $('.main'),response.status.code);
                 $.each($('.main .errorlist'), function () {     
                 $(this).next().prepend('<span class="ui-icon ui-icon-info"></span>');
                 });   
-            }
-            
-            canvas_preview = $('#plasmoid_'+plasmoid_uuid).get(0);
-        return {editor_element:'#plasmoid-editor'}
+            }            
+            switch($('#id_type').val()){
+                case '0': $(this)[0].mode = 'htmlmixed';
+                break;
+                case '1': $(this)[0].mode = 'css';
+                break;
+                case '2': $(this)[0].mode = 'javascript';
+                break;
+            }   
+            canvas_preview = $('#entity-'+uuid).get(0);
+        return {editor_element:'#entity-editor'}
         }
     }); 
+}
+
+function apply_tabs(){
+    tabs = $('#pages-tabs').tabs({
+        select: function(event, ui) {
+            selected_tab = ui.index;
+        },
+    });
+    if(tabs !== undefined) {
+        tabs.tabs('option', 'selected',selected_tab);
+    }
 }
     
     
@@ -101,60 +121,65 @@ function bind_functions(){
             if(urls == undefined) {
                 urls = [
                     [XRegExp('^/pages/$'),this.view_pages],
-                    [XRegExp('^/pages/new/$'), this.create_anchor],            
-                    [XRegExp('^/pages/(?<uuid>[^/]+)/edit/$'), this.edit_anchor],
-                    [XRegExp('^/pages/entities/new/$'), this.create_entity],
+                    [XRegExp('^/pages/anchors/new/$'), this.create_anchor],            
+                    [XRegExp('^/pages/anchors/(?<uuid>[^/]+)/edit/$'), this.edit_anchor],
+                    [XRegExp('^/pages/entities/(?<uuid>[^/]+)/new/$'), this.create_entity],
+                    [XRegExp('^/pages/entities/(?<uuid>[^/]+)/edit/$'), this.edit_entity],
                 ];
             }
             application.route_uri_to_mod_function(uri, urls, push_history);
         },
         
-        view_pages: function(kwargs) {
-            application.ws.remote('/pages/',{},function(response){
-                application.functions.ui.transition(response.data.dom.main, $('.main'));
-                $tabs = $('#pages-tabs').tabs();
-            });
+        view_pages: function(kwargs, update) {
+            if(update === undefined){
+                application.ws.remote('/pages/',{},function(response){
+                    application.functions.ui.transition(response.data.dom.main, $('.main'));
+                    apply_tabs();
+                });
+            }
+            else {
+                console.log('update');
+                application.functions.ui.transition(kwargs.data.dom.main, $('.main'));
+                apply_tabs();
+            }
         },
 
         create_anchor: function() {
-            application.ws.remote('/pages/new/',{},function(response){
+            application.ws.remote('/pages/anchors/new/',{},function(response){
                 application.functions.ui.transition(response.data.dom.main, $('.main'));
-                //initEditor(response.data.plasmoid.uuid, response.data.dom.main);
             });
 
-        },        
-
-        edit_anchor: function(kwargs) {
-            console.log(kwargs);
-            application.ws.remote('/pages/'+kwargs.uuid+'/edit/',{},function(response){
-                application.functions.ui.transition(response.data.dom.main, $('.main'));
+        },
+        save_create_anchor: function(kwargs) {
+            var form = $("form:visible").serializeObject();
+            application.ws.remote('/pages/anchors/new/',{form:form},function(response){
+                application.functions.ui.transition(response.data.dom.main, $('.main'), response.status.code);
+                tabs = $('#pages-tabs').tabs();
             });
         },
 
-        save_create_anchor: function(kwargs) {
-            var form = $("form:visible").serializeObject();
-            application.ws.remote('/pages/new/',{form:form},function(response){
-                application.functions.ui.transition(response.data.dom.main, $('.main'), response.status.code);
-                $tabs = $('#pages-tabs').tabs();
+        edit_anchor: function(kwargs) {
+            application.ws.remote('/pages/anchors/'+kwargs.uuid+'/edit/',{},function(response){
+                application.functions.ui.transition(response.data.dom.main, $('.main'));
             });
         },
         save_edit_anchor: function(kwargs) {
             var form = $("form:visible").serializeObject();
-            application.ws.remote('/pages/'+kwargs.uuid+'/edit/',{form:form},function(response){
+            application.ws.remote('/pages/anchors/'+kwargs.uuid+'/edit/',{form:form},function(response){
                 application.functions.ui.transition(response.data.dom.main, $('.main'), response.status.code);
-                $tabs = $('#pages-tabs').tabs();
+                tabs = $('#pages-tabs').tabs();
             });
         },
         
         delete_anchors: function() {
-            application.ws.remote('/data/pages/delete/',{},function(response){
+            application.ws.remote('/data/pages/anchors/delete/',{},function(response){
                 i18nButtons = {}
                 i18nButtons[gettext('Cancel')] = function(){
                     $(this).dialog('close');
                 }
                 i18nButtons[gettext('Delete')] = function(){
                     var params = $(".datatable :checkbox:checked:visible").serializeObject();
-                    application.ws.remote('/data/pages/delete/',{params:params},function(response){
+                    application.ws.remote('/data/pages/anchors/delete/',{params:params},function(response){
                         application.functions.ui.transition(response.data.dom.main, $('.main'));                        
                         $tabs = $('#pages-tabs').tabs();
                     });
@@ -172,26 +197,58 @@ function bind_functions(){
             });        
         },
 
-        create_entity: function() {
-            application.ws.remote('/pages/entities/new/',{},function(response){
-                application.functions.ui.transition(response.data.dom.main, $('.main'));
-                //initEditor(response.data.plasmoid.uuid, response.data.dom.main);
+        create_entity: function(kwargs) {            
+            initEditor(kwargs.uuid,undefined,'/pages/entities/'+kwargs.uuid+'/create/');            
+        },
+        save_create_entity: function(kwargs) {
+            var form_data = $("form:visible").serializeObject();
+            form_data.content = editor._state.buffer.toString();
+            application.ws.remote('/pages/entities/'+kwargs.uuid+'/create/',{form:form_data},function(response){
+                switch(response.status.code) {
+                    case "ENTITY_CREATE_OK":
+                        application.functions.pages.view_pages(response, true);
+                    break;
+                    case "FORM_INVALID":
+                        console.log('invalid form!');
+                        initEditor(kwargs.uuid, response);
+                    break;
+                }
             });
+        },
 
+        edit_entity: function(kwargs) {
+            initEditor(kwargs.uuid,undefined,'/pages/entities/'+kwargs.uuid+'/edit/');
+        },
+        save_edit_entity: function(kwargs) {
+            console.log(kwargs);
+            var form_data = $("form:visible").serializeObject();
+            form_data.content = editor._state.buffer.toString();
+            application.ws.remote('/pages/entities/'+kwargs.uuid+'/edit/',{form:form_data},function(response){
+                switch(response.status.code) {
+                    case "ENTITY_EDIT_OK":
+                        application.functions.pages.view_pages(response, true);
+                    break;
+                    case "ENTITY_EDIT_NO_CHANGE":
+                        application.functions.pages.view_pages(response, true);
+                    break;
+                    case "FORM_INVALID":
+                        console.log('invalid form!');
+                        initEditor(kwargs.uuid, response);
+                    break;
+                }
+            });
         },
         
         delete_entities: function() {
-            application.ws.remote('/data/plasmoids/delete/',{},function(response){
+            application.ws.remote('/data/pages/entities/delete/',{},function(response){
                 i18nButtons = {}
                 i18nButtons[gettext('Cancel')] = function(){
                     $(this).dialog('close');
                 }
                 i18nButtons[gettext('Delete')] = function(){
                     var params = $(".datatable :checkbox:checked:visible").serializeObject();
-                    application.ws.remote('/data/plasmoids/delete/',{params:params},function(response){
-                        application.cb_selected = 0;
-                        application.functions.ui.transition(response.data.dom.main, $('.main'));
-                        $tabs = $('#pages-tabs').tabs();
+                    application.ws.remote('/data/pages/entities/delete/',{params:params},function(response){
+                        application.functions.pages.view_pages(response, true);
                     });
                     $(this).dialog('close');
                 }
@@ -207,44 +264,16 @@ function bind_functions(){
             });
         },               
 
-
-        
-        
-
-        
-        cancel_edit_plasmoid: function() {
-            listPlasmoids();            
-        },
-        
-
-        save_entity: function(kwargs) {
-            var form_data = $("form:visible").serializeObject();            
-            form_data.content = editor._state.buffer.toString();
-            application.ws.remote('/data/pages/'+kwargs.uuid+'/save/',{form:form_data},function(response){
-                switch(response.status.code) {
-                    case "PLASMOID_EDIT_OK":
-                        application.functions.plasmoids.view_plasmoids();
-                    break;
-                    case "PLASMOID_EDIT_NO_CHANGE":
-                        application.functions.plasmoids.view_plasmoids();
-                    break;
-                    case "FORM_INVALID":
-                        initEditor(kwargs.uuid, response.data.dom.main);
-                    break;
-                }
-            });
-        }
     }    
 }
 
 function bind_ws(){
-    application.ws.method('^/data/plasmoids/(?<plasmoid_uuid>[^/]+)/online/update/$', function(params){
+    application.ws.method('^/data/pages/entities/(?<uuid>[^/]+)/online/update/$', function(params){
         editor.update_online(params.online);
     });
 
-    application.ws.method('^/plasmoids/modified/$', function(kwargs){
-        application.functions.plasmoids.view_plasmoids(kwargs, true);
-
+    application.ws.method('^/pages/entities/modified/$', function(kwargs){
+        application.functions.pages.view_pages(kwargs, true);
     });
 }
     
@@ -258,6 +287,18 @@ function bind_events() {
             console.log(error);
         }
     }
+
+    $('#id_type').die().live('change', function(){
+        var _val = $(this).val();
+        switch($(this).val()){
+            case '0': editor.change_mode('htmlmixed');
+            break;
+            case '1': editor.change_mode('css');
+            break;
+            case '2': editor.change_mode('javascript');
+            break;
+        }
+    });
     
     //FIXME: Buggy preview mode doesn't work properly without processing.js yet
     $('#id_auto_preview').live("click",function() {
@@ -289,6 +330,7 @@ function bind_events() {
 function unbind_events() {
     $(document).unbind('infinote_update');
     $('#id_auto_preview').die();
+    $('#id_type').die();
 }
     
 return {

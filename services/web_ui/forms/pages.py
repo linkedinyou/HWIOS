@@ -29,14 +29,15 @@ class EditAnchorForm(forms.Form):
     auto_preview = forms.BooleanField(label=_('Auto Preview'),required = False)
 
 
-class CreateEntityForm(forms.Form):
+class EntityForm(forms.Form):
     slug = forms.CharField(label=_('Title'), min_length = 2, max_length = 32,widget=forms.TextInput(attrs={'class':'textfield-small'}))
-    anchor = forms.ModelChoiceField(queryset=PageAnchor.objects.all(), empty_label=_('Choose...'))
-
+    anchor = forms.ModelChoiceField(queryset=PageAnchor.objects.all(), empty_label=_('Please Choose...'))
+    type = forms.ChoiceField(label=_('Entity Type'), choices=[(0,'HTML'),(1,'CSS'),(2,'JS')])
     
 class EditEntityForm(forms.Form):
     slug = forms.CharField(label=_('Title'), min_length = 2, max_length = 32,widget=forms.TextInput(attrs={'class':'textfield-small'}))
-    anchor = forms.ModelChoiceField(queryset=PageAnchor.objects.all(), empty_label=_('Choose...'))    
+    anchor = forms.ModelChoiceField(queryset=PageAnchor.objects.all(), empty_label=_('Please Choose...'))
+    type = forms.ChoiceField(label=_('Entity Type'), choices=[(0,'HTML'),(1,'CSS'),(2,'JS')])
 
 
 

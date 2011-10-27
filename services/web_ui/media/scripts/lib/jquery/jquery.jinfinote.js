@@ -47,23 +47,23 @@
         //Init request
         ce.opts['ws_handler'].remote(ce.opts['ws_connect'],{},function(response){
             if(!('data' in response)){
-            return false;
+                return false;
             }            
             //in some cases, only a create page is shown and none created. Do not proceed in that case.
-            if(!('log' in response.data.article)) {
+            if(!('ce' in response.data)) {
                 ce.opts['init'](response.data, null);
                 return false;
             }
-            else {
+            else {                
                 ce._localUser = parseInt(response.data.uid);
-                $.each(response.data.online, function(idx, user){
+                $.each(response.data.ce.online, function(idx, user){
                     if(user.id == ce._localUser){
                     ce._localColor = user.color;
                     }
                 });                
-                ce._state.buffer = new Buffer([new Segment(0, response.data.article.state[1])]);
-                ce._state.vector = new Vector(response.data.article.state[0]);                
-                ce.sync_log(response.data.article.log[1], function(){
+                ce._state.buffer = new Buffer([new Segment(0, response.data.ce.state[1])]);
+                ce._state.vector = new Vector(response.data.ce.state[0]);            
+                ce.sync_log(response.data.ce.log[1], function(){
                     //arbitrary init function, in which user can customize stuff
                     var init_response = ce.opts['init'](response.data);
                     if('mode' in ce.opts) {
@@ -75,13 +75,13 @@
                     }
                 });
                 if('mode' in ce.opts) {
-                ce.update_online(response.data.online);
+                ce.update_online(response.data.ce.online);
                 }
-            } 
+            }
             ce._prevValue = ce._state.buffer.toString();            
             if (isNaN(this._localUser) && ce.opts['mode'] == 'edit') {return false;}
             ce._initialized = true;
-            $(document).trigger('infinote_synced',[ce._state.log.length, , ce._textarea]);
+            $(document).trigger('infinote_synced',[ce._state.log.length, ce._textarea]);
         }); 
         return true;
     }
@@ -159,6 +159,9 @@
     //Listen mode, not much to do unless you want to make it fancier
     CollabEditor.prototype.init_code_listener = function(init_response, data) {}
    
+
+
+
     
     //Editor mode. Initialize codemirror and setup events
     CollabEditor.prototype.init_code_editor = function(init_response, data) {
@@ -218,6 +221,9 @@
         ce.suppress_change = false;
     }
 
+    CollabEditor.prototype.change_mode = function(mode_name){
+        ce.editor.setOption('mode', mode_name);
+    }
 
     CollabEditor.prototype._handle_local_undo = function() {
         ce.suppress_change = true;

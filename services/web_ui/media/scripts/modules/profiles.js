@@ -367,7 +367,6 @@ function unbind_events() {
     
 return {
     init: function(uri, push_history) {
-        console.log('wtf');
         profiles_context = $.context({anchor:'.main',delegate:'#profiles-context',uri:'/profiles/context/',id:'ctx-profiles'});
         bind_functions();
         bind_ws();

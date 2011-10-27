@@ -22,27 +22,27 @@
                 </tr>
             </thead>
             <tbody>
-            {%ifequal pages|length 0%}
-            <tr><td colspan='4'>{%trans 'No pages yet...'%}</td></tr>
+            {%ifequal anchors|length 0%}
+            <tr><td colspan='4'>{%trans 'No anchors yet...'%}</td></tr>
             {%else%}
-                {% for page in pages %}
+                {% for anchor in anchors %}
                 <tr>
-                <td><input type='checkbox' id='{{page.pk}}' name='{{page.pk}}'/></td>
-                <td>{{page.slug}}</td>
+                <td><input type='checkbox' id='{{anchor.pk}}' name='{{anchor.pk}}'/></td>
+                <td>{{anchor.slug}}</td>
                 <td>
-                    {%ifequal page.access 0 %}
+                    {%ifequal anchor.access 0 %}
                     {%trans 'All'%}
                     {%else%}
-                    {%ifequal page.access 1 %}
+                    {%ifequal anchor.access 1 %}
                     {%trans 'Users'%}
                     {%else%}
-                    {%ifequal page.access 2 %}
+                    {%ifequal anchor.access 2 %}
                     {%trans 'Moderators'%}
                     {%endifequal%}{%endifequal%}{%endifequal%}
                 </td>
-                <td>{{page.target}}</td>
-                <td>{{page.cacheable}}</td>
-                <td>{{page.last_modified|date:'SHORT_DATETIME_FORMAT' }}</td>
+                <td>{{anchor.target}}</td>
+                <td>{{anchor.cacheable}}</td>
+                <td>{{anchor.last_modified|date:'SHORT_DATETIME_FORMAT' }}</td>
                 </tr>
                 {%endfor%}
             {%endifequal%}
@@ -50,10 +50,10 @@
             </table>
             <div class='btn-bar'>
                 <div class='btn-set btn-set-single'>
-                    <button data-uri='/pages/new/' class='btn ui-state-default ui-corner-left'>
+                    <button data-uri='/pages/anchors/new/' class='btn ui-state-default ui-corner-left'>
                         <span class='ui-icon ui-icon-document'></span><span class='btn-txt'>{%trans 'New'%}</span>
                     </button>
-                    <button data-uripart='/pages/{id}/edit/' data-uriflag='cb-cid' class='btn btn-active-one ui-state-default ui-state-disabled'>
+                    <button data-uripart='/pages/anchors/{id}/edit/' data-uriflag='cb-cid' class='btn btn-active-one ui-state-default ui-state-disabled'>
                         <span class='ui-icon ui-icon-pencil'></span><span class='btn-txt'>{%trans 'Edit'%}</span>
                     </button>
                     <button data-function='pages.delete_anchors' class='btn btn-active-many ui-state-default ui-state-disabled ui-corner-right'>
@@ -66,9 +66,47 @@
 
 
         <div id='pages-entities' class='ui-widget-content'>
+            <table class='datatable' >
+            <thead>
+                <tr>
+                <th><input type='checkbox' id='cb-all'/></th>
+                <th>{%trans 'Title'%}</th>
+                <th>{%trans 'UUID'%}</th>
+                <th>{%trans 'Type'%}</th>
+                <th>{%trans 'Anchor'%}</th>                
+                <th>{%trans 'Last Modified'%}</th>
+                </tr>
+            </thead>
+            <tbody>
+            {%ifequal entities|length 0%}
+            <tr><td colspan='4'>{%trans 'No entities yet...'%}</td></tr>
+            {%else%}
+                {% for entity in entities %}
+                <tr>
+                <td><input type='checkbox' id='{{entity.pk}}' name='{{entity.pk}}'/></td>
+                <td>{{entity.slug}}</td>
+                <td>{{entity.uuid}}</td>
+                <td>
+                    {%ifequal entity.type 0 %}
+                    {%trans 'HTML'%}
+                    {%else%}
+                    {%ifequal entity.type 1 %}
+                    {%trans 'CSS'%}
+                    {%else%}
+                    {%ifequal entity.type 2 %}
+                    {%trans 'JS'%}
+                    {%endifequal%}{%endifequal%}{%endifequal%}
+                </td>
+                <td>{{entity.anchor}}</td>
+                <td>{{entity.last_modified|date:'SHORT_DATETIME_FORMAT' }}</td>
+                </tr>
+                {%endfor%}
+            {%endifequal%}
+            </tbody>
+            </table>
             <div class='btn-bar'>
                 <div class='btn-set btn-set-single'>
-                    <button data-uri='/pages/entities/new/' class='btn ui-state-default ui-corner-left'>
+                    <button data-uripart='/pages/entities/{id}/new/' data-uriflag='random-cid' class='btn ui-state-default ui-corner-left'>
                         <span class='ui-icon ui-icon-document'></span><span class='btn-txt'>{%trans 'New'%}</span>
                     </button>
                     <button data-uripart='/pages/entities/{id}/edit/' data-uriflag='cb-cid' class='btn btn-active-one ui-state-default ui-state-disabled'>

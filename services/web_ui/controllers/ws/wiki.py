@@ -66,12 +66,10 @@ class WS_Wiki(object):
                 'data':{
                     'dom':{'main':main},
                     'article':{
-                        'title':article.slug,
-                        'state':subscriber['state'],
-                        'log':subscriber['log'],
+                        'title':article.slug,                        
                         'revisions':revisions
-                    }, 
-                    'online':subscriber['online'],
+                    },
+                    'ce':subscriber,
                     'uid':client.profile.pk
                 }
             }
@@ -107,17 +105,23 @@ class WS_Wiki(object):
                     'dom':{'main':main},
                     'article':{
                         'title':article.slug,
-                        'state':subscriber['state'],
-                        'log':subscriber['log'],
                         'revisions':revisions
-                    }, 
-                    'online':subscriber['online'],
+                    },
+                    'ce':subscriber,
                     'uid':client.profile.pk,
                 }
             }
         except ObjectDoesNotExist:
             main = render_to_string("wiki/create_article.html", {"profile":client.profile,"article":{'slug':slug}})
-            return {'data':{'dom':{'main':main},'article':{'title':slug, 'state':False}}}
+            return {
+                'data':{
+                    'dom':{'main':main},
+                    'article':{
+                        'title':slug,
+                        'state':False
+                    }
+                }
+            }
 
 
     def _signal_presence(self, client, online, app_pool, item_id):
@@ -233,8 +237,7 @@ class WS_Wiki(object):
         del params['content']
         form = EditArticleForm(params)
         
-        if form.is_valid():
-            
+        if form.is_valid():            
             try:
                 article = WikiArticle.objects.get(slug = slug)
             except WikiArticle.DoesNotExist:
@@ -314,7 +317,7 @@ class WS_Wiki(object):
         else:
             try:
                 article = WikiArticle.objects.get(slug=slug)
-                main = render_to_string('wiki/edit_article.html',  {'form': form,"page":article})
+                main = render_to_string('wiki/edit_article.html',  {'form': form,"article":article})
             except WikiArticle.DoesNotExist:
                 main = render_to_string("wiki/create_article.html", {"slug":slug,"form":form})
             response = {

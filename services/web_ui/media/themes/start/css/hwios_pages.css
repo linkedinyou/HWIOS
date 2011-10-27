@@ -1,10 +1,10 @@
-#plasmoid-form-container {
+#entity-form-container {
     width:100%;
     height:300px;
     overflow:hidden;
 }
 
-#plasmoid-form {
+#entity-form {
     float:left;
     margin-right:-100%;
     border-bottom:1px dotted #ddd;
@@ -12,7 +12,23 @@
     height:300px;
 }
 
-.plasmoid-preview {
+#entity-editor {
+    overflow:auto;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    float:left;
+}
+
+#entity-form {
+    display:block;
+    width:100%;
+    height:300px;
+    float:top;
+    
+    
+}
+
+.entity-preview {
     height:300px;
     border-left:1px dotted #ddd;
     border-bottom:1px dotted #ddd;
@@ -21,7 +37,7 @@
     background: url('images/opaque.jpg') repeat !important;    
 }
 
-.hwios-plasmoid {
+.hwios-entity {
     height:200px;
     width:100%;
     position:relative;
@@ -29,24 +45,29 @@
 }
 
 /*expand the container to the widget boundaries*/
-.plasmoid-container {
+.entity-container {
     width:100%;
     height:100%;
 }
 
-.hwios-plasmoid canvas {
+.hwios-entity canvas {
     height:100%;
     width:100%;
     position:absolute;
 }
 
-#plasmoid-editor {
+#entity-editor {
     width:100%;
     float:left;
     border-bottom:1px dotted #ddd;
 }
 
 
-.plasmoid-container {
+.entity-container {
     overflow:hidden;
 }
+
+.page-widget-sidebar {
+    border:1px dotted #ddd;
+}
+

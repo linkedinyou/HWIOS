@@ -62,18 +62,19 @@ ws_patterns = [
     
     #pages uri's
     (r'^/pages/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'list_pages'),
-    (r'^/pages/new/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'create_page'),
-    (r'^/pages/(?P<uuid>[^/]+)/edit/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'edit_page'),    
-    (r'^/pages/entities/new/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'create_entity'),
-    (r'^/data/pages/delete/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'delete_pages'),
-    (r'^/data/pages/scripts/(?P<script_id>[^/]+)/save/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'save_page'),
-    (r'^/data/pages/scripts/(?P<script_id>[^/]+)/connect/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'connect_plasmoid_editor'),
-    (r'^/data/pages/scripts/(?P<script_id>[^/]+)/disconnect/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'disconnect_plasmoid_editor'),
-    (r'^/data/pages/scripts/(?P<script_id>[^/]+)/insert/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'request_plasmoid_insert'),
-    (r'^/data/pages/scripts/(?P<script_id>[^/]+)/remove/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'request_plasmoid_delete'),
-    (r'^/data/pages/scripts/(?P<script_id>[^/]+)/undo/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'request_plasmoid_undo'),
-    (r'^/data/pages/scripts/(?P<script_id>[^/]+)/caret/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'update_remote_caret'),
-    (r'^/data/pages/scripts/(?P<script_id>[^/]+)/play/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'play_plasmoid_script'),
+    (r'^/pages/anchors/new/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'create_anchor'),
+    (r'^/pages/anchors/(?P<uuid>[^/]+)/edit/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'edit_anchor'),
+    (r'^/data/pages/anchors/delete/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'delete_anchors'),
+    (r'^/pages/entities/(?P<uuid>[^/]+)/create/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'create_entity'),
+    (r'^/pages/entities/(?P<uuid>[^/]+)/edit/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'edit_entity'),
+    (r'^/data/pages/entities/delete/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'delete_entities'),
+    (r'^/data/pages/entities/(?P<uuid>[^/]+)/save/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'save_entity'),
+    (r'^/data/pages/entities/(?P<uuid>[^/]+)/connect/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'connect_entity_editor'),
+    (r'^/data/pages/entities/(?P<uuid>[^/]+)/disconnect/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'disconnect_entity_editor'),
+    (r'^/data/pages/entities/(?P<uuid>[^/]+)/insert/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'request_entity_insert'),
+    (r'^/data/pages/entities/(?P<uuid>[^/]+)/remove/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'request_entity_delete'),
+    (r'^/data/pages/entities/(?P<uuid>[^/]+)/undo/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'request_entity_undo'),
+    (r'^/data/pages/entities/(?P<uuid>[^/]+)/caret/$', 'web_ui.controllers.ws.pages', 'WS_Pages', 'update_remote_caret'),
     
     
     #pad uri's

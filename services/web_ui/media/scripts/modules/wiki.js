@@ -53,10 +53,10 @@ function(){
                         $(this).next().prepend('<span class="ui-icon ui-icon-info"></span>');
                         });   
                     }
-                    if(data.article.revisions < 2) {
+                    if(data.ce.revisions < 2) {
                         $('#wiki-edit-history').addClass('ui-state-disabled');
                     }
-                    apply_markdown($('#wiki-markdown'),data.article.state[1]);
+                    apply_markdown($('#wiki-markdown'),data.ce.state[1]);
                     if(add_text !==undefined){
                         return {editor_element:'#wiki-editor',add_text: add_text}
                     }
@@ -82,10 +82,11 @@ function(){
             cb_caret:'^/data/wiki/(?<id>[^/]+)/caret/$',
             editor:'listen',
             init: 
-                function(data) {                    
+                function(data) {
                     application.functions.ui.transition(data.dom.main, $('.main'),'');
-                    if(data.article.state !==false) {
-                        apply_markdown($('#wiki-markdown'),data.article.state[1]);
+                    //skip when article doesn't exist, and no editor is available
+                    if(data.ce !== undefined) {
+                        apply_markdown($('#wiki-markdown'),data.ce.state[1]);
                     }                    
                     return {editor_element:'#wiki-editor'}
                 },
@@ -176,10 +177,10 @@ function bind_functions() {
                 }
                 
                 application.ws.remote('/wiki/'+kwargs.id+'/edit/history/',{},function(response){
-                    page_revisions = response.article.revisions;
+                    page_revisions = response.ce.revisions;
                     application.functions.ui.transition(response.data.dom.main, $('.main'));
-                    $.data($('#wiki-restore-button')[0],'revision',response.article.revisions.length);
-                        var _history_slider = $('#undo_slider').slider({ animate:true,min:1, max: response.article.revisions.length,value: response.article.revisions.length,
+                    $.data($('#wiki-restore-button')[0],'revision',response.ce.revisions.length);
+                        var _history_slider = $('#undo_slider').slider({ animate:true,min:1, max: response.ce.revisions.length,value: response.ce.revisions.length,
                             change: function(event, ui) {
                                 var _value = $('#undo_slider').slider('option','value');
                                 $('#undo_slider_value').html('@ '+_value);                                
@@ -368,7 +369,7 @@ function unbind_events() {
             $(document).trigger('WIKI_ARTICLE_LINK_FOLLOWED',{id:'Main'});
         },
         clean_up: function(){
-            $('div[class*="hwios-plasmoid"]').remove();
+            $('div[class*="page-widget-sidebar"]').remove();
             unbind_events();
         }
     }     

@@ -81,7 +81,7 @@ function bind_functions() {
             $('.menu-item-selected').removeClass('menu-item-selected');
             $('.menu-item').each(function(idx,value){
                 _data = $(this).data();
-                if('uri' in _data && location.pathname.indexOf(_data.uri) != -1){
+                if('uri' in _data && location.pathname.startsWith(_data.uri) == true){
                     $(this).addClass('menu-item-selected');
                     $(this).parents('li').addClass('menu-item-selected');
                 }

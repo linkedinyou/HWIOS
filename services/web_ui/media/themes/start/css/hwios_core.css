@@ -131,7 +131,7 @@ button .btn-icon {
     border-radius:5px;
     box-sizing:border-box;
     -moz-box-sizing:border-box;
-    float:top;
+    float:left;
 }
 
 #content-container {
@@ -434,7 +434,7 @@ button .btn-icon {
     top:0px;
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
-    position:relative;
+    overflow:auto;
 }
 
 .infinote-participant {
